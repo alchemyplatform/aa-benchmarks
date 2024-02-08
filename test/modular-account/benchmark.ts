@@ -1,4 +1,4 @@
-import { formatEther, formatGwei, getContract } from "viem";
+import { formatEther, formatGwei, getContract, parseEther, toHex } from "viem";
 
 import { artifacts } from "./artifacts";
 import { expect } from "chai";
@@ -7,7 +7,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpe
 
 describe("ModularAccount", function () {
   async function setupFixture() {
-    const [owner, otherAccount] = await hre.viem.getWalletClients();
+    const [owner, alice] = await hre.viem.getWalletClients();
     const publicClient = await hre.viem.getPublicClient();
 
     for (const { address, bytecode } of Object.values(artifacts)) {
@@ -48,13 +48,43 @@ describe("ModularAccount", function () {
       upgradeableModularAccount,
       multiOwnerModularAccountFactory,
       owner,
-      otherAccount,
+      alice,
       publicClient,
     };
   }
 
   describe("Benchmark", function () {
     let hash: `0x${string}` | undefined;
+
+    async function createAccountFixture() {
+      const setupFixtureResults = await loadFixture(setupFixture);
+      const { multiOwnerModularAccountFactory, owner, publicClient } =
+        setupFixtureResults;
+      await multiOwnerModularAccountFactory.write.createAccount([
+        0n,
+        [owner.account.address],
+      ]);
+      const smartAccountAddress =
+        await multiOwnerModularAccountFactory.read.getAddress([
+          0n,
+          [owner.account.address],
+        ]);
+      await hre.network.provider.send("hardhat_setBalance", [
+        smartAccountAddress,
+        toHex(parseEther("100")),
+      ]);
+      const smartAccount = getContract({
+        address: smartAccountAddress,
+        abi: artifacts.UpgradeableModularAccount.abi,
+        publicClient,
+        walletClient: owner,
+      });
+
+      return {
+        ...setupFixtureResults,
+        smartAccount,
+      };
+    }
 
     beforeEach(function () {
       hash = undefined;
@@ -66,20 +96,29 @@ describe("ModularAccount", function () {
       const receipt = await publicClient.getTransactionReceipt({ hash: hash! });
       console.table({
         "Gas used": `${receipt.gasUsed}`,
-        "Gas price": `${formatGwei(receipt.effectiveGasPrice)} Gwei`,
+        "Gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
         "Transaction fee": `${formatEther(
           receipt.gasUsed * receipt.effectiveGasPrice
         )} ETH`,
       });
     });
 
-    it("Create account", async function () {
+    it("Creation", async function () {
       const { multiOwnerModularAccountFactory, owner } = await loadFixture(
         setupFixture
       );
       hash = await multiOwnerModularAccountFactory.write.createAccount([
         0n,
         [owner.account.address],
+      ]);
+    });
+
+    it("Native transfer", async function () {
+      const { smartAccount, alice } = await loadFixture(createAccountFixture);
+      hash = await smartAccount.write.execute([
+        alice.account.address,
+        parseEther("1"),
+        "0x",
       ]);
     });
   });
