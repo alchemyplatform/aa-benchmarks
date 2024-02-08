@@ -1,6 +1,7 @@
 import { formatEther, formatGwei, getContract } from "viem";
 
 import { artifacts } from "./artifacts";
+import { expect } from "chai";
 import hre from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 
@@ -53,16 +54,16 @@ describe("ModularAccount", function () {
   }
 
   describe("Benchmark", function () {
-    it("Create account", async function () {
-      const { multiOwnerModularAccountFactory, owner, publicClient } =
-        await loadFixture(setupFixture);
+    let hash: `0x${string}` | undefined;
 
-      const hash = await multiOwnerModularAccountFactory.write.createAccount([
-        0n,
-        [owner.account.address],
-      ]);
-      const receipt = await publicClient.getTransactionReceipt({ hash });
+    beforeEach(function () {
+      hash = undefined;
+    });
 
+    afterEach(async function () {
+      const publicClient = await hre.viem.getPublicClient();
+      expect(hash).to.not.be.undefined;
+      const receipt = await publicClient.getTransactionReceipt({ hash: hash! });
       console.table({
         "Gas used": `${receipt.gasUsed}`,
         "Gas price": `${formatGwei(receipt.effectiveGasPrice)} Gwei`,
@@ -70,6 +71,16 @@ describe("ModularAccount", function () {
           receipt.gasUsed * receipt.effectiveGasPrice
         )} ETH`,
       });
+    });
+
+    it("Create account", async function () {
+      const { multiOwnerModularAccountFactory, owner } = await loadFixture(
+        setupFixture
+      );
+      hash = await multiOwnerModularAccountFactory.write.createAccount([
+        0n,
+        [owner.account.address],
+      ]);
     });
   });
 });
