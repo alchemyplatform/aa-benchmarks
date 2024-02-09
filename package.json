@@ -7,6 +7,7 @@
     "verify": "hardhat verify --network mainnet"
   },
   "devDependencies": {
+    "@account-abstraction/sdk": "^0.6.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",

@@ -1,4 +1,4 @@
-export const artifacts = {
+export const MODULAR_ACCOUNT_ARTIFACTS = {
   MultiOwnerModularAccountFactory: {
     address: "0x000000e92D78D90000007F0082006FDA09BD5f11",
     abi: [

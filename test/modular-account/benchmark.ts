@@ -1,55 +1,89 @@
-import { formatEther, formatGwei, getContract, parseEther, toHex } from "viem";
+import {
+  encodeFunctionData,
+  encodePacked,
+  formatEther,
+  formatGwei,
+  getAbiItem,
+  getContract,
+  hashMessage,
+  parseEther,
+  recoverAddress,
+  recoverMessageAddress,
+  toHex,
+  zeroAddress,
+} from "viem";
 
-import { artifacts } from "./artifacts";
+import { ENTRY_POINT_ARTIFACTS } from "../entryPoint";
+import { MODULAR_ACCOUNT_ARTIFACTS } from "./artifacts";
+import { calcPreVerificationGas } from "@account-abstraction/sdk";
 import { expect } from "chai";
 import hre from "hardhat";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 
 describe("ModularAccount", function () {
   async function setupFixture() {
-    const [owner, alice] = await hre.viem.getWalletClients();
+    const [owner, alice, beneficiary] = await hre.viem.getWalletClients();
     const publicClient = await hre.viem.getPublicClient();
 
-    for (const { address, bytecode } of Object.values(artifacts)) {
+    for (const { address, bytecode } of Object.values(ENTRY_POINT_ARTIFACTS)) {
+      await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
+    }
+
+    const entryPoint = getContract({
+      address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.address,
+      abi: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
+      publicClient,
+      walletClient: owner,
+    });
+
+    for (const { address, bytecode } of Object.values(
+      MODULAR_ACCOUNT_ARTIFACTS
+    )) {
       await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
     }
 
     const multiOwnerPlugin = getContract({
-      address: artifacts.MultiOwnerPlugin.address,
-      abi: artifacts.MultiOwnerPlugin.abi,
+      address: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerPlugin.address,
+      abi: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerPlugin.abi,
       publicClient,
       walletClient: owner,
     });
 
     const sessionKeyPlugin = getContract({
-      address: artifacts.SessionKeyPlugin.address,
-      abi: artifacts.SessionKeyPlugin.abi,
-      publicClient,
-      walletClient: owner,
-    });
-
-    const upgradeableModularAccount = getContract({
-      address: artifacts.UpgradeableModularAccount.address,
-      abi: artifacts.UpgradeableModularAccount.abi,
+      address: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.address,
+      abi: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.abi,
       publicClient,
       walletClient: owner,
     });
 
     const multiOwnerModularAccountFactory = getContract({
-      address: artifacts.MultiOwnerModularAccountFactory.address,
-      abi: artifacts.MultiOwnerModularAccountFactory.abi,
+      address:
+        MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerModularAccountFactory.address,
+      abi: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerModularAccountFactory.abi,
       publicClient,
       walletClient: owner,
     });
 
+    const smartAccountAddress =
+      await multiOwnerModularAccountFactory.read.getAddress([
+        0n,
+        [owner.account.address],
+      ]);
+    await hre.network.provider.send("hardhat_setBalance", [
+      smartAccountAddress,
+      toHex(parseEther("100")),
+    ]);
+
     return {
+      entryPoint,
       multiOwnerPlugin,
       sessionKeyPlugin,
-      upgradeableModularAccount,
       multiOwnerModularAccountFactory,
       owner,
       alice,
+      beneficiary,
       publicClient,
+      smartAccountAddress,
     };
   }
 
@@ -75,7 +109,7 @@ describe("ModularAccount", function () {
       ]);
       const smartAccount = getContract({
         address: smartAccountAddress,
-        abi: artifacts.UpgradeableModularAccount.abi,
+        abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
         publicClient,
         walletClient: owner,
       });
@@ -119,6 +153,93 @@ describe("ModularAccount", function () {
         alice.account.address,
         parseEther("1"),
         "0x",
+      ]);
+    });
+
+    it("User Operation: Creation", async function () {
+      const {
+        multiOwnerModularAccountFactory,
+        owner,
+        entryPoint,
+        beneficiary,
+        alice,
+        publicClient,
+      } = await loadFixture(setupFixture);
+
+      const createAccountArgs = [0n, [owner.account.address]] as const;
+
+      const sender = await multiOwnerModularAccountFactory.read.getAddress(
+        createAccountArgs
+      );
+      const nonce = await entryPoint.read.getNonce([sender, 0n]);
+      const initCode = encodePacked(
+        ["address", "bytes"],
+        [
+          multiOwnerModularAccountFactory.address,
+          encodeFunctionData({
+            abi: [
+              getAbiItem({
+                abi: multiOwnerModularAccountFactory.abi,
+                name: "createAccount",
+              }),
+            ],
+            args: createAccountArgs,
+          }),
+        ]
+      );
+      const callData = encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [zeroAddress, 0n, "0x"],
+      });
+
+      const userOp = {
+        sender,
+        nonce,
+        initCode,
+        callData,
+        callGasLimit: 1_000_000n,
+        verificationGasLimit: 2_000_000n,
+        preVerificationGas: 21_000n,
+        maxFeePerGas: 1n,
+        maxPriorityFeePerGas: 1n,
+        paymasterAndData: "0x" as `0x${string}`,
+        signature:
+          "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c" as `0x${string}`,
+      };
+      userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+      const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
+      console.log(userOpHash);
+      userOp.signature = await owner.signMessage({
+        message: { raw: userOpHash },
+      });
+      console.log({ userOp });
+      console.log(await publicClient.getBalance({ address: sender }));
+
+      console.log(
+        userOpHash,
+        owner.account.address,
+        await recoverAddress({
+          hash: hashMessage({ raw: userOpHash }),
+          signature: userOp.signature,
+        }),
+        await recoverMessageAddress({
+          message: { raw: userOpHash },
+          signature: userOp.signature,
+        }),
+        await recoverAddress({
+          hash: "0xed97311a0ed98e9dfd0515c18ceb9e6f644ba7761e0e8459073fc16ecfd687ac",
+          signature: userOp.signature,
+        })
+      );
+
+      hash = await entryPoint.write.handleOps([
+        [userOp],
+        beneficiary.account.address,
       ]);
     });
   });
