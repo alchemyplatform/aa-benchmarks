@@ -19,6 +19,7 @@
     "chai": "^4.2.0",
     "hardhat": "^2.19.5",
     "hardhat-gas-reporter": "^1.0.8",
+    "prettier": "3.2.5",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
     "typescript": "~5.0.4",

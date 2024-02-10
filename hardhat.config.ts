@@ -1,6 +1,6 @@
 import "@nomicfoundation/hardhat-toolbox-viem";
 
-import { HardhatUserConfig } from "hardhat/config";
+import {HardhatUserConfig} from "hardhat/config";
 
 const config: HardhatUserConfig = {
   solidity: {
