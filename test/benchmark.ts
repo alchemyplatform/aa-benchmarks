@@ -43,7 +43,7 @@ export interface AccountFixtureReturnType {
     ownerAddress: `0x${string}`,
   ) => Promise<`0x${string}`>;
   getSignature: (
-    signer: WalletClient<Transport, Chain, Account>,
+    owner: WalletClient<Transport, Chain, Account>,
     userOp: UserOperation,
     entryPoint: GetContractReturnType<
       typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
@@ -94,23 +94,40 @@ describe("Benchmark", function () {
   ACCOUNTS_TO_BENCHMARK.forEach(({name, fixture}) => {
     describe(name, function () {
       let hash: `0x${string}` | undefined;
+      let balanceBefore: bigint | undefined;
+      let balanceAfter: bigint | undefined;
 
       beforeEach(function () {
         hash = undefined;
+        balanceBefore = undefined;
+        balanceAfter = undefined;
       });
 
       afterEach(async function () {
         const publicClient = await hre.viem.getPublicClient();
         if (hash) {
+          // Runtime
           const receipt = await publicClient.getTransactionReceipt({
             hash,
           });
           console.table({
             "Gas used": `${receipt.gasUsed}`,
             "Gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
+            "L1 fee": "TODO",
             "Transaction fee": `${formatEther(
               receipt.gasUsed * receipt.effectiveGasPrice,
             )} ETH`,
+          });
+        } else if (balanceBefore != null && balanceAfter != null) {
+          // User Operation
+          // This works because the gas price is set to 1.
+          const gasUsed = balanceBefore - balanceAfter;
+          const gasPrice = BigInt(hre.config.networks.hardhat.gasPrice);
+          console.table({
+            "Gas used": `${gasUsed}`,
+            "Gas price": `${formatGwei(gasPrice)} gwei`,
+            "L1 fee": "TODO",
+            "Transaction fee": `${formatEther(gasUsed * gasPrice)} ETH`,
           });
         }
       });
@@ -145,7 +162,7 @@ describe("Benchmark", function () {
 
       describe("User Operation", function () {
         it(`[${name}] User Operation: Creation`, async function () {
-          const {owner, beneficiary, entryPoint} =
+          const {owner, beneficiary, entryPoint, publicClient} =
             await loadFixture(baseFixture);
           const {
             encodeExecute,
@@ -162,15 +179,13 @@ describe("Benchmark", function () {
             accountAddress,
             toHex(parseEther("100")),
           ]);
-          // const tx = await entryPoint.write.depositTo([accountAddress], {
-          //   value: parseEther("1"),
-          // });
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          const value = 0n;
           const userOp: UserOperation = {
             sender: accountAddress,
             nonce,
             initCode: getInitCode(0n, owner.account.address),
-            callData: encodeExecute(zeroAddress, 0n, "0x"),
+            callData: encodeExecute(zeroAddress, value, "0x"),
             callGasLimit: 1_000_000n,
             verificationGasLimit: 2_000_000n,
             preVerificationGas: 21_000n,
@@ -182,13 +197,21 @@ describe("Benchmark", function () {
           userOp.signature = getDummySignature(userOp);
           userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
           userOp.signature = await getSignature(owner, userOp, entryPoint);
-          console.log({userOp});
 
-          // TODO: Fix "AA23 reverted (or OOG)" error
-          hash = await entryPoint.write.handleOps([
+          balanceBefore = await entryPoint.read.balanceOf([accountAddress]);
+          balanceBefore += await publicClient.getBalance({
+            address: accountAddress,
+          });
+          await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
+          // Add the value sent back to calculate gas properly.
+          balanceAfter = value;
+          balanceAfter += await entryPoint.read.balanceOf([accountAddress]);
+          balanceAfter += await publicClient.getBalance({
+            address: accountAddress,
+          });
         });
       });
     });

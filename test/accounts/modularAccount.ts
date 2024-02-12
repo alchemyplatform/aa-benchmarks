@@ -39,9 +39,9 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         [ownerAddress],
       ]);
     },
-    getSignature: async (signer, userOp, entryPoint) => {
+    getSignature: async (owner, userOp, entryPoint) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      return await signer.signMessage({
+      return await owner.signMessage({
         message: {raw: userOpHash},
       });
     },
