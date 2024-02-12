@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@account-abstraction/sdk": "^0.6.0",
+    "@eth-optimism/core-utils": "^0.13.1",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",

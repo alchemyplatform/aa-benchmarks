@@ -9,15 +9,21 @@ import {
   formatGwei,
   getContract,
   parseEther,
+  parseGwei,
   toHex,
   zeroAddress,
 } from "viem";
+import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
 
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import hre from "hardhat";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import {modularAccount} from "./accounts/modularAccount";
+
+const L1_GAS_PRICE = parseGwei("20");
+const OP_FIXED_OVERHEAD = 188;
+const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
 
 export interface UserOperation {
   sender: `0x${string}`;
@@ -96,11 +102,15 @@ describe("Benchmark", function () {
       let hash: `0x${string}` | undefined;
       let balanceBefore: bigint | undefined;
       let balanceAfter: bigint | undefined;
+      let l1GasUsed: bigint | undefined;
+      let l1Fee: bigint | undefined;
 
       beforeEach(function () {
         hash = undefined;
         balanceBefore = undefined;
         balanceAfter = undefined;
+        l1GasUsed = undefined;
+        l1Fee = undefined;
       });
 
       afterEach(async function () {
@@ -110,24 +120,40 @@ describe("Benchmark", function () {
           const receipt = await publicClient.getTransactionReceipt({
             hash,
           });
+          const tx = await publicClient.getTransaction({
+            hash,
+          });
+          const l2Fee = receipt.gasUsed * receipt.effectiveGasPrice;
+          const l1Fee = calculateL1Fee(
+            tx.input,
+            OP_FIXED_OVERHEAD,
+            Number(L1_GAS_PRICE),
+            OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** 3,
+            3,
+          ).toBigInt();
           console.table({
-            "Gas used": `${receipt.gasUsed}`,
-            "Gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
-            "L1 fee": "TODO",
-            "Transaction fee": `${formatEther(
-              receipt.gasUsed * receipt.effectiveGasPrice,
-            )} ETH`,
+            "L2 gas used": `${receipt.gasUsed}`,
+            "L2 gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
+            "L2 fee": `${formatEther(l2Fee)} ETH`,
+            "L1 gas used": `${calculateL1GasUsed(tx.input, OP_FIXED_OVERHEAD).toBigInt()}`,
+            "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
+            "L1 fee": `${formatEther(l1Fee)} ETH`,
+            "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
         } else if (balanceBefore != null && balanceAfter != null) {
           // User Operation
           // This works because the gas price is set to 1.
           const gasUsed = balanceBefore - balanceAfter;
           const gasPrice = BigInt(hre.config.networks.hardhat.gasPrice);
+          const l2Fee = gasUsed * gasPrice;
           console.table({
-            "Gas used": `${gasUsed}`,
-            "Gas price": `${formatGwei(gasPrice)} gwei`,
-            "L1 fee": "TODO",
-            "Transaction fee": `${formatEther(gasUsed * gasPrice)} ETH`,
+            "L2 gas used": `${gasUsed}`,
+            "L2 gas price": `${formatGwei(gasPrice)} gwei`,
+            "L2 fee": `${formatEther(l2Fee)} ETH`,
+            "L1 gas used": `${l1GasUsed}`,
+            "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
+            "L1 fee": `${formatEther(l1Fee!)} ETH`,
+            "Total fee": `${formatEther(l2Fee + l1Fee!)} ETH`,
           });
         }
       });
@@ -202,7 +228,7 @@ describe("Benchmark", function () {
           balanceBefore += await publicClient.getBalance({
             address: accountAddress,
           });
-          await entryPoint.write.handleOps([
+          const hash = await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
@@ -212,6 +238,21 @@ describe("Benchmark", function () {
           balanceAfter += await publicClient.getBalance({
             address: accountAddress,
           });
+
+          const tx = await publicClient.getTransaction({
+            hash,
+          });
+          l1GasUsed = calculateL1GasUsed(
+            tx.input,
+            OP_FIXED_OVERHEAD,
+          ).toBigInt();
+          l1Fee = calculateL1Fee(
+            tx.input,
+            OP_FIXED_OVERHEAD,
+            Number(L1_GAS_PRICE),
+            OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** 3,
+            3,
+          ).toBigInt();
         });
       });
     });
