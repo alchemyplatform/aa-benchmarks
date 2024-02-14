@@ -1,5 +1,14 @@
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
-import {encodeFunctionData, encodePacked, getAbiItem, getContract, keccak256, concat} from "viem";
+import {
+  encodeFunctionData,
+  encodePacked,
+  getAbiItem,
+  getContract,
+  parseEther,
+  toHex,
+  walletActions,
+  zeroAddress,
+} from "viem";
 
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import hre from "hardhat";
@@ -7,7 +16,7 @@ import hre from "hardhat";
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
-  const testClient = await hre.viem.getTestClient();
+  const testClient = (await hre.viem.getTestClient()).extend(walletActions);
 
   for (const {address, bytecode} of Object.values(KERNEL_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
@@ -20,24 +29,33 @@ async function fixture(): Promise<AccountFixtureReturnType> {
     walletClient,
   });
 
-  // keccak256(address(impl), uint256(2))
-  // set isAllowedImpl(impl) to true
-  const implSlot = keccak256(concat(["0x000000000000000000000000", KERNEL_ARTIFACTS.Kernel.address, "0x0000000000000000000000000000000000000000000000000000000000000001"]))
-  await testClient.setStorageAt({
+  await testClient.impersonateAccount({address: zeroAddress});
+  await hre.network.provider.send("hardhat_setBalance", [
+    zeroAddress,
+    toHex(parseEther("100")),
+  ]);
+  await testClient.writeContract({
     address: KERNEL_ARTIFACTS.KernelFactory.address,
-    index: implSlot,
-    value: '0x0000000000000000000000000000000000000000000000000000000000000001'
-  })
+    abi: KERNEL_ARTIFACTS.KernelFactory.abi,
+    functionName: "setImplementation",
+    args: [KERNEL_ARTIFACTS.Kernel.address, true],
+    account: zeroAddress,
+  });
+  await testClient.stopImpersonatingAccount({address: zeroAddress});
 
-  const initializeBytecode = (owner: `0x${string}`) => (
+  const initializeBytecode = (owner: `0x${string}`) =>
     encodeFunctionData({
-      abi: [getAbiItem({
+      abi: [
+        getAbiItem({
           abi: KERNEL_ARTIFACTS.Kernel.abi,
           name: "initialize",
-        })],
-      args: [KERNEL_ARTIFACTS.KernelECDSAValidator.address, encodePacked(['address'], [owner])]          
-    })
-  )
+        }),
+      ],
+      args: [
+        KERNEL_ARTIFACTS.KernelECDSAValidator.address,
+        encodePacked(["address"], [owner]),
+      ],
+    });
 
   return {
     createAccount: async (salt, ownerAddress) => {
@@ -50,7 +68,7 @@ async function fixture(): Promise<AccountFixtureReturnType> {
     getAccountAddress: async (salt, ownerAddress) => {
       return await kernelFactory.read.getAccountAddress([
         initializeBytecode(ownerAddress),
-        salt
+        salt,
       ]);
     },
     getSignature: async (owner, userOp, entryPoint) => {
@@ -80,12 +98,18 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         [
           kernelFactory.address,
           encodeFunctionData({
-            abi: [getAbiItem({
+            abi: [
+              getAbiItem({
                 abi: KERNEL_ARTIFACTS.KernelFactory.abi,
-                name: "createAccount"
-              })],
-            args: [KERNEL_ARTIFACTS.Kernel.address, initializeBytecode(ownerAddress), salt],
-          })
+                name: "createAccount",
+              }),
+            ],
+            args: [
+              KERNEL_ARTIFACTS.Kernel.address,
+              initializeBytecode(ownerAddress),
+              salt,
+            ],
+          }),
         ],
       );
     },
@@ -93,6 +117,6 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 }
 
 export const kernel: AccountConfig = {
-  name: "Kernel V1",
+  name: "Kernel v2.1",
   fixture,
 };
