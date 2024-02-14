@@ -76,7 +76,6 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         ],
       );
     },
-    setupFactory: () => Promise.resolve(),
   };
 }
 

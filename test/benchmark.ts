@@ -64,7 +64,6 @@ export interface AccountFixtureReturnType {
   ) => `0x${string}`;
   getDummySignature: (userOp: UserOperation) => `0x${string}`;
   getInitCode: (salt: bigint, ownerAddress: `0x${string}`) => `0x${string}`;
-  setupFactory: () => Promise<void>;
 }
 
 export interface AccountConfig {
@@ -163,16 +162,14 @@ describe("Benchmark", function () {
       describe("Runtime", function () {
         it(`[${name}] Runtime: Creation`, async function () {
           const {owner} = await loadFixture(baseFixture);
-          const {setupFactory, createAccount} = await loadFixture(fixture);
-          await setupFactory();
+          const {createAccount} = await loadFixture(fixture);
           hash = await createAccount(0n, owner.account.address);
         });
 
         it(`[${name}] Runtime: Native transfer`, async function () {
           const {owner, alice} = await loadFixture(baseFixture);
-          const {setupFactory, getAccountAddress, createAccount, encodeExecute} =
+          const {getAccountAddress, createAccount, encodeExecute} =
             await loadFixture(fixture);
-          await setupFactory();
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
@@ -195,14 +192,12 @@ describe("Benchmark", function () {
           const {owner, beneficiary, entryPoint, publicClient} =
             await loadFixture(baseFixture);
           const {
-            setupFactory,
             encodeExecute,
             getAccountAddress,
             getDummySignature,
             getInitCode,
             getSignature,
           } = await loadFixture(fixture);
-          await setupFactory();
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,

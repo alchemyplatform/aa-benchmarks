@@ -7,6 +7,7 @@ import hre from "hardhat";
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
+  const testClient = await hre.viem.getTestClient();
 
   for (const {address, bytecode} of Object.values(KERNEL_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
@@ -18,6 +19,15 @@ async function fixture(): Promise<AccountFixtureReturnType> {
     publicClient,
     walletClient,
   });
+
+  // keccak256(address(impl), uint256(2))
+  // set isAllowedImpl(impl) to true
+  const implSlot = keccak256(concat(["0x000000000000000000000000", KERNEL_ARTIFACTS.Kernel.address, "0x0000000000000000000000000000000000000000000000000000000000000001"]))
+  await testClient.setStorageAt({
+    address: KERNEL_ARTIFACTS.KernelFactory.address,
+    index: implSlot,
+    value: '0x0000000000000000000000000000000000000000000000000000000000000001'
+  })
 
   const initializeBytecode = (owner: `0x${string}`) => (
     encodeFunctionData({
@@ -79,17 +89,6 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         ],
       );
     },
-    setupFactory: async () => {
-      const testClient = await hre.viem.getTestClient();
-      // keccak256(address(impl), uint256(2))
-      // set isAllowedImpl(impl) to true
-      const implSlot = keccak256(concat(["0x000000000000000000000000", KERNEL_ARTIFACTS.Kernel.address, "0x0000000000000000000000000000000000000000000000000000000000000001"]))
-      await testClient.setStorageAt({ 
-        address: KERNEL_ARTIFACTS.KernelFactory.address,
-        index: implSlot,
-        value: '0x0000000000000000000000000000000000000000000000000000000000000001'
-      })
-    }
   };
 }
 
