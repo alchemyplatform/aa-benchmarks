@@ -20,7 +20,9 @@ import {
   getL1GasUsedForCallData,
   getL1GasUsedForUserOp,
 } from "./utils/fees";
+import {collectResult, getResultMap} from "./utils/writer";
 
+import {Context} from "mocha";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {UserOperation} from "./utils/userOp";
 import {calcPreVerificationGas} from "@account-abstraction/sdk";
@@ -87,24 +89,25 @@ describe("Benchmark", function () {
     };
   }
 
+  this.afterAll(async function () {
+    console.log(getResultMap());
+  });
+
   ACCOUNTS_TO_BENCHMARK.forEach(({name, fixture}) => {
     describe(name, function () {
-      let hash: `0x${string}` | undefined;
-      let balanceBefore: bigint | undefined;
-      let balanceAfter: bigint | undefined;
-      let userOp: UserOperation | undefined;
+      describe("Runtime", function () {
+        let hash: `0x${string}` | undefined;
 
-      beforeEach(async function () {
-        hash = undefined;
-        userOp = undefined;
-        balanceBefore = undefined;
-        balanceAfter = undefined;
-      });
+        beforeEach(function () {
+          hash = undefined;
+        });
 
-      afterEach(async function () {
-        const publicClient = await hre.viem.getPublicClient();
-        if (hash) {
-          // Runtime
+        afterEach(async function (this: Context) {
+          if (!hash) {
+            return;
+          }
+
+          const publicClient = await hre.viem.getPublicClient();
           const receipt = await publicClient.getTransactionReceipt({
             hash,
           });
@@ -122,33 +125,22 @@ describe("Benchmark", function () {
             "L1 fee": `${formatEther(l1Fee)} ETH`,
             "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
-        } else if (userOp && balanceAfter != null && balanceBefore != null) {
-          // User Operation
-          // This works because the gas price is set to 1.
-          const gasUsed = balanceBefore - balanceAfter;
-          const gasPrice = BigInt(hre.config.networks.hardhat.gasPrice);
-          const l2Fee = gasUsed * gasPrice;
-          const l1Fee = getL1FeeForUserOp(userOp);
-          console.table({
-            "L2 gas used": `${gasUsed}`,
-            "L2 gas price": `${formatGwei(gasPrice)} gwei`,
+          collectResult(this.currentTest!.title, name, {
+            "L2 gas used": `${receipt.gasUsed}`,
             "L2 fee": `${formatEther(l2Fee)} ETH`,
-            "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
-            "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
+            "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
             "L1 fee": `${formatEther(l1Fee)} ETH`,
             "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
-        }
-      });
+        });
 
-      describe("Runtime", function () {
-        it(`[${name}] Runtime: Creation`, async function () {
+        it(`Runtime: Account creation`, async function () {
           const {owner} = await loadFixture(baseFixture);
           const {createAccount} = await loadFixture(fixture);
           hash = await createAccount(0n, owner.account.address);
         });
 
-        it(`[${name}] Runtime: Native transfer`, async function () {
+        it(`Runtime: Native transfer`, async function () {
           const {owner, alice} = await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeExecute} =
             await loadFixture(fixture);
@@ -170,7 +162,46 @@ describe("Benchmark", function () {
       });
 
       describe("User Operation", function () {
-        it(`[${name}] User Operation: Creation`, async function () {
+        let balanceBefore: bigint | undefined;
+        let balanceAfter: bigint | undefined;
+        let userOp: UserOperation | undefined;
+
+        beforeEach(async function () {
+          userOp = undefined;
+          balanceBefore = undefined;
+          balanceAfter = undefined;
+        });
+
+        afterEach(async function (this: Context) {
+          if (!userOp || balanceAfter == null || balanceBefore == null) {
+            return;
+          }
+
+          // This works because the gas price is set to 1.
+          const gasUsed = balanceBefore - balanceAfter;
+          const gasPrice = BigInt(hre.config.networks.hardhat.gasPrice);
+          const l2Fee = gasUsed * gasPrice;
+          const l1Fee = getL1FeeForUserOp(userOp);
+          console.table({
+            "L2 gas used": `${gasUsed}`,
+            "L2 gas price": `${formatGwei(gasPrice)} gwei`,
+            "L2 fee": `${formatEther(l2Fee)} ETH`,
+            "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
+            "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
+            "L1 fee": `${formatEther(l1Fee)} ETH`,
+            "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
+          });
+
+          collectResult(this.currentTest!.title, name, {
+            "L2 gas used": `${gasUsed}`,
+            "L2 fee": `${formatEther(l2Fee)} ETH`,
+            "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
+            "L1 fee": `${formatEther(l1Fee)} ETH`,
+            "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
+          });
+        });
+
+        it(`User Operation: Account creation`, async function () {
           const {owner, beneficiary, entryPoint} =
             await loadFixture(baseFixture);
           const {
