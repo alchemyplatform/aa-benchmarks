@@ -12,18 +12,18 @@ import {
   toHex,
   zeroAddress,
 } from "viem";
+import {collectResult, getResultMap} from "./utils/writer";
 import {
-  L1_GAS_PRICE,
   getAccountBalance,
   getL1FeeForCallData,
   getL1FeeForUserOp,
   getL1GasUsedForCallData,
   getL1GasUsedForUserOp,
 } from "./utils/fees";
-import {collectResult, getResultMap} from "./utils/writer";
 
 import {Context} from "mocha";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
+import {L1_GAS_PRICE} from "../hardhat.config";
 import {UserOperation} from "./utils/userOp";
 import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import hre from "hardhat";
@@ -121,7 +121,7 @@ describe("Benchmark", function () {
             "L2 gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
             "L2 fee": `${formatEther(l2Fee)} ETH`,
             "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
-            "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
+            "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
             "L1 fee": `${formatEther(l1Fee)} ETH`,
             "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
@@ -187,7 +187,7 @@ describe("Benchmark", function () {
             "L2 gas price": `${formatGwei(gasPrice)} gwei`,
             "L2 fee": `${formatEther(l2Fee)} ETH`,
             "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
-            "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
+            "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
             "L1 fee": `${formatEther(l1Fee)} ETH`,
             "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
