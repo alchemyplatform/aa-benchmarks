@@ -1,42 +1,46 @@
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 import {encodeFunctionData, encodePacked, getAbiItem, getContract} from "viem";
 
-import {MODULAR_ACCOUNT_ARTIFACTS} from "../artifacts/modularAccount";
+import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import hre from "hardhat";
 
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
-  for (const {address, bytecode} of Object.values(MODULAR_ACCOUNT_ARTIFACTS)) {
+  for (const {address, bytecode} of Object.values(KERNEL_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
   }
 
-  // const sessionKeyPlugin = getContract({
-  //   address: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.address,
-  //   abi: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.abi,
-  //   publicClient,
-  //   walletClient,
-  // });
-
-  const multiOwnerModularAccountFactory = getContract({
-    address: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerModularAccountFactory.address,
-    abi: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerModularAccountFactory.abi,
+  const kernelFactory = getContract({
+    address: KERNEL_ARTIFACTS.KernelFactory.address,
+    abi: KERNEL_ARTIFACTS.KernelFactory.abi,
     publicClient,
     walletClient,
   });
 
+  const initializeBytecode = (owner: `0x${string}`) => (
+    encodeFunctionData({
+      abi: [getAbiItem({
+          abi: KERNEL_ARTIFACTS.Kernel.abi,
+          name: "initialize",
+        })],
+      args: [KERNEL_ARTIFACTS.KernelECDSAValidator.address, encodePacked(['address'], [owner])]          
+    })
+  )
+
   return {
     createAccount: async (salt, ownerAddress) => {
-      return await multiOwnerModularAccountFactory.write.createAccount([
+      return await kernelFactory.write.createAccount([
+        KERNEL_ARTIFACTS.Kernel.address,
+        initializeBytecode(ownerAddress),
         salt,
-        [ownerAddress],
       ]);
     },
     getAccountAddress: async (salt, ownerAddress) => {
-      return await multiOwnerModularAccountFactory.read.getAddress([
-        salt,
-        [ownerAddress],
+      return await kernelFactory.read.getAccountAddress([
+        initializeBytecode(ownerAddress),
+        salt
       ]);
     },
     getSignature: async (owner, userOp, entryPoint) => {
@@ -49,11 +53,11 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       return encodeFunctionData({
         abi: [
           getAbiItem({
-            abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
+            abi: KERNEL_ARTIFACTS.Kernel.abi,
             name: "execute",
           }),
         ],
-        args: [to, value, data],
+        args: [to, value, data, 0], // Operation.CALL = 0
       });
     },
     getDummySignature: (_userOp) => {
@@ -63,24 +67,24 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       return encodePacked(
         ["address", "bytes"],
         [
-          multiOwnerModularAccountFactory.address,
+          kernelFactory.address,
           encodeFunctionData({
-            abi: [
-              getAbiItem({
-                abi: multiOwnerModularAccountFactory.abi,
-                name: "createAccount",
-              }),
-            ],
-            args: [salt, [ownerAddress]],
-          }),
+            abi: [getAbiItem({
+                abi: KERNEL_ARTIFACTS.KernelFactory.abi,
+                name: "createAccount"
+              })],
+            args: [KERNEL_ARTIFACTS.Kernel.address, initializeBytecode(ownerAddress), salt],
+          })
         ],
       );
     },
-    setupFactory: () => Promise.resolve(),
+    setupFactory: async () => {
+      return await kernelFactory.write.setImplementation([KERNEL_ARTIFACTS.Kernel.address, true]);
+    }
   };
 }
 
-export const modularAccount: AccountConfig = {
-  name: "Modular Account",
+export const kernel: AccountConfig = {
+  name: "Kernel V1",
   fixture,
 };

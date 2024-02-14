@@ -20,6 +20,7 @@ import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import hre from "hardhat";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import {modularAccount} from "./accounts/modularAccount";
+import {kernel} from "./accounts/kernelv1";
 
 const L1_GAS_PRICE = parseGwei("20");
 const OP_FIXED_OVERHEAD = 188;
@@ -63,6 +64,7 @@ export interface AccountFixtureReturnType {
   ) => `0x${string}`;
   getDummySignature: (userOp: UserOperation) => `0x${string}`;
   getInitCode: (salt: bigint, ownerAddress: `0x${string}`) => `0x${string}`;
+  setupFactory: () => Promise<void>;
 }
 
 export interface AccountConfig {
@@ -70,7 +72,7 @@ export interface AccountConfig {
   fixture: () => Promise<AccountFixtureReturnType>;
 }
 
-const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [modularAccount];
+const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [modularAccount, kernel];
 
 describe("Benchmark", function () {
   async function baseFixture() {
@@ -105,12 +107,14 @@ describe("Benchmark", function () {
       let l1GasUsed: bigint | undefined;
       let l1Fee: bigint | undefined;
 
-      beforeEach(function () {
+      beforeEach(async function () {
         hash = undefined;
         balanceBefore = undefined;
         balanceAfter = undefined;
         l1GasUsed = undefined;
         l1Fee = undefined;
+        const {setupFactory} = await loadFixture(fixture);
+        await setupFactory();
       });
 
       afterEach(async function () {
