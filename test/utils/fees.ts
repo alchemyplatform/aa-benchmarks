@@ -11,7 +11,7 @@ import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
 import hre from "hardhat";
 
-export const L1_GAS_PRICE = parseGwei("20");
+export const L1_GAS_PRICE = parseGwei("25");
 const OP_FIXED_OVERHEAD = 188;
 const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
 
