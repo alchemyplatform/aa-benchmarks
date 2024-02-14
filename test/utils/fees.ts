@@ -15,7 +15,7 @@ export const L1_GAS_PRICE = parseGwei("20");
 const OP_FIXED_OVERHEAD = 188;
 const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
 
-export async function getBalance(
+export async function getAccountBalance(
   accountAddress: `0x${string}`,
   entryPoint: GetContractReturnType<
     typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
@@ -25,7 +25,7 @@ export async function getBalance(
 ) {
   const publicClient = await hre.viem.getPublicClient();
   let balance = value || 0n;
-  balance = await entryPoint.read.balanceOf([accountAddress]);
+  balance += await entryPoint.read.balanceOf([accountAddress]);
   balance += await publicClient.getBalance({
     address: accountAddress,
   });

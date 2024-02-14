@@ -14,7 +14,7 @@ import {
 } from "viem";
 import {
   L1_GAS_PRICE,
-  getBalance,
+  getAccountBalance,
   getL1FeeForCallData,
   getL1FeeForUserOp,
   getL1GasUsedForCallData,
@@ -25,9 +25,9 @@ import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {UserOperation} from "./utils/userOp";
 import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import hre from "hardhat";
+import {kernel} from "./accounts/kernel";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import {modularAccount} from "./accounts/modularAccount";
-import {kernel} from "./accounts/kernelv1";
 
 export interface AccountFixtureReturnType {
   createAccount: (
@@ -135,7 +135,7 @@ describe("Benchmark", function () {
             "L2 fee": `${formatEther(l2Fee)} ETH`,
             "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
             "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
-            "L1 fee": `${l1Fee} ETH`,
+            "L1 fee": `${formatEther(l1Fee)} ETH`,
             "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
         }
@@ -188,7 +188,7 @@ describe("Benchmark", function () {
             accountAddress,
             toHex(parseEther("100")),
           ]);
-          balanceBefore = await getBalance(accountAddress, entryPoint);
+          balanceBefore = await getAccountBalance(accountAddress, entryPoint);
 
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
           const value = 0n;
@@ -214,7 +214,11 @@ describe("Benchmark", function () {
             beneficiary.account.address,
           ]);
           // Add the value sent back to calculate gas properly.
-          balanceAfter = await getBalance(accountAddress, entryPoint, value);
+          balanceAfter = await getAccountBalance(
+            accountAddress,
+            entryPoint,
+            value,
+          );
         });
       });
     });
