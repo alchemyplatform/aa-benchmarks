@@ -113,8 +113,6 @@ describe("Benchmark", function () {
         balanceAfter = undefined;
         l1GasUsed = undefined;
         l1Fee = undefined;
-        const {setupFactory} = await loadFixture(fixture);
-        await setupFactory();
       });
 
       afterEach(async function () {
@@ -165,14 +163,16 @@ describe("Benchmark", function () {
       describe("Runtime", function () {
         it(`[${name}] Runtime: Creation`, async function () {
           const {owner} = await loadFixture(baseFixture);
-          const {createAccount} = await loadFixture(fixture);
+          const {setupFactory, createAccount} = await loadFixture(fixture);
+          await setupFactory();
           hash = await createAccount(0n, owner.account.address);
         });
 
         it(`[${name}] Runtime: Native transfer`, async function () {
           const {owner, alice} = await loadFixture(baseFixture);
-          const {getAccountAddress, createAccount, encodeExecute} =
+          const {setupFactory, getAccountAddress, createAccount, encodeExecute} =
             await loadFixture(fixture);
+          await setupFactory();
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
@@ -195,12 +195,14 @@ describe("Benchmark", function () {
           const {owner, beneficiary, entryPoint, publicClient} =
             await loadFixture(baseFixture);
           const {
+            setupFactory,
             encodeExecute,
             getAccountAddress,
             getDummySignature,
             getInitCode,
             getSignature,
           } = await loadFixture(fixture);
+          await setupFactory();
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,

@@ -1,5 +1,5 @@
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
-import {encodeFunctionData, encodePacked, getAbiItem, getContract} from "viem";
+import {encodeFunctionData, encodePacked, getAbiItem, getContract, keccak256, concat} from "viem";
 
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import hre from "hardhat";
@@ -79,7 +79,15 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       );
     },
     setupFactory: async () => {
-      return await kernelFactory.write.setImplementation([KERNEL_ARTIFACTS.Kernel.address, true]);
+      const testClient = await hre.viem.getTestClient();
+      // keccak256(address(impl), uint256(2))
+      // set isAllowedImpl(impl) to true
+      const implSlot = keccak256(concat(["0x000000000000000000000000", KERNEL_ARTIFACTS.Kernel.address, "0x0000000000000000000000000000000000000000000000000000000000000001"]))
+      await testClient.setStorageAt({ 
+        address: KERNEL_ARTIFACTS.KernelFactory.address,
+        index: implSlot,
+        value: '0x0000000000000000000000000000000000000000000000000000000000000001'
+      })
     }
   };
 }
