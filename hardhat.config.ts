@@ -11,8 +11,8 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      gasPrice: 3_000_000, // 0.003 gwei
-      initialBaseFeePerGas: 3_000_000, // 0.003 gwei
+      gasPrice: 100_000_000, // 0.1 gwei
+      initialBaseFeePerGas: 100_000_000, // 0.1 gwei
     },
   },
 };
