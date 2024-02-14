@@ -9,36 +9,25 @@ import {
   formatGwei,
   getContract,
   parseEther,
-  parseGwei,
   toHex,
   zeroAddress,
 } from "viem";
-import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
+import {
+  L1_GAS_PRICE,
+  getBalance,
+  getL1FeeForCallData,
+  getL1FeeForUserOp,
+  getL1GasUsedForCallData,
+  getL1GasUsedForUserOp,
+} from "./utils/fees";
 
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
+import {UserOperation} from "./utils/userOp";
 import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import hre from "hardhat";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import {modularAccount} from "./accounts/modularAccount";
 import {kernel} from "./accounts/kernelv1";
-
-const L1_GAS_PRICE = parseGwei("20");
-const OP_FIXED_OVERHEAD = 188;
-const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
-
-export interface UserOperation {
-  sender: `0x${string}`;
-  nonce: bigint;
-  initCode: `0x${string}`;
-  callData: `0x${string}`;
-  callGasLimit: bigint;
-  verificationGasLimit: bigint;
-  preVerificationGas: bigint;
-  maxFeePerGas: bigint;
-  maxPriorityFeePerGas: bigint;
-  paymasterAndData: `0x${string}`;
-  signature: `0x${string}`;
-}
 
 export interface AccountFixtureReturnType {
   createAccount: (
@@ -103,15 +92,13 @@ describe("Benchmark", function () {
       let hash: `0x${string}` | undefined;
       let balanceBefore: bigint | undefined;
       let balanceAfter: bigint | undefined;
-      let l1GasUsed: bigint | undefined;
-      let l1Fee: bigint | undefined;
+      let userOp: UserOperation | undefined;
 
       beforeEach(async function () {
         hash = undefined;
+        userOp = undefined;
         balanceBefore = undefined;
         balanceAfter = undefined;
-        l1GasUsed = undefined;
-        l1Fee = undefined;
       });
 
       afterEach(async function () {
@@ -125,36 +112,31 @@ describe("Benchmark", function () {
             hash,
           });
           const l2Fee = receipt.gasUsed * receipt.effectiveGasPrice;
-          const l1Fee = calculateL1Fee(
-            tx.input,
-            OP_FIXED_OVERHEAD,
-            Number(L1_GAS_PRICE),
-            OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** 3,
-            3,
-          ).toBigInt();
+          const l1Fee = getL1FeeForCallData(tx.input);
           console.table({
             "L2 gas used": `${receipt.gasUsed}`,
             "L2 gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
             "L2 fee": `${formatEther(l2Fee)} ETH`,
-            "L1 gas used": `${calculateL1GasUsed(tx.input, OP_FIXED_OVERHEAD).toBigInt()}`,
+            "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
             "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
             "L1 fee": `${formatEther(l1Fee)} ETH`,
             "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
-        } else if (balanceBefore != null && balanceAfter != null) {
+        } else if (userOp && balanceAfter != null && balanceBefore != null) {
           // User Operation
           // This works because the gas price is set to 1.
           const gasUsed = balanceBefore - balanceAfter;
           const gasPrice = BigInt(hre.config.networks.hardhat.gasPrice);
           const l2Fee = gasUsed * gasPrice;
+          const l1Fee = getL1FeeForUserOp(userOp);
           console.table({
             "L2 gas used": `${gasUsed}`,
             "L2 gas price": `${formatGwei(gasPrice)} gwei`,
             "L2 fee": `${formatEther(l2Fee)} ETH`,
-            "L1 gas used": `${l1GasUsed}`,
+            "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
             "L1 gas price": `${formatGwei(L1_GAS_PRICE)} gwei`,
-            "L1 fee": `${formatEther(l1Fee!)} ETH`,
-            "Total fee": `${formatEther(l2Fee + l1Fee!)} ETH`,
+            "L1 fee": `${l1Fee} ETH`,
+            "Total fee": `${formatEther(l2Fee + l1Fee)} ETH`,
           });
         }
       });
@@ -189,7 +171,7 @@ describe("Benchmark", function () {
 
       describe("User Operation", function () {
         it(`[${name}] User Operation: Creation`, async function () {
-          const {owner, beneficiary, entryPoint, publicClient} =
+          const {owner, beneficiary, entryPoint} =
             await loadFixture(baseFixture);
           const {
             encodeExecute,
@@ -206,9 +188,11 @@ describe("Benchmark", function () {
             accountAddress,
             toHex(parseEther("100")),
           ]);
+          balanceBefore = await getBalance(accountAddress, entryPoint);
+
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
           const value = 0n;
-          const userOp: UserOperation = {
+          userOp = {
             sender: accountAddress,
             nonce,
             initCode: getInitCode(0n, owner.account.address),
@@ -225,35 +209,12 @@ describe("Benchmark", function () {
           userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
           userOp.signature = await getSignature(owner, userOp, entryPoint);
 
-          balanceBefore = await entryPoint.read.balanceOf([accountAddress]);
-          balanceBefore += await publicClient.getBalance({
-            address: accountAddress,
-          });
-          const hash = await entryPoint.write.handleOps([
+          await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
           // Add the value sent back to calculate gas properly.
-          balanceAfter = value;
-          balanceAfter += await entryPoint.read.balanceOf([accountAddress]);
-          balanceAfter += await publicClient.getBalance({
-            address: accountAddress,
-          });
-
-          const tx = await publicClient.getTransaction({
-            hash,
-          });
-          l1GasUsed = calculateL1GasUsed(
-            tx.input,
-            OP_FIXED_OVERHEAD,
-          ).toBigInt();
-          l1Fee = calculateL1Fee(
-            tx.input,
-            OP_FIXED_OVERHEAD,
-            Number(L1_GAS_PRICE),
-            OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** 3,
-            3,
-          ).toBigInt();
+          balanceAfter = await getBalance(accountAddress, entryPoint, value);
         });
       });
     });
