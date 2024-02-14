@@ -1,6 +1,10 @@
 import "@nomicfoundation/hardhat-toolbox-viem";
+import "dotenv/config";
 
 import {HardhatUserConfig} from "hardhat/config";
+
+export const L1_GAS_PRICE = Number(process.env.L1_GAS_PRICE);
+export const L2_GAS_PRICE = Number(process.env.L2_GAS_PRICE);
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -11,8 +15,8 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      gasPrice: 100_000_000, // 0.1 gwei
-      initialBaseFeePerGas: 100_000_000, // 0.1 gwei
+      gasPrice: L2_GAS_PRICE,
+      initialBaseFeePerGas: L2_GAS_PRICE,
     },
   },
 };

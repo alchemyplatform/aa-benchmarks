@@ -1,17 +1,11 @@
-import {
-  Chain,
-  GetContractReturnType,
-  PublicClient,
-  Transport,
-  parseGwei,
-} from "viem";
+import {Chain, GetContractReturnType, PublicClient, Transport} from "viem";
 import {UserOperation, encodeUserOp} from "./userOp";
 import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
 
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
+import {L1_GAS_PRICE} from "../../hardhat.config";
 import hre from "hardhat";
 
-export const L1_GAS_PRICE = parseGwei("25");
 const OP_FIXED_OVERHEAD = 188;
 const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
 
