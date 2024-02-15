@@ -5,7 +5,6 @@ import {
   PublicClient,
   Transport,
   WalletClient,
-  formatGwei,
   getContract,
   parseEther,
   toHex,
@@ -26,7 +25,7 @@ import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import hre from "hardhat";
 import {Context} from "mocha";
-import {L1_GAS_PRICE} from "../hardhat.config";
+import {L2_GAS_PRICE} from "../hardhat.config";
 import {kernel} from "./accounts/kernel";
 import {modularAccount} from "./accounts/modularAccount";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
@@ -109,28 +108,19 @@ describe("Benchmark", function () {
           }
 
           const publicClient = await hre.viem.getPublicClient();
-          const receipt = await publicClient.getTransactionReceipt({
+          const {gasUsed} = await publicClient.getTransactionReceipt({
             hash,
           });
-          const tx = await publicClient.getTransaction({
+          const {input} = await publicClient.getTransaction({
             hash,
           });
-          const l2Fee = receipt.gasUsed * receipt.effectiveGasPrice;
-          const l1Fee = getL1FeeForCallData(tx.input);
-          console.table({
-            "L2 gas used": `${receipt.gasUsed}`,
-            "L2 gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
-            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
-            "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
-            "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
-            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
-            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
-            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
-          });
+          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
+          const l1Fee = getL1FeeForCallData(input);
+
           collectResult(this.currentTest!.title, name, {
-            "L2 gas used": `${receipt.gasUsed}`,
+            "L2 gas used": `${gasUsed}`,
             "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
-            "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
+            "L1 gas used": `${getL1GasUsedForCallData(input)}`,
             "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
             "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
             "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
@@ -182,19 +172,8 @@ describe("Benchmark", function () {
 
           // This works because the gas price is set to 1.
           const gasUsed = balanceBefore - balanceAfter;
-          const gasPrice = BigInt(hre.config.networks.hardhat.gasPrice);
-          const l2Fee = gasUsed * gasPrice;
+          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
           const l1Fee = getL1FeeForUserOp(userOp);
-          console.table({
-            "L2 gas used": `${gasUsed}`,
-            "L2 gas price": `${formatGwei(gasPrice)} gwei`,
-            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
-            "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
-            "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
-            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
-            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
-            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
-          });
 
           collectResult(this.currentTest!.title, name, {
             "L2 gas used": `${gasUsed}`,

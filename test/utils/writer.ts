@@ -1,7 +1,12 @@
 import markdownTable from "markdown-table";
 import replaceInFile from "replace-in-file";
 import {formatGwei} from "viem";
-import {ETH_PRICE_USD, L1_GAS_PRICE, L2_GAS_PRICE} from "../../hardhat.config";
+import {
+  DRY_RUN,
+  ETH_PRICE_USD,
+  L1_GAS_PRICE,
+  L2_GAS_PRICE,
+} from "../../hardhat.config";
 
 const resultMap: {
   [test: string]: {[account: string]: {[metric: string]: string}};
@@ -56,11 +61,19 @@ export async function writeResults() {
     buffer += markdownTable(table, {align}) + "\n\n";
   }
 
-  replaceInFile.sync({
-    files: "README.md",
-    from: /<!-- BENCHMARK_RESULTS -->[\s\S]*<!-- \/BENCHMARK_RESULTS -->/,
-    to: `<!-- BENCHMARK_RESULTS -->\n\n${buffer}<!-- /BENCHMARK_RESULTS -->`,
-  });
+  if (DRY_RUN) {
+    console.log(
+      "\n  🌵 Dry run! Results printed below. Run `pnpm benchmark:write` to update the results in README.md.\n\n",
+    );
+    console.log(buffer);
+  } else {
+    replaceInFile.sync({
+      files: "README.md",
+      from: /<!-- BENCHMARK_RESULTS -->[\s\S]*<!-- \/BENCHMARK_RESULTS -->/,
+      to: `<!-- BENCHMARK_RESULTS -->\n\n${buffer}<!-- /BENCHMARK_RESULTS -->`,
+    });
+    console.log("\n  📝 Results written to README.md!");
+  }
 }
 
 function monospace(word: string) {

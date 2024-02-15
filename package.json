@@ -1,10 +1,9 @@
 {
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat test",
-    "coverage": "hardhat coverage",
-    "gas-report": "hardhat gas-report",
-    "verify": "hardhat verify --network mainnet"
+    "test": "DRY_RUN=1 hardhat test",
+    "benchmark": "DRY_RUN=1 hardhat test",
+    "benchmark:write": "hardhat test"
   },
   "devDependencies": {
     "@account-abstraction/sdk": "^0.6.0",
