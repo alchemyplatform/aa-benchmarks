@@ -5,11 +5,11 @@ import {
   Transport,
   formatEther,
 } from "viem";
+import {ETH_PRICE_USD, L1_GAS_PRICE} from "../../hardhat.config";
 import {UserOperation, encodeUserOp} from "./userOp";
 import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
 
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
-import {L1_GAS_PRICE} from "../../hardhat.config";
 import hre from "hardhat";
 
 const OP_FIXED_OVERHEAD = 188;
@@ -58,4 +58,8 @@ export function getL1FeeForCallData(callData: `0x${string}`) {
 
 export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
   return Number(formatEther(wei)).toFixed(decimals).toString();
+}
+
+export function convertWeiToUsd(wei: bigint) {
+  return (Number(formatEther(wei)) * ETH_PRICE_USD).toFixed(2);
 }

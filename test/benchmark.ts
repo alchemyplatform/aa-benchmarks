@@ -13,6 +13,7 @@ import {
 } from "viem";
 import {collectResult, writeResults} from "./utils/writer";
 import {
+  convertWeiToUsd,
   formatEtherTruncated,
   getAccountBalance,
   getL1FeeForCallData,
@@ -124,6 +125,7 @@ describe("Benchmark", function () {
             "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
             "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
             "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
           collectResult(this.currentTest!.title, name, {
             "L2 gas used": `${receipt.gasUsed}`,
@@ -131,6 +133,7 @@ describe("Benchmark", function () {
             "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
             "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
             "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
         });
 
@@ -190,6 +193,7 @@ describe("Benchmark", function () {
             "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
             "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
             "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
 
           collectResult(this.currentTest!.title, name, {
@@ -198,6 +202,7 @@ describe("Benchmark", function () {
             "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
             "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
             "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
         });
 
