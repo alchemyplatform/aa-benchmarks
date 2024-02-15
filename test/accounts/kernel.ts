@@ -31,7 +31,7 @@ async function fixture(): Promise<AccountFixtureReturnType> {
   await testClient.impersonateAccount({address: zeroAddress});
   await hre.network.provider.send("hardhat_setBalance", [
     zeroAddress,
-    toHex(parseEther("100")),
+    toHex(parseEther("10000")),
   ]);
   await testClient.writeContract({
     address: KERNEL_ARTIFACTS.KernelFactory.address,
