@@ -25,9 +25,9 @@ export async function writeResults() {
 
   const configTable = [
     ["Option", "Value"],
-    ["L2 gas price", `${formatGwei(BigInt(L2_GAS_PRICE))} gwei`],
-    ["L1 gas price", `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`],
-    ["ETH price (USD)", `$${ETH_PRICE_USD}`],
+    ["L2 gas price (Gwei)", `${monospace(formatGwei(BigInt(L2_GAS_PRICE)))}`],
+    ["L1 gas price (Gwei)", `${monospace(formatGwei(BigInt(L1_GAS_PRICE)))}`],
+    ["ETH price (USD)", `${monospace(`$${ETH_PRICE_USD}`)}`],
   ];
   buffer += markdownTable(configTable, {align: ["l", "r"]}) + "\n\n";
   buffer += "</details>\n\n";
@@ -49,7 +49,7 @@ export async function writeResults() {
         if (!tableRowObject[metricName]) {
           tableRowObject[metricName] = [metricName];
         }
-        tableRowObject[metricName].push(metrics[metricName]);
+        tableRowObject[metricName].push(monospace(metrics[metricName]));
       }
     }
     const table = [tableHeader, ...Object.values(tableRowObject)];
@@ -61,4 +61,8 @@ export async function writeResults() {
     from: /<!-- BENCHMARK_RESULTS -->[\s\S]*<!-- \/BENCHMARK_RESULTS -->/,
     to: `<!-- BENCHMARK_RESULTS -->\n\n${buffer}<!-- /BENCHMARK_RESULTS -->`,
   });
+}
+
+function monospace(word: string) {
+  return `\`${word}\``;
 }
