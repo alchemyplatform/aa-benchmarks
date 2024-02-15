@@ -1,5 +1,7 @@
 import markdownTable from "markdown-table";
 import replaceInFile from "replace-in-file";
+import {formatGwei} from "viem";
+import {ETH_PRICE_USD, L1_GAS_PRICE, L2_GAS_PRICE} from "../../hardhat.config";
 
 const resultMap: {
   [test: string]: {[account: string]: {[metric: string]: string}};
@@ -17,7 +19,22 @@ export function collectResult(
 }
 
 export async function writeResults() {
-  let buffer = "";
+  let buffer =
+    "These numbers are derived from local simulations with fixed inputs (see [Run with different settings](#run-with-different-settings) below) and on-chain numbers may differ.\n\n";
+
+  buffer += "<details>\n";
+  buffer += "<summary><b>Run options</b></summary>\n\n";
+  buffer += `Last run: ${new Date().toUTCString()}\n`;
+
+  const configTable = [
+    ["Option", "Value"],
+    ["L2 gas price", `${formatGwei(BigInt(L2_GAS_PRICE))} gwei`],
+    ["L1 gas price", `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`],
+    ["ETH price (USD)", `$${ETH_PRICE_USD}`],
+  ];
+  buffer += markdownTable(configTable, {align: ["l", "r"]}) + "\n\n";
+  buffer += "</details>\n\n";
+
   let align;
   for (const test in resultMap) {
     buffer += `### ${test}\n\n`;
