@@ -12,7 +12,7 @@ import {
   toHex,
   zeroAddress,
 } from "viem";
-import {collectResult, getResultMap} from "./utils/writer";
+import {collectResult, writeResults} from "./utils/writer";
 import {
   getAccountBalance,
   getL1FeeForCallData,
@@ -90,7 +90,7 @@ describe("Benchmark", function () {
   }
 
   this.afterAll(async function () {
-    console.log(getResultMap());
+    await writeResults();
   });
 
   ACCOUNTS_TO_BENCHMARK.forEach(({name, fixture}) => {
