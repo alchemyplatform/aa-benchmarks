@@ -11,7 +11,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Thu, 15 Feb 2024 03:18:46 GMT
+Last run: Thu, 15 Feb 2024 04:21:33 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) |   `0.1` |
@@ -57,14 +57,20 @@ Last run: Thu, 15 Feb 2024 03:18:46 GMT
 
 ## Run benchmark
 
-Copy `.env.sample` to `.env` and update the values within `.env`.
+Copy `.env.sample` to `.env` and update the values within `.env`:
 
 ```bash
 cp .env.sample .env
 ```
 
-Run `pnpm test` to run the benchmarks over the supported accounts.
+Test running the benchmarks over the supported accounts and see the results in your terminal:
 
 ```bash
-pnpm test
+pnpm benchmark
+```
+
+Run the benchmarks and update this file with the new results:
+
+```bash
+pnpm benchmark:write
 ```
