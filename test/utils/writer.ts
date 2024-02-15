@@ -19,10 +19,7 @@ export function collectResult(
 }
 
 export async function writeResults() {
-  let buffer =
-    "These numbers are derived from local simulations with fixed inputs (see [Run with different settings](#run-with-different-settings) below) and on-chain numbers may differ.\n\n";
-
-  buffer += "<details>\n";
+  let buffer = "<details>\n";
   buffer += "<summary><b>Run options</b></summary>\n\n";
   buffer += `Last run: ${new Date().toUTCString()}\n`;
 

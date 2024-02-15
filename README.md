@@ -4,14 +4,14 @@ A comprehensive benchmark for smart contract accounts that support account abstr
 
 ## Results
 
-<!-- BENCHMARK_RESULTS -->
+These numbers are derived from local simulations with fixed inputs (see [Run with different settings](#run-with-different-settings) below) and actual on-chain numbers may differ. The L1 data fee calculations were done following the formula and variables specified in [Optimism Bedrock](https://docs.optimism.io/stack/transactions/fees#bedrock).
 
-These numbers are derived from local simulations with fixed inputs (see [Run with different settings](#run-with-different-settings) below) and on-chain numbers may differ.
+<!-- BENCHMARK_RESULTS -->
 
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Thu, 15 Feb 2024 01:11:44 GMT
+Last run: Thu, 15 Feb 2024 01:21:57 GMT
 | Option          |    Value |
 | :-------------- | -------: |
 | L2 gas price    | 0.1 gwei |
