@@ -28,7 +28,16 @@ import {
   getL1GasUsedForUserOp,
 } from "./utils/fees";
 import {UserOperation} from "./utils/userOp";
+<<<<<<< HEAD
 import {collectResult, writeResults} from "./utils/writer";
+=======
+import {calcPreVerificationGas} from "@account-abstraction/sdk";
+import hre from "hardhat";
+import {kernel} from "./accounts/kernel";
+import {biconomy_v2} from "./accounts/biconomy-v2";
+import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
+import {modularAccount} from "./accounts/modularAccount";
+>>>>>>> 9a1cc35 (Add Biconomy V2 benchmark)
 
 export interface AccountFixtureReturnType {
   createAccount: (
@@ -61,7 +70,7 @@ export interface AccountConfig {
   fixture: () => Promise<AccountFixtureReturnType>;
 }
 
-const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [modularAccount, kernel];
+const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [modularAccount, kernel, biconomy_v2];
 
 describe("Benchmark", function () {
   async function baseFixture() {
