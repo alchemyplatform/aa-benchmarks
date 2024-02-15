@@ -1,4 +1,4 @@
-import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
+import hre from "hardhat";
 import {
   encodeFunctionData,
   encodePacked,
@@ -9,9 +9,8 @@ import {
   walletActions,
   zeroAddress,
 } from "viem";
-
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
-import hre from "hardhat";
+import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();

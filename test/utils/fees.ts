@@ -1,3 +1,5 @@
+import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
+import hre from "hardhat";
 import {
   Chain,
   GetContractReturnType,
@@ -6,11 +8,8 @@ import {
   formatEther,
 } from "viem";
 import {ETH_PRICE_USD, L1_GAS_PRICE} from "../../hardhat.config";
-import {UserOperation, encodeUserOp} from "./userOp";
-import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
-
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
-import hre from "hardhat";
+import {UserOperation, encodeUserOp} from "./userOp";
 
 const OP_FIXED_OVERHEAD = 188;
 const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;

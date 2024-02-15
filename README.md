@@ -6,38 +6,52 @@ A comprehensive benchmark for smart contract accounts that support account abstr
 
 <!-- BENCHMARK_RESULTS -->
 
+These numbers are derived from local simulations with fixed inputs (see [Run with different settings](#run-with-different-settings) below) and on-chain numbers may differ.
+
+<details>
+<summary><b>Run options</b></summary>
+
+Last run: Thu, 15 Feb 2024 01:11:44 GMT
+| Option          |    Value |
+| :-------------- | -------: |
+| L2 gas price    | 0.1 gwei |
+| L1 gas price    |  25 gwei |
+| ETH price (USD) |    $2500 |
+
+</details>
+
 ### Runtime: Account creation
 
-|                 | Modular Account |     Kernel v2.1 |
-| :-------------- | --------------: | --------------: |
-| L2 gas used     |          725323 |          136206 |
-| L2 fee          | 0.000072532 ETH | 0.000013621 ETH |
-| L1 gas used     |            2116 |            3308 |
-| L1 fee          | 0.000036184 ETH | 0.000056567 ETH |
-| Total fee       | 0.000108716 ETH | 0.000070187 ETH |
-| Total fee (USD) |           $0.27 |           $0.18 |
+|                 | Modular Account | Kernel v2.1 |
+| :-------------- | --------------: | ----------: |
+| L2 gas used     |          725323 |      136206 |
+| L2 fee (ETH)    |     0.000072532 | 0.000013621 |
+| L1 gas used     |            2116 |        3308 |
+| L1 fee (ETH)    |     0.000036184 | 0.000056567 |
+| Total fee       |     0.000108716 | 0.000070187 |
+| Total fee (USD) |           $0.27 |       $0.18 |
 
 ### Runtime: Native transfer
 
-|                 | Modular Account |     Kernel v2.1 |
-| :-------------- | --------------: | --------------: |
-| L2 gas used     |           50408 |           39436 |
-| L2 fee          | 0.000005041 ETH | 0.000003944 ETH |
-| L1 gas used     |            2176 |            2304 |
-| L1 fee          | 0.000037210 ETH | 0.000039398 ETH |
-| Total fee       | 0.000042250 ETH | 0.000043342 ETH |
-| Total fee (USD) |           $0.11 |           $0.11 |
+|                 | Modular Account | Kernel v2.1 |
+| :-------------- | --------------: | ----------: |
+| L2 gas used     |           50408 |       39436 |
+| L2 fee (ETH)    |     0.000005041 | 0.000003944 |
+| L1 gas used     |            2176 |        2304 |
+| L1 fee (ETH)    |     0.000037210 | 0.000039398 |
+| Total fee       |     0.000042250 | 0.000043342 |
+| Total fee (USD) |           $0.11 |       $0.11 |
 
 ### User Operation: Account creation
 
-|                 | Modular Account |     Kernel v2.1 |
-| :-------------- | --------------: | --------------: |
-| L2 gas used     |          834202 |          237719 |
-| L2 fee          | 0.000083420 ETH | 0.000023772 ETH |
-| L1 gas used     |            6624 |            8064 |
-| L1 fee          | 0.000113270 ETH | 0.000137894 ETH |
-| Total fee       | 0.000196691 ETH | 0.000161666 ETH |
-| Total fee (USD) |           $0.49 |           $0.40 |
+|                 | Modular Account | Kernel v2.1 |
+| :-------------- | --------------: | ----------: |
+| L2 gas used     |          834202 |      237719 |
+| L2 fee (ETH)    |     0.000083420 | 0.000023772 |
+| L1 gas used     |            6624 |        8064 |
+| L1 fee (ETH)    |     0.000113270 | 0.000137894 |
+| Total fee (ETH) |     0.000196691 | 0.000161666 |
+| Total fee (USD) |           $0.49 |       $0.40 |
 
 <!-- /BENCHMARK_RESULTS -->
 

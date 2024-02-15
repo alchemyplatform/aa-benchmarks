@@ -11,7 +11,6 @@ import {
   toHex,
   zeroAddress,
 } from "viem";
-import {collectResult, writeResults} from "./utils/writer";
 import {
   convertWeiToUsd,
   formatEtherTruncated,
@@ -21,16 +20,17 @@ import {
   getL1GasUsedForCallData,
   getL1GasUsedForUserOp,
 } from "./utils/fees";
+import {collectResult, writeResults} from "./utils/writer";
 
-import {Context} from "mocha";
-import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
-import {L1_GAS_PRICE} from "../hardhat.config";
-import {UserOperation} from "./utils/userOp";
 import {calcPreVerificationGas} from "@account-abstraction/sdk";
-import hre from "hardhat";
-import {kernel} from "./accounts/kernel";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
+import hre from "hardhat";
+import {Context} from "mocha";
+import {L1_GAS_PRICE} from "../hardhat.config";
+import {kernel} from "./accounts/kernel";
 import {modularAccount} from "./accounts/modularAccount";
+import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
+import {UserOperation} from "./utils/userOp";
 
 export interface AccountFixtureReturnType {
   createAccount: (
@@ -120,19 +120,19 @@ describe("Benchmark", function () {
           console.table({
             "L2 gas used": `${receipt.gasUsed}`,
             "L2 gas price": `${formatGwei(receipt.effectiveGasPrice)} gwei`,
-            "L2 fee": `${formatEtherTruncated(l2Fee)} ETH`,
+            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
             "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
             "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
-            "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
-            "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
+            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
             "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
           collectResult(this.currentTest!.title, name, {
             "L2 gas used": `${receipt.gasUsed}`,
-            "L2 fee": `${formatEtherTruncated(l2Fee)} ETH`,
+            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
             "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
-            "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
-            "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
+            "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)}`,
             "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
         });
@@ -188,20 +188,20 @@ describe("Benchmark", function () {
           console.table({
             "L2 gas used": `${gasUsed}`,
             "L2 gas price": `${formatGwei(gasPrice)} gwei`,
-            "L2 fee": `${formatEtherTruncated(l2Fee)} ETH`,
+            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
             "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
             "L1 gas price": `${formatGwei(BigInt(L1_GAS_PRICE))} gwei`,
-            "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
-            "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
+            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
             "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
 
           collectResult(this.currentTest!.title, name, {
             "L2 gas used": `${gasUsed}`,
-            "L2 fee": `${formatEtherTruncated(l2Fee)} ETH`,
+            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
             "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
-            "L1 fee": `${formatEtherTruncated(l1Fee)} ETH`,
-            "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)} ETH`,
+            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
+            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
             "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
         });
