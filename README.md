@@ -11,7 +11,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Thu, 15 Feb 2024 03:16:53 GMT
+Last run: Thu, 15 Feb 2024 03:18:46 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) |   `0.1` |
@@ -28,7 +28,7 @@ Last run: Thu, 15 Feb 2024 03:16:53 GMT
 | L2 fee (ETH)    |   `0.000072532` | `0.000013621` |
 | L1 gas used     |          `2116` |        `3308` |
 | L1 fee (ETH)    |   `0.000036184` | `0.000056567` |
-| Total fee       |   `0.000108716` | `0.000070187` |
+| Total fee (ETH) |   `0.000108716` | `0.000070187` |
 | Total fee (USD) |         `$0.27` |       `$0.18` |
 
 ### Runtime: Native transfer
@@ -39,7 +39,7 @@ Last run: Thu, 15 Feb 2024 03:16:53 GMT
 | L2 fee (ETH)    |   `0.000005041` | `0.000003944` |
 | L1 gas used     |          `2176` |        `2304` |
 | L1 fee (ETH)    |   `0.000037210` | `0.000039398` |
-| Total fee       |   `0.000042250` | `0.000043342` |
+| Total fee (ETH) |   `0.000042250` | `0.000043342` |
 | Total fee (USD) |         `$0.11` |       `$0.11` |
 
 ### User Operation: Account creation

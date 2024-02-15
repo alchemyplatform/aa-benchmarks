@@ -132,7 +132,7 @@ describe("Benchmark", function () {
             "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
             "L1 gas used": `${getL1GasUsedForCallData(tx.input)}`,
             "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
-            "Total fee": `${formatEtherTruncated(l2Fee + l1Fee)}`,
+            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
             "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
           });
         });
