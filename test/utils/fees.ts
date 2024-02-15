@@ -1,4 +1,10 @@
-import {Chain, GetContractReturnType, PublicClient, Transport} from "viem";
+import {
+  Chain,
+  GetContractReturnType,
+  PublicClient,
+  Transport,
+  formatEther,
+} from "viem";
 import {UserOperation, encodeUserOp} from "./userOp";
 import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
 
@@ -48,4 +54,8 @@ export function getL1FeeForCallData(callData: `0x${string}`) {
     OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** 3,
     3,
   ).toBigInt();
+}
+
+export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
+  return Number(formatEther(wei)).toFixed(decimals).toString();
 }
