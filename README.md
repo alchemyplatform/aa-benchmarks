@@ -11,7 +11,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Fri, 16 Feb 2024 17:26:48 GMT
+Last run: Fri, 16 Feb 2024 19:12:05 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) | `0.005` |
@@ -53,16 +53,38 @@ Last run: Fri, 16 Feb 2024 17:26:48 GMT
 | Total fee (ETH) |   `0.000218718` | `0.000257103` | `0.000250319` |
 | Total fee (USD) |         `$0.55` |       `$0.64` |       `$0.63` |
 
-### User Operation: Native transfer
+### [Modular Account]: Add Session Key
 
-|                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
-| :-------------- | --------------: | ------------: | ------------: |
-| L2 gas used     |        `165100` |      `152989` |      `161912` |
-| L2 fee (ETH)    |   `0.000000825` | `0.000000765` | `0.000000810` |
-| L1 gas used     |          `6680` |        `6820` |        `7304` |
-| L1 fee (ETH)    |   `0.000191903` | `0.000195925` | `0.000209829` |
-| Total fee (ETH) |   `0.000192729` | `0.000196690` | `0.000210639` |
-| Total fee (USD) |         `$0.48` |       `$0.49` |       `$0.53` |
+|                 | Modular Account |
+| :-------------- | --------------: |
+| L2 gas used     |       `1477199` |
+| L2 fee (ETH)    |   `0.000147720` |
+| L1 gas used     |         `50104` |
+| L1 fee (ETH)    |   `0.000856778` |
+| Total fee (ETH) |   `0.001004498` |
+| Total fee (USD) |         `$2.51` |
+
+### [Modular Account]: Session Key Native Transfer
+
+|                 | Modular Account |
+| :-------------- | --------------: |
+| L2 gas used     |        `190213` |
+| L2 fee (ETH)    |   `0.000019021` |
+| L1 gas used     |          `6436` |
+| L1 fee (ETH)    |   `0.000110056` |
+| Total fee (ETH) |   `0.000129077` |
+| Total fee (USD) |         `$0.32` |
+
+### [Modular Account]: Session Key ERC20 Transfer
+
+|                 | Modular Account |
+| :-------------- | --------------: |
+| L2 gas used     |        `190421` |
+| L2 fee (ETH)    |   `0.000019042` |
+| L1 gas used     |          `7120` |
+| L1 fee (ETH)    |   `0.000121752` |
+| Total fee (ETH) |   `0.000140794` |
+| Total fee (USD) |         `$0.35` |
 
 <!-- /BENCHMARK_RESULTS -->
 
