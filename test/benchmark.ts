@@ -17,6 +17,7 @@ import {
 import {L2_GAS_PRICE} from "../hardhat.config";
 import {kernel} from "./accounts/kernel";
 import {modularAccount} from "./accounts/modularAccount";
+import {biconomy_v2} from "./accounts/biconomy-v2";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {
   convertWeiToUsd,
@@ -28,16 +29,7 @@ import {
   getL1GasUsedForUserOp,
 } from "./utils/fees";
 import {UserOperation} from "./utils/userOp";
-<<<<<<< HEAD
 import {collectResult, writeResults} from "./utils/writer";
-=======
-import {calcPreVerificationGas} from "@account-abstraction/sdk";
-import hre from "hardhat";
-import {kernel} from "./accounts/kernel";
-import {biconomy_v2} from "./accounts/biconomy-v2";
-import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
-import {modularAccount} from "./accounts/modularAccount";
->>>>>>> 9a1cc35 (Add Biconomy V2 benchmark)
 
 export interface AccountFixtureReturnType {
   createAccount: (
@@ -111,28 +103,35 @@ describe("Benchmark", function () {
         });
 
         afterEach(async function (this: Context) {
-          if (!hash) {
-            return;
+          const tableEntries = {
+            "L2 gas used": "",
+            "L2 fee (ETH)": "",
+            "L1 gas used": "",
+            "L1 fee (ETH)": "",
+            "Total fee (ETH)": "",
+            "Total fee (USD)": "Unsupported",
+          }; 
+
+          if (hash) {
+            const publicClient = await hre.viem.getPublicClient();
+            const {gasUsed} = await publicClient.getTransactionReceipt({
+              hash,
+            });
+            const {input} = await publicClient.getTransaction({
+              hash,
+            });
+            const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
+            const l1Fee = getL1FeeForCallData(input);
+
+            tableEntries["L2 gas used"] = `${gasUsed}`;
+            tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
+            tableEntries["L1 gas used"] = `${getL1GasUsedForCallData(input)}`;
+            tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
+            tableEntries["Total fee (ETH)"] = `${formatEtherTruncated(l2Fee + l1Fee)}`;
+            tableEntries["Total fee (USD)"] = `$${convertWeiToUsd(l2Fee + l1Fee)}`;
           }
 
-          const publicClient = await hre.viem.getPublicClient();
-          const {gasUsed} = await publicClient.getTransactionReceipt({
-            hash,
-          });
-          const {input} = await publicClient.getTransaction({
-            hash,
-          });
-          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
-          const l1Fee = getL1FeeForCallData(input);
-
-          collectResult(this.currentTest!.title, name, {
-            "L2 gas used": `${gasUsed}`,
-            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
-            "L1 gas used": `${getL1GasUsedForCallData(input)}`,
-            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
-            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
-            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
-          });
+          collectResult(this.currentTest!.title, name, tableEntries);
         });
 
         it(`Runtime: Account creation`, async function () {
@@ -142,6 +141,12 @@ describe("Benchmark", function () {
         });
 
         it(`Runtime: Native transfer`, async function () {
+
+          if (name === "Biconomy v2") {
+            // Biconomy V2 doesn't support runtime native transfers.
+            return;
+          }
+
           const {owner, alice} = await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeExecute} =
             await loadFixture(fixture);
