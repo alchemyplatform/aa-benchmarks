@@ -143,13 +143,13 @@ describe("Benchmark", function () {
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("100")),
+            toHex(parseEther("10000")),
           ]);
           await createAccount(0n, owner.account.address);
 
           hash = await owner.sendTransaction({
             to: accountAddress,
-            data: encodeExecute(alice.account.address, parseEther("1"), "0x"),
+            data: encodeExecute(alice.account.address, parseEther("0.5"), "0x"),
           });
         });
       });
@@ -201,7 +201,7 @@ describe("Benchmark", function () {
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("100")),
+            toHex(parseEther("10000")),
           ]);
           balanceBefore = await getAccountBalance(accountAddress, entryPoint);
 
@@ -228,6 +228,60 @@ describe("Benchmark", function () {
             [userOp],
             beneficiary.account.address,
           ]);
+          // Add the value sent back to calculate gas properly.
+          balanceAfter = await getAccountBalance(
+            accountAddress,
+            entryPoint,
+            value,
+          );
+        });
+
+        it(`User Operation: Native transfer`, async function () {
+          const {owner, alice, beneficiary, entryPoint} =
+            await loadFixture(baseFixture);
+          const {
+            createAccount,
+            encodeExecute,
+            getAccountAddress,
+            getDummySignature,
+            getSignature,
+          } = await loadFixture(fixture);
+          await createAccount(0n, owner.account.address);
+
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await hre.network.provider.send("hardhat_setBalance", [
+            accountAddress,
+            toHex(parseEther("10000")),
+          ]);
+          balanceBefore = await getAccountBalance(accountAddress, entryPoint);
+
+          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          const value = parseEther("0.5");
+          userOp = {
+            sender: accountAddress,
+            nonce,
+            initCode: "0x" as `0x${string}`,
+            callData: encodeExecute(alice.account.address, value, "0x"),
+            callGasLimit: 1_000_000n,
+            verificationGasLimit: 2_000_000n,
+            preVerificationGas: 21_000n,
+            maxFeePerGas: 1n,
+            maxPriorityFeePerGas: 1n,
+            paymasterAndData: "0x" as `0x${string}`,
+            signature: "0x" as `0x${string}`,
+          };
+          userOp.signature = getDummySignature(userOp);
+          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+          userOp.signature = await getSignature(owner, userOp, entryPoint);
+
+          await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
+
           // Add the value sent back to calculate gas properly.
           balanceAfter = await getAccountBalance(
             accountAddress,
