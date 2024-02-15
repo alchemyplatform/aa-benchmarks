@@ -18,12 +18,16 @@ export function collectResult(
 
 export async function writeResults() {
   let buffer = "";
+  let align;
   for (const test in resultMap) {
     buffer += `### ${test}\n\n`;
     const testResults = resultMap[test];
     const accountNames = Object.keys(testResults);
     // Account names, with the first column left intentionally blank.
     const tableHeader = ["", ...accountNames];
+    if (!align) {
+      align = ["l", ...tableHeader.map(() => "r")];
+    }
     const tableRowObject: {[key: string]: string[]} = {};
     for (const accountName of accountNames) {
       const metrics = testResults[accountName];
@@ -35,7 +39,7 @@ export async function writeResults() {
       }
     }
     const table = [tableHeader, ...Object.values(tableRowObject)];
-    buffer += markdownTable(table) + "\n\n";
+    buffer += markdownTable(table, {align}) + "\n\n";
   }
 
   replaceInFile.sync({
