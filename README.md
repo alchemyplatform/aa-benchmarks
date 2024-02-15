@@ -11,7 +11,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Thu, 15 Feb 2024 18:46:52 GMT
+Last run: Thu, 15 Feb 2024 20:20:53 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) |   `0.1` |
@@ -53,16 +53,27 @@ Last run: Thu, 15 Feb 2024 18:46:52 GMT
 | Total fee (ETH) |   `0.000196691` | `0.000161666` | `0.000164235` |
 | Total fee (USD) |         `$0.49` |       `$0.40` |       `$0.41` |
 
-### User Operation: Native transfer
+### [Modular Account]: Add Session Key
 
-|                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
-| :-------------- | --------------: | ------------: | ------------: |
-| L2 gas used     |        `140931` |      `128803` |      `137743` |
-| L2 fee (ETH)    |   `0.000014093` | `0.000012880` | `0.000013774` |
-| L1 gas used     |          `5840` |        `5980` |        `6464` |
-| L1 fee (ETH)    |   `0.000099864` | `0.000102258` | `0.000110534` |
-| Total fee (ETH) |   `0.000113957` | `0.000115138` | `0.000124309` |
-| Total fee (USD) |         `$0.28` |       `$0.29` |       `$0.31` |
+|                 | Modular Account |
+| :-------------- | --------------: |
+| L2 gas used     |        `201869` |
+| L2 fee (ETH)    |   `0.000020187` |
+| L1 gas used     |         `52784` |
+| L1 fee (ETH)    |   `0.000902606` |
+| Total fee (ETH) |   `0.000922793` |
+| Total fee (USD) |         `$2.31` |
+
+### [Modular Account]: Session Key Native Transfer
+
+|                 | Modular Account |
+| :-------------- | --------------: |
+| L2 gas used     |        `201869` |
+| L2 fee (ETH)    |   `0.000020187` |
+| L1 gas used     |         `52784` |
+| L1 fee (ETH)    |   `0.000902606` |
+| Total fee (ETH) |   `0.000922793` |
+| Total fee (USD) |         `$2.31` |
 
 <!-- /BENCHMARK_RESULTS -->
 
