@@ -15,18 +15,15 @@ import {
   zeroAddress,
 } from "viem";
 import {L2_GAS_PRICE} from "../hardhat.config";
+import {biconomy_v2} from "./accounts/biconomy-v2";
 import {kernel} from "./accounts/kernel";
 import {modularAccount} from "./accounts/modularAccount";
-import {biconomy_v2} from "./accounts/biconomy-v2";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {
   convertWeiToUsd,
   formatEtherTruncated,
-  getAccountBalance,
   getL1FeeForCallData,
-  getL1FeeForUserOp,
   getL1GasUsedForCallData,
-  getL1GasUsedForUserOp,
 } from "./utils/fees";
 import {UserOperation} from "./utils/userOp";
 import {collectResult, writeResults} from "./utils/writer";
@@ -62,7 +59,11 @@ export interface AccountConfig {
   fixture: () => Promise<AccountFixtureReturnType>;
 }
 
-const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [modularAccount, kernel, biconomy_v2];
+const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
+  modularAccount,
+  kernel,
+  biconomy_v2,
+];
 
 describe("Benchmark", function () {
   async function baseFixture() {
@@ -95,45 +96,49 @@ describe("Benchmark", function () {
 
   ACCOUNTS_TO_BENCHMARK.forEach(({name, fixture}) => {
     describe(name, function () {
+      let hash: `0x${string}` | undefined;
+
+      beforeEach(function () {
+        hash = undefined;
+      });
+
+      afterEach(async function (this: Context) {
+        const tableEntries = {
+          "L2 gas used": "-",
+          "L2 fee (ETH)": "-",
+          "L1 gas used": "-",
+          "L1 fee (ETH)": "-",
+          "Total fee (ETH)": "-",
+          "Total fee (USD)": "Unsupported",
+        };
+
+        if (hash) {
+          const publicClient = await hre.viem.getPublicClient();
+          const {gasUsed} = await publicClient.getTransactionReceipt({
+            hash,
+          });
+          const {input} = await publicClient.getTransaction({
+            hash,
+          });
+          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
+          const l1Fee = getL1FeeForCallData(input);
+
+          tableEntries["L2 gas used"] = `${gasUsed}`;
+          tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
+          tableEntries["L1 gas used"] = `${getL1GasUsedForCallData(input)}`;
+          tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
+          tableEntries["Total fee (ETH)"] =
+            `${formatEtherTruncated(l2Fee + l1Fee)}`;
+          tableEntries["Total fee (USD)"] =
+            `$${convertWeiToUsd(l2Fee + l1Fee)}`;
+        }
+
+        collectResult(this.currentTest!.title, name, tableEntries);
+
+        collectResult(this.currentTest!.title, name, tableEntries);
+      });
+
       describe("Runtime", function () {
-        let hash: `0x${string}` | undefined;
-
-        beforeEach(function () {
-          hash = undefined;
-        });
-
-        afterEach(async function (this: Context) {
-          const tableEntries = {
-            "L2 gas used": "",
-            "L2 fee (ETH)": "",
-            "L1 gas used": "",
-            "L1 fee (ETH)": "",
-            "Total fee (ETH)": "",
-            "Total fee (USD)": "Unsupported",
-          }; 
-
-          if (hash) {
-            const publicClient = await hre.viem.getPublicClient();
-            const {gasUsed} = await publicClient.getTransactionReceipt({
-              hash,
-            });
-            const {input} = await publicClient.getTransaction({
-              hash,
-            });
-            const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
-            const l1Fee = getL1FeeForCallData(input);
-
-            tableEntries["L2 gas used"] = `${gasUsed}`;
-            tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
-            tableEntries["L1 gas used"] = `${getL1GasUsedForCallData(input)}`;
-            tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
-            tableEntries["Total fee (ETH)"] = `${formatEtherTruncated(l2Fee + l1Fee)}`;
-            tableEntries["Total fee (USD)"] = `$${convertWeiToUsd(l2Fee + l1Fee)}`;
-          }
-
-          collectResult(this.currentTest!.title, name, tableEntries);
-        });
-
         it(`Runtime: Account creation`, async function () {
           const {owner} = await loadFixture(baseFixture);
           const {createAccount} = await loadFixture(fixture);
@@ -141,7 +146,6 @@ describe("Benchmark", function () {
         });
 
         it(`Runtime: Native transfer`, async function () {
-
           if (name === "Biconomy v2") {
             // Biconomy V2 doesn't support runtime native transfers.
             return;
@@ -168,36 +172,6 @@ describe("Benchmark", function () {
       });
 
       describe("User Operation", function () {
-        let balanceBefore: bigint | undefined;
-        let balanceAfter: bigint | undefined;
-        let userOp: UserOperation | undefined;
-
-        beforeEach(async function () {
-          userOp = undefined;
-          balanceBefore = undefined;
-          balanceAfter = undefined;
-        });
-
-        afterEach(async function (this: Context) {
-          if (!userOp || balanceAfter == null || balanceBefore == null) {
-            return;
-          }
-
-          // This works because the gas price is set to 1.
-          const gasUsed = balanceBefore - balanceAfter;
-          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
-          const l1Fee = getL1FeeForUserOp(userOp);
-
-          collectResult(this.currentTest!.title, name, {
-            "L2 gas used": `${gasUsed}`,
-            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
-            "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
-            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
-            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
-            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
-          });
-        });
-
         it(`User Operation: Account creation`, async function () {
           const {owner, beneficiary, entryPoint} =
             await loadFixture(baseFixture);
@@ -216,11 +190,10 @@ describe("Benchmark", function () {
             accountAddress,
             toHex(parseEther("10000")),
           ]);
-          balanceBefore = await getAccountBalance(accountAddress, entryPoint);
 
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
           const value = 0n;
-          userOp = {
+          const userOp = {
             sender: accountAddress,
             nonce,
             initCode: getInitCode(0n, owner.account.address),
@@ -237,16 +210,10 @@ describe("Benchmark", function () {
           userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
           userOp.signature = await getSignature(owner, userOp, entryPoint);
 
-          await entryPoint.write.handleOps([
+          hash = await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
-          // Add the value sent back to calculate gas properly.
-          balanceAfter = await getAccountBalance(
-            accountAddress,
-            entryPoint,
-            value,
-          );
         });
 
         it(`User Operation: Native transfer`, async function () {
@@ -269,11 +236,10 @@ describe("Benchmark", function () {
             accountAddress,
             toHex(parseEther("10000")),
           ]);
-          balanceBefore = await getAccountBalance(accountAddress, entryPoint);
 
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
           const value = parseEther("0.5");
-          userOp = {
+          const userOp = {
             sender: accountAddress,
             nonce,
             initCode: "0x" as `0x${string}`,
@@ -290,17 +256,10 @@ describe("Benchmark", function () {
           userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
           userOp.signature = await getSignature(owner, userOp, entryPoint);
 
-          await entryPoint.write.handleOps([
+          hash = await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
-
-          // Add the value sent back to calculate gas properly.
-          balanceAfter = await getAccountBalance(
-            accountAddress,
-            entryPoint,
-            value,
-          );
         });
       });
     });
