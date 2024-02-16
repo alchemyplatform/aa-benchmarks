@@ -14,6 +14,7 @@ import {
 import { BICONOMY_V2_ARTIFACTS } from "../artifacts/biconomy-v2";
 import { ENTRY_POINT_ARTIFACTS } from "../artifacts/entryPoint";
 import hre from "hardhat";
+import { MerkleTree } from 'merkletreejs'
 
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
@@ -31,18 +32,22 @@ async function fixture(): Promise<AccountFixtureReturnType> {
     walletClient,
   });
 
-  // Helper function for generating "module setup data"
-  const getModuleSetupData = (owner: `0x${string}`) =>
-    encodeFunctionData({
-      abi: [
-        getAbiItem({
-          abi: BICONOMY_V2_ARTIFACTS.EcdsaOwnershipRegistryModule.abi,
-          name: "initForSmartAccount",
-        }),
-      ],
-      args: [owner],
-    });
+    // Helper function for generating "module setup data"
+    const getModuleSetupData = (owner: `0x${string}`) =>
+        encodeFunctionData({
+            abi: [
+                getAbiItem({
+                    abi: BICONOMY_V2_ARTIFACTS.EcdsaOwnershipRegistryModule.abi,
+                    name: "initForSmartAccount",
+                }),
+            ],
+            args: [owner],
+        });
     
+    const keyDataHolder = {
+
+    }
+
     return {
         createAccount: async (salt, ownerAddress) => {
             return await biconomyV2Factory.write.deployCounterFactualAccount([
@@ -189,15 +194,15 @@ async function fixture(): Promise<AccountFixtureReturnType> {
                 ],
             });
         },
-        getSessionKeySignature: async (key, message) => {
-            return await key.signMessage({
-              message: {raw: message},
-            });
-        },
-        useSessionKeyERC20TransferCalldata: (token, key, to, amount) => {
-            // todo: implement this
-            return "0x";
-        },
+        // getSessionKeySignature: async (key, message) => {
+        //     return await key.signMessage({
+        //       message: {raw: message},
+        //     });
+        // },
+        // useSessionKeyERC20TransferCalldata: (token, key, to, amount) => {
+        //     // todo: implement this
+        //     return "0x";
+        // },
         // useSessionKeyNativeTokenTransferCalldata: (key, to, amount) => {
         //     // Unsupported by Biconomy v2
         // }

@@ -321,7 +321,7 @@ describe("Benchmark", function () {
 
         describe("Session Key", function () {
           it(`[${name}]: Add Session Key`, async function () {
-            const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
+            const {owner, alice, beneficiary, entryPoint, usdc, usdt, sessionKey} =
               await loadFixture(baseFixture);
             const {
               getAccountAddress,
