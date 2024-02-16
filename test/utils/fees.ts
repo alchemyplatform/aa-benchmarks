@@ -10,9 +10,9 @@ export function getL1GasUsed(serializedTx: `0x${string}`) {
 }
 
 export function getL1Fee(gasUsed: bigint) {
-  const scaledDynamicOverhead = BigInt(OP_DYNAMIC_OVERHEAD_SCALAR);
   return (
-    (gasUsed * BigInt(L1_GAS_PRICE) * scaledDynamicOverhead) / BigInt(10 ** 3)
+    (gasUsed * BigInt(L1_GAS_PRICE) * BigInt(OP_DYNAMIC_OVERHEAD_SCALAR)) /
+    BigInt(10 ** 3)
   );
 }
 

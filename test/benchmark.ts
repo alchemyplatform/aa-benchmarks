@@ -14,13 +14,13 @@ import {
   serializeTransaction,
   toHex,
   zeroAddress,
-  getAddress,
 } from "viem";
 import {L2_GAS_PRICE} from "../hardhat.config";
 import {biconomy_v2} from "./accounts/biconomy-v2";
 import {kernel} from "./accounts/kernel";
 import {modularAccount} from "./accounts/modularAccount";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
+import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 import {
   convertWeiToUsd,
   formatEtherTruncated,
@@ -29,7 +29,6 @@ import {
 } from "./utils/fees";
 import {UserOperation} from "./utils/userOp";
 import {collectResult, writeResults} from "./utils/writer";
-import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 
 export interface AccountFixtureReturnType {
   createAccount: (
@@ -225,46 +224,6 @@ describe("Benchmark", function () {
       });
 
       describe("Runtime", function () {
-        let hash: `0x${string}` | undefined;
-
-        beforeEach(function () {
-          hash = undefined;
-        });
-
-        afterEach(async function (this: Context) {
-          const tableEntries = {
-            "L2 gas used": "",
-            "L2 fee (ETH)": "",
-            "L1 gas used": "",
-            "L1 fee (ETH)": "",
-            "Total fee (ETH)": "",
-            "Total fee (USD)": "Unsupported",
-          };
-
-          if (hash) {
-            const publicClient = await hre.viem.getPublicClient();
-            const {gasUsed} = await publicClient.getTransactionReceipt({
-              hash,
-            });
-            const {input} = await publicClient.getTransaction({
-              hash,
-            });
-            const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
-            const l1Fee = getL1FeeForCallData(input);
-
-            tableEntries["L2 gas used"] = `${gasUsed}`;
-            tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
-            tableEntries["L1 gas used"] = `${getL1GasUsedForCallData(input)}`;
-            tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
-            tableEntries["Total fee (ETH)"] =
-              `${formatEtherTruncated(l2Fee + l1Fee)}`;
-            tableEntries["Total fee (USD)"] =
-              `$${convertWeiToUsd(l2Fee + l1Fee)}`;
-          }
-
-          collectResult(this.currentTest!.title, name, tableEntries);
-        });
-
         it(`Runtime: Account creation`, async function () {
           const {owner} = await loadFixture(baseFixture);
           const {createAccount} = await loadFixture(fixture);
@@ -343,7 +302,7 @@ describe("Benchmark", function () {
         });
 
         describe("Session Key", function () {
-          it(`[${name}]: Add Session Key`, async function () {
+          it(`Add Session Key`, async function () {
             const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
               await loadFixture(baseFixture);
             const {
@@ -406,7 +365,7 @@ describe("Benchmark", function () {
             ]);
           });
 
-          it(`[${name}]: Session Key Native Transfer`, async function () {
+          it(`Session Key Native Transfer`, async function () {
             const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
               await loadFixture(baseFixture);
             const {
@@ -501,7 +460,7 @@ describe("Benchmark", function () {
             ]);
           });
 
-          it(`[${name}]: Session Key ERC20 Transfer`, async function () {
+          it(`Session Key ERC20 Transfer`, async function () {
             const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
               await loadFixture(baseFixture);
             const {
