@@ -106,7 +106,7 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         ],
       ]);
     },
-    addSessionKeyCalldata: (keys, target, tokens, account) => {
+    addSessionKeyCalldata: (keys, target, tokens, spendLimit, account) => {
       // add permissions for tokens
       const permissions = tokens.flatMap((token) => [
         encodeFunctionData({
@@ -116,25 +116,16 @@ async function fixture(): Promise<AccountFixtureReturnType> {
               name: "updateAccessListAddressEntry",
             }),
           ],
-          args: [token.address, true, true],
+          args: [token.address, true, false],
         }),
         encodeFunctionData({
           abi: [
             getAbiItem({
               abi: MODULAR_ACCOUNT_ARTIFACTS.ISessionKeyPermissionsUpdate.abi,
-              name: "updateAccessListFunctionEntry",
+              name: "setERC20SpendLimit",
             }),
           ],
-          args: [token.address, ERC20_APPROVE_SELECTOR, true],
-        }),
-        encodeFunctionData({
-          abi: [
-            getAbiItem({
-              abi: MODULAR_ACCOUNT_ARTIFACTS.ISessionKeyPermissionsUpdate.abi,
-              name: "updateAccessListFunctionEntry",
-            }),
-          ],
-          args: [token.address, ERC20_TRANSFER_SELECTOR, true],
+          args: [token.address, spendLimit, 0n],
         }),
       ]);
       // add target
@@ -158,6 +149,17 @@ async function fixture(): Promise<AccountFixtureReturnType> {
             }),
           ],
           args: [target, "0x00000000", true],
+        }),
+      );
+      permissions.push(
+        encodeFunctionData({
+          abi: [
+            getAbiItem({
+              abi: MODULAR_ACCOUNT_ARTIFACTS.ISessionKeyPermissionsUpdate.abi,
+              name: "setNativeTokenSpendLimit",
+            }),
+          ],
+          args: [spendLimit, 0],
         }),
       );
       switch (keys.length) {
