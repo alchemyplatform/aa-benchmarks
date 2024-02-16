@@ -1,35 +1,10 @@
 import {calculateL1Fee, calculateL1GasUsed} from "@eth-optimism/core-utils";
-import hre from "hardhat";
-import {
-  Chain,
-  GetContractReturnType,
-  PublicClient,
-  Transport,
-  formatEther,
-} from "viem";
+import {formatEther} from "viem";
 import {ETH_PRICE_USD, L1_GAS_PRICE} from "../../hardhat.config";
-import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
 import {UserOperation, encodeUserOp} from "./userOp";
 
 const OP_FIXED_OVERHEAD = 188;
 const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
-
-export async function getAccountBalance(
-  accountAddress: `0x${string}`,
-  entryPoint: GetContractReturnType<
-    typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
-    PublicClient<Transport, Chain>
-  >,
-  value?: bigint,
-) {
-  const publicClient = await hre.viem.getPublicClient();
-  let balance = value || 0n;
-  balance += await entryPoint.read.balanceOf([accountAddress]);
-  balance += await publicClient.getBalance({
-    address: accountAddress,
-  });
-  return balance;
-}
 
 export function getL1GasUsedForUserOp(userOp: UserOperation) {
   const encodedUserOp = encodeUserOp(userOp);

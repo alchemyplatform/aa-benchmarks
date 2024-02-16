@@ -1,4 +1,4 @@
-import { AccountConfig, AccountFixtureReturnType } from "../benchmark";
+import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 import {
     encodeFunctionData,
     encodePacked,
@@ -20,13 +20,13 @@ import hre from "hardhat";
 import { MerkleTree } from "merkletreejs";
 
 async function fixture(): Promise<AccountFixtureReturnType> {
-    const [walletClient] = await hre.viem.getWalletClients();
-    const publicClient = await hre.viem.getPublicClient();
-    const testClient = (await hre.viem.getTestClient()).extend(walletActions);
+  const [walletClient] = await hre.viem.getWalletClients();
+  const publicClient = await hre.viem.getPublicClient();
+  const testClient = (await hre.viem.getTestClient()).extend(walletActions);
 
-    for (const { address, bytecode } of Object.values(BICONOMY_V2_ARTIFACTS)) {
-        await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
-    }
+  for (const {address, bytecode} of Object.values(BICONOMY_V2_ARTIFACTS)) {
+    await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
+  }
 
     await hre.network.provider.send("evm_setNextBlockTimestamp", [2_000_000_000]); // Set the time to 2 billion
 
@@ -39,15 +39,15 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 
     // Helper function for generating "module setup data"
     const getModuleSetupData = (owner: `0x${string}`) =>
-        encodeFunctionData({
-            abi: [
-                getAbiItem({
-                    abi: BICONOMY_V2_ARTIFACTS.EcdsaOwnershipRegistryModule.abi,
-                    name: "initForSmartAccount",
-                }),
-            ],
-            args: [owner],
-        });
+    encodeFunctionData({
+        abi: [
+        getAbiItem({
+            abi: BICONOMY_V2_ARTIFACTS.EcdsaOwnershipRegistryModule.abi,
+            name: "initForSmartAccount",
+        }),
+        ],
+        args: [owner],
+    });
 
     const keyDataHolder: any = {
         validUntil: null,
@@ -315,6 +315,6 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 }
 
 export const biconomy_v2: AccountConfig = {
-    name: "Biconomy v2",
-    fixture,
+  name: "Biconomy v2",
+  fixture,
 };

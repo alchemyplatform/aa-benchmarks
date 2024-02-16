@@ -16,18 +16,15 @@ import {
   getAddress,
 } from "viem";
 import {L2_GAS_PRICE} from "../hardhat.config";
+import {biconomy_v2} from "./accounts/biconomy-v2";
 import {kernel} from "./accounts/kernel";
 import {modularAccount} from "./accounts/modularAccount";
-import {biconomy_v2} from "./accounts/biconomy-v2";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {
   convertWeiToUsd,
   formatEtherTruncated,
-  getAccountBalance,
   getL1FeeForCallData,
-  getL1FeeForUserOp,
   getL1GasUsedForCallData,
-  getL1GasUsedForUserOp,
 } from "./utils/fees";
 import {UserOperation} from "./utils/userOp";
 import {collectResult, writeResults} from "./utils/writer";
@@ -163,6 +160,48 @@ describe("Benchmark", function () {
 
   ACCOUNTS_TO_BENCHMARK.forEach(({name, fixture}) => {
     describe(name, function () {
+      let hash: `0x${string}` | undefined;
+
+      beforeEach(function () {
+        hash = undefined;
+      });
+
+      afterEach(async function (this: Context) {
+        const tableEntries = {
+          "L2 gas used": "-",
+          "L2 fee (ETH)": "-",
+          "L1 gas used": "-",
+          "L1 fee (ETH)": "-",
+          "Total fee (ETH)": "-",
+          "Total fee (USD)": "Unsupported",
+        };
+
+        if (hash) {
+          const publicClient = await hre.viem.getPublicClient();
+          const {gasUsed} = await publicClient.getTransactionReceipt({
+            hash,
+          });
+          const {input} = await publicClient.getTransaction({
+            hash,
+          });
+          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
+          const l1Fee = getL1FeeForCallData(input);
+
+          tableEntries["L2 gas used"] = `${gasUsed}`;
+          tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
+          tableEntries["L1 gas used"] = `${getL1GasUsedForCallData(input)}`;
+          tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
+          tableEntries["Total fee (ETH)"] =
+            `${formatEtherTruncated(l2Fee + l1Fee)}`;
+          tableEntries["Total fee (USD)"] =
+            `$${convertWeiToUsd(l2Fee + l1Fee)}`;
+        }
+
+        collectResult(this.currentTest!.title, name, tableEntries);
+
+        collectResult(this.currentTest!.title, name, tableEntries);
+      });
+
       describe("Runtime", function () {
         let hash: `0x${string}` | undefined;
 
@@ -237,45 +276,6 @@ describe("Benchmark", function () {
       });
 
       describe("User Operation", function () {
-        let balanceBefore: bigint | undefined;
-        let balanceAfter: bigint | undefined;
-        let userOp: UserOperation | undefined;
-
-        beforeEach(async function () {
-          userOp = undefined;
-          balanceBefore = undefined;
-          balanceAfter = undefined;
-        });
-
-        afterEach(async function (this: Context) {
-          const tableEntries = {
-            "L2 gas used": "",
-            "L2 fee (ETH)": "",
-            "L1 gas used": "",
-            "L1 fee (ETH)": "",
-            "Total fee (ETH)": "",
-            "Total fee (USD)": "Unsupported",
-          };
-
-          if (userOp && balanceAfter != null && balanceBefore != null) {
-            // This works because the gas price is set to 1.
-            const gasUsed = balanceBefore - balanceAfter;
-            const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
-            const l1Fee = getL1FeeForUserOp(userOp);
-
-            tableEntries["L2 gas used"] = `${gasUsed}`;
-            tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
-            tableEntries["L1 gas used"] = `${getL1GasUsedForUserOp(userOp)}`;
-            tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
-            tableEntries["Total fee (ETH)"] =
-              `${formatEtherTruncated(l2Fee + l1Fee)}`;
-            tableEntries["Total fee (USD)"] =
-              `$${convertWeiToUsd(l2Fee + l1Fee)}`;
-          }
-
-          collectResult(this.currentTest!.title, name, tableEntries);
-        });
-
         it(`User Operation: Account creation`, async function () {
           const {owner, beneficiary, entryPoint} =
             await loadFixture(baseFixture);
@@ -294,11 +294,10 @@ describe("Benchmark", function () {
             accountAddress,
             toHex(parseEther("10000")),
           ]);
-          balanceBefore = await getAccountBalance(accountAddress, entryPoint);
 
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
           const value = 0n;
-          userOp = {
+          const userOp = {
             sender: accountAddress,
             nonce,
             initCode: getInitCode(0n, owner.account.address),
@@ -315,16 +314,10 @@ describe("Benchmark", function () {
           userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
           userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
 
-          await entryPoint.write.handleOps([
+          hash = await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
-          // Add the value sent back to calculate gas properly.
-          balanceAfter = await getAccountBalance(
-            accountAddress,
-            entryPoint,
-            value,
-          );
         });
 
         describe("Session Key", function () {
@@ -355,14 +348,12 @@ describe("Benchmark", function () {
               accountAddress,
               toHex(parseEther("100")),
             ]);
-            balanceBefore = await getAccountBalance(accountAddress, entryPoint);
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
               (await installSessionKeyPlugin(accountAddress, owner));
-
             const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
             const value = 0n;
-            userOp = {
+            let userOp = {
               sender: accountAddress,
               nonce,
               initCode: "0x" as `0x${string}`,
@@ -389,16 +380,10 @@ describe("Benchmark", function () {
               entryPoint,
             );
 
-            await entryPoint.write.handleOps([
+            hash = await entryPoint.write.handleOps([
               [userOp],
               beneficiary.account.address,
             ]);
-            // Add the value sent back to calculate gas properly.
-            balanceAfter = await getAccountBalance(
-              accountAddress,
-              entryPoint,
-              value,
-            );
           });
 
           it(`Session Key Native Transfer`, async function () {
@@ -433,7 +418,7 @@ describe("Benchmark", function () {
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
               (await installSessionKeyPlugin(accountAddress, owner));
-            userOp = {
+            let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
@@ -465,7 +450,6 @@ describe("Benchmark", function () {
             ]);
 
             // test
-            balanceBefore = await getAccountBalance(accountAddress, entryPoint);
             userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
@@ -490,16 +474,10 @@ describe("Benchmark", function () {
               userOp,
               entryPoint,
             );
-            await entryPoint.write.handleOps([
+            hash = await entryPoint.write.handleOps([
               [userOp],
               beneficiary.account.address,
             ]);
-            // Add the value sent back to calculate gas properly.
-            balanceAfter = await getAccountBalance(
-              accountAddress,
-              entryPoint,
-              tokenTransferAmt,
-            );
           });
 
           it(`Session Key ERC20 Transfer`, async function () {
@@ -536,7 +514,7 @@ describe("Benchmark", function () {
             await usdc.write.mint([accountAddress, parseEther("100")]);
             installSessionKeyPlugin &&
               (await installSessionKeyPlugin(accountAddress, owner));
-            userOp = {
+            let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
@@ -568,7 +546,6 @@ describe("Benchmark", function () {
             ]);
 
             // test
-            balanceBefore = await getAccountBalance(accountAddress, entryPoint);
             userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
@@ -595,20 +572,10 @@ describe("Benchmark", function () {
               entryPoint,
             );
 
-            console.log(`${name} Session Key ERC20 Transfer calldata: `, userOp.callData);
-            console.log(`${name} Session Key ERC20 Transfer signature: `, userOp.signature);
-
-            await entryPoint.write.handleOps([
+            hash = await entryPoint.write.handleOps([
               [userOp],
               beneficiary.account.address,
             ]);
-
-            // Add the value sent back to calculate gas properly.
-            balanceAfter = await getAccountBalance(
-              accountAddress,
-              entryPoint,
-              0n, // transferred erc20 tokens, not native
-            );
           });
         });
       });
