@@ -59,6 +59,10 @@ export interface AccountFixtureReturnType {
   installSessionKeyPlugin?: (
     account: `0x${string}`,
     owner: WalletClient<Transport, Chain, Account>,
+    entryPoint?: GetContractReturnType<
+      typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
+      PublicClient<Transport, Chain>
+    >,
   ) => void;
   addSessionKeyCalldata?: (
     keys: `0x${string}`[],
@@ -345,7 +349,7 @@ describe("Benchmark", function () {
             ]);
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner));
+              (await installSessionKeyPlugin(accountAddress, owner, entryPoint));
 
             // use 5 keys
             const keys = (await sessionKey.getAddresses()).slice(0, 5);
@@ -417,7 +421,7 @@ describe("Benchmark", function () {
             ]);
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner));
+              (await installSessionKeyPlugin(accountAddress, owner, entryPoint));
             let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
@@ -514,7 +518,7 @@ describe("Benchmark", function () {
             await createAccount(0n, owner.account.address);
             await usdc.write.mint([accountAddress, parseEther("100")]);
             installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner));
+              (await installSessionKeyPlugin(accountAddress, owner, entryPoint));
             let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),

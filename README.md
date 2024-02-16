@@ -11,7 +11,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Fri, 16 Feb 2024 19:44:22 GMT
+Last run: Fri, 16 Feb 2024 22:24:52 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) |   `0.1` |
@@ -90,12 +90,12 @@ Last run: Fri, 16 Feb 2024 19:44:22 GMT
 
 |                 |   Kernel v2.1 |
 | :-------------- | ------------: |
-| L2 gas used     |           `-` |
-| L2 fee (ETH)    |           `-` |
-| L1 gas used     |           `-` |
-| L1 fee (ETH)    |           `-` |
-| Total fee (ETH) |           `-` |
-| Total fee (USD) | `Unsupported` |
+| L2 gas used     |      `140744` |
+| L2 fee (ETH)    | `0.000014074` |
+| L1 gas used     |        `5668` |
+| L1 fee (ETH)    | `0.000096923` |
+| Total fee (ETH) | `0.000110997` |
+| Total fee (USD) |       `$0.28` |
 
 ### [Kernel v2.1]: Session Key Native Transfer
 
