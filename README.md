@@ -11,11 +11,11 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Fri, 16 Feb 2024 19:44:22 GMT
+Last run: Fri, 16 Feb 2024 23:08:09 GMT
 | Option              |   Value |
 | :------------------ | ------: |
-| L2 gas price (Gwei) |   `0.1` |
-| L1 gas price (Gwei) |    `25` |
+| L2 gas price (Gwei) | `0.005` |
+| L1 gas price (Gwei) |    `42` |
 | ETH price (USD)     | `$2500` |
 
 </details>
@@ -24,133 +24,67 @@ Last run: Fri, 16 Feb 2024 19:44:22 GMT
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
-| L2 gas used     |             `-` |           `-` |           `-` |
-| L2 fee (ETH)    |             `-` |           `-` |           `-` |
-| L1 gas used     |             `-` |           `-` |           `-` |
-| L1 fee (ETH)    |             `-` |           `-` |           `-` |
-| Total fee (ETH) |             `-` |           `-` |           `-` |
-| Total fee (USD) |   `Unsupported` | `Unsupported` | `Unsupported` |
+| L2 gas used     |        `725323` |      `136206` |      `197473` |
+| L2 fee (ETH)    |   `0.000003627` | `0.000000681` | `0.000000987` |
+| L1 gas used     |          `2612` |        `3932` |        `3196` |
+| L1 fee (ETH)    |   `0.000075038` | `0.000112958` | `0.000091815` |
+| Total fee (ETH) |   `0.000078664` | `0.000113640` | `0.000092802` |
+| Total fee (USD) |         `$0.20` |       `$0.28` |       `$0.23` |
 
 ### Runtime: Native transfer
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
-| L2 gas used     |             `-` |           `-` |           `-` |
-| L2 fee (ETH)    |             `-` |           `-` |           `-` |
-| L1 gas used     |             `-` |           `-` |           `-` |
-| L1 fee (ETH)    |             `-` |           `-` |           `-` |
-| Total fee (ETH) |             `-` |           `-` |           `-` |
-| Total fee (USD) |   `Unsupported` | `Unsupported` | `Unsupported` |
+| L2 gas used     |         `50408` |       `39436` |           `-` |
+| L2 fee (ETH)    |   `0.000000252` | `0.000000197` |           `-` |
+| L1 gas used     |          `2768` |        `2900` |           `-` |
+| L1 fee (ETH)    |   `0.000079519` | `0.000083311` |           `-` |
+| Total fee (ETH) |   `0.000079771` | `0.000083508` |           `-` |
+| Total fee (USD) |         `$0.20` |       `$0.21` | `Unsupported` |
 
 ### User Operation: Account creation
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
 | L2 gas used     |        `858351` |      `261853` |      `329947` |
-| L2 fee (ETH)    |   `0.000085835` | `0.000026185` | `0.000032995` |
-| L1 gas used     |          `7464` |        `8904` |        `8656` |
-| L1 fee (ETH)    |   `0.000127634` | `0.000152258` | `0.000148018` |
-| Total fee (ETH) |   `0.000213469` | `0.000178444` | `0.000181012` |
-| Total fee (USD) |         `$0.53` |       `$0.45` |       `$0.45` |
+| L2 fee (ETH)    |   `0.000004292` | `0.000001309` | `0.000001650` |
+| L1 gas used     |          `8076` |        `9528` |        `9280` |
+| L1 fee (ETH)    |   `0.000232007` | `0.000273720` | `0.000266596` |
+| Total fee (ETH) |   `0.000236299` | `0.000275030` | `0.000268246` |
+| Total fee (USD) |         `$0.59` |       `$0.69` |       `$0.67` |
 
-### [Modular Account]: Add Session Key
+### Add Session Key
 
-|                 | Modular Account |
-| :-------------- | --------------: |
-| L2 gas used     |       `1502810` |
-| L2 fee (ETH)    |   `0.000150281` |
-| L1 gas used     |         `50944` |
-| L1 fee (ETH)    |   `0.000871142` |
-| Total fee (ETH) |   `0.001021423` |
-| Total fee (USD) |         `$2.55` |
+|                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
+| :-------------- | --------------: | ------------: | ------------: |
+| L2 gas used     |       `1502810` |           `-` |           `-` |
+| L2 fee (ETH)    |   `0.000007514` |           `-` |           `-` |
+| L1 gas used     |         `51568` |           `-` |           `-` |
+| L1 fee (ETH)    |   `0.001481446` |           `-` |           `-` |
+| Total fee (ETH) |   `0.001488960` |           `-` |           `-` |
+| Total fee (USD) |         `$3.72` | `Unsupported` | `Unsupported` |
 
-### [Modular Account]: Session Key Native Transfer
+### Session Key Native Transfer
 
-|                 | Modular Account |
-| :-------------- | --------------: |
-| L2 gas used     |        `194515` |
-| L2 fee (ETH)    |   `0.000019451` |
-| L1 gas used     |          `7276` |
-| L1 fee (ETH)    |   `0.000124420` |
-| Total fee (ETH) |   `0.000143871` |
-| Total fee (USD) |         `$0.36` |
+|                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
+| :-------------- | --------------: | ------------: | ------------: |
+| L2 gas used     |        `194515` |           `-` |           `-` |
+| L2 fee (ETH)    |   `0.000000973` |           `-` |           `-` |
+| L1 gas used     |          `7900` |           `-` |           `-` |
+| L1 fee (ETH)    |   `0.000226951` |           `-` |           `-` |
+| Total fee (ETH) |   `0.000227924` |           `-` |           `-` |
+| Total fee (USD) |         `$0.57` | `Unsupported` | `Unsupported` |
 
-### [Modular Account]: Session Key ERC20 Transfer
+### Session Key ERC20 Transfer
 
-|                 | Modular Account |
-| :-------------- | --------------: |
-| L2 gas used     |        `194738` |
-| L2 fee (ETH)    |   `0.000019474` |
-| L1 gas used     |          `7960` |
-| L1 fee (ETH)    |   `0.000136116` |
-| Total fee (ETH) |   `0.000155590` |
-| Total fee (USD) |         `$0.39` |
-
-### [Kernel v2.1]: Add Session Key
-
-|                 |   Kernel v2.1 |
-| :-------------- | ------------: |
-| L2 gas used     |           `-` |
-| L2 fee (ETH)    |           `-` |
-| L1 gas used     |           `-` |
-| L1 fee (ETH)    |           `-` |
-| Total fee (ETH) |           `-` |
-| Total fee (USD) | `Unsupported` |
-
-### [Kernel v2.1]: Session Key Native Transfer
-
-|                 |   Kernel v2.1 |
-| :-------------- | ------------: |
-| L2 gas used     |           `-` |
-| L2 fee (ETH)    |           `-` |
-| L1 gas used     |           `-` |
-| L1 fee (ETH)    |           `-` |
-| Total fee (ETH) |           `-` |
-| Total fee (USD) | `Unsupported` |
-
-### [Kernel v2.1]: Session Key ERC20 Transfer
-
-|                 |   Kernel v2.1 |
-| :-------------- | ------------: |
-| L2 gas used     |           `-` |
-| L2 fee (ETH)    |           `-` |
-| L1 gas used     |           `-` |
-| L1 fee (ETH)    |           `-` |
-| Total fee (ETH) |           `-` |
-| Total fee (USD) | `Unsupported` |
-
-### [Biconomy v2]: Add Session Key
-
-|                 |   Biconomy v2 |
-| :-------------- | ------------: |
-| L2 gas used     |           `-` |
-| L2 fee (ETH)    |           `-` |
-| L1 gas used     |           `-` |
-| L1 fee (ETH)    |           `-` |
-| Total fee (ETH) |           `-` |
-| Total fee (USD) | `Unsupported` |
-
-### [Biconomy v2]: Session Key Native Transfer
-
-|                 |   Biconomy v2 |
-| :-------------- | ------------: |
-| L2 gas used     |           `-` |
-| L2 fee (ETH)    |           `-` |
-| L1 gas used     |           `-` |
-| L1 fee (ETH)    |           `-` |
-| Total fee (ETH) |           `-` |
-| Total fee (USD) | `Unsupported` |
-
-### [Biconomy v2]: Session Key ERC20 Transfer
-
-|                 |   Biconomy v2 |
-| :-------------- | ------------: |
-| L2 gas used     |           `-` |
-| L2 fee (ETH)    |           `-` |
-| L1 gas used     |           `-` |
-| L1 fee (ETH)    |           `-` |
-| Total fee (ETH) |           `-` |
-| Total fee (USD) | `Unsupported` |
+|                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
+| :-------------- | --------------: | ------------: | ------------: |
+| L2 gas used     |        `194738` |           `-` |           `-` |
+| L2 fee (ETH)    |   `0.000000974` |           `-` |           `-` |
+| L1 gas used     |          `8572` |           `-` |           `-` |
+| L1 fee (ETH)    |   `0.000246256` |           `-` |           `-` |
+| Total fee (ETH) |   `0.000247230` |           `-` |           `-` |
+| Total fee (USD) |         `$0.62` | `Unsupported` | `Unsupported` |
 
 <!-- /BENCHMARK_RESULTS -->
 
