@@ -343,7 +343,6 @@ describe("Benchmark", function () {
               accountAddress,
               toHex(parseEther("100")),
             ]);
-            balanceBefore = await getAccountBalance(accountAddress, entryPoint);
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
               (await installSessionKeyPlugin(accountAddress, owner));
@@ -353,7 +352,7 @@ describe("Benchmark", function () {
 
             const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
             const value = 0n;
-            userOp = {
+            const userOp = {
               sender: accountAddress,
               nonce,
               initCode: "0x" as `0x${string}`,
@@ -380,16 +379,10 @@ describe("Benchmark", function () {
               entryPoint,
             );
 
-            await entryPoint.write.handleOps([
+            hash = await entryPoint.write.handleOps([
               [userOp],
               beneficiary.account.address,
             ]);
-            // Add the value sent back to calculate gas properly.
-            balanceAfter = await getAccountBalance(
-              accountAddress,
-              entryPoint,
-              value,
-            );
           });
 
           it(`[${name}]: Session Key Native Transfer`, async function () {
@@ -425,7 +418,7 @@ describe("Benchmark", function () {
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
               (await installSessionKeyPlugin(accountAddress, owner));
-            userOp = {
+            let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
@@ -457,7 +450,6 @@ describe("Benchmark", function () {
             ]);
 
             // test
-            balanceBefore = await getAccountBalance(accountAddress, entryPoint);
             userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
@@ -482,16 +474,10 @@ describe("Benchmark", function () {
               userOp,
               entryPoint,
             );
-            await entryPoint.write.handleOps([
+            hash = await entryPoint.write.handleOps([
               [userOp],
               beneficiary.account.address,
             ]);
-            // Add the value sent back to calculate gas properly.
-            balanceAfter = await getAccountBalance(
-              accountAddress,
-              entryPoint,
-              tokenTransferAmt,
-            );
           });
 
           it(`[${name}]: Session Key ERC20 Transfer`, async function () {
@@ -529,7 +515,7 @@ describe("Benchmark", function () {
             await usdc.write.mint([accountAddress, parseEther("100")]);
             installSessionKeyPlugin &&
               (await installSessionKeyPlugin(accountAddress, owner));
-            userOp = {
+            let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
@@ -561,7 +547,6 @@ describe("Benchmark", function () {
             ]);
 
             // test
-            balanceBefore = await getAccountBalance(accountAddress, entryPoint);
             userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
@@ -588,17 +573,10 @@ describe("Benchmark", function () {
               entryPoint,
             );
 
-            await entryPoint.write.handleOps([
+            hash = await entryPoint.write.handleOps([
               [userOp],
               beneficiary.account.address,
             ]);
-
-            // Add the value sent back to calculate gas properly.
-            balanceAfter = await getAccountBalance(
-              accountAddress,
-              entryPoint,
-              0n, // transferred erc20 tokens, not native
-            );
           });
         });
       });
