@@ -7,7 +7,6 @@
   },
   "devDependencies": {
     "@account-abstraction/sdk": "^0.6.0",
-    "@biconomy/account": "^4.0.0",
     "@eth-optimism/core-utils": "^0.13.1",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^2.0.0",
@@ -29,8 +28,5 @@
     "ts-node": ">=8.0.0",
     "typescript": "~5.0.4",
     "viem": "^1.15.1"
-  },
-  "dependencies": {
-    "merkletreejs": "^0.3.11"
   }
 }

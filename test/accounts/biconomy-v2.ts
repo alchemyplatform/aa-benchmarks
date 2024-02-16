@@ -17,7 +17,6 @@ import {
 import { BICONOMY_V2_ARTIFACTS } from "../artifacts/biconomy-v2";
 import { ENTRY_POINT_ARTIFACTS } from "../artifacts/entryPoint";
 import hre from "hardhat";
-import { MerkleTree } from "merkletreejs";
 
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
