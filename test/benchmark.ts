@@ -13,6 +13,7 @@ import {
   parseEther,
   toHex,
   zeroAddress,
+  getAddress,
 } from "viem";
 import {L2_GAS_PRICE} from "../hardhat.config";
 import {kernel} from "./accounts/kernel";
@@ -32,6 +33,7 @@ import {UserOperation} from "./utils/userOp";
 import {collectResult, writeResults} from "./utils/writer";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 import {ZERO_ADDRESS} from "./utils/consts";
+import {MODULAR_ACCOUNT_ARTIFACTS} from "./artifacts/modularAccount";
 
 export interface AccountFixtureReturnType {
   createAccount: (
@@ -70,10 +72,15 @@ export interface AccountFixtureReturnType {
       typeof TOKEN_ARTIFACTS.USDC.abi,
       PublicClient<Transport, Chain>
     >[],
+    account?: `0x${string}`,
   ) => `0x${string}`;
   getSessionKeySignature?: (
-    key: WalletClient<Transport, Chain, Account>,
-    message: `0x${string}`,
+    signer: WalletClient<Transport, Chain, Account>,
+    userOp: UserOperation,
+    entryPoint: GetContractReturnType<
+      typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
+      PublicClient<Transport, Chain>
+    >,
   ) => Promise<`0x${string}`>;
   useSessionKeyERC20TransferCalldata?: (
     token: GetContractReturnType<
@@ -96,11 +103,17 @@ export interface AccountConfig {
   fixture: () => Promise<AccountFixtureReturnType>;
 }
 
-const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [modularAccount, kernel, biconomy_v2];
+const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
+  modularAccount,
+  kernel,
+  biconomy_v2,
+];
+
+const nativeTokenTransferTarget = "0x0000000000000000000000000000000000000001";
 
 describe("Benchmark", function () {
   async function baseFixture() {
-    const [owner, alice, beneficiary, sessionKeys] =
+    const [owner, alice, beneficiary, sessionKey] =
       await hre.viem.getWalletClients();
     const publicClient = await hre.viem.getPublicClient();
 
@@ -141,7 +154,7 @@ describe("Benchmark", function () {
       publicClient,
       usdc,
       usdt,
-      sessionKeys,
+      sessionKey,
     };
   }
 
@@ -166,7 +179,7 @@ describe("Benchmark", function () {
             "L1 fee (ETH)": "",
             "Total fee (ETH)": "",
             "Total fee (USD)": "Unsupported",
-          }; 
+          };
 
           if (hash) {
             const publicClient = await hre.viem.getPublicClient();
@@ -183,8 +196,10 @@ describe("Benchmark", function () {
             tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
             tableEntries["L1 gas used"] = `${getL1GasUsedForCallData(input)}`;
             tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
-            tableEntries["Total fee (ETH)"] = `${formatEtherTruncated(l2Fee + l1Fee)}`;
-            tableEntries["Total fee (USD)"] = `$${convertWeiToUsd(l2Fee + l1Fee)}`;
+            tableEntries["Total fee (ETH)"] =
+              `${formatEtherTruncated(l2Fee + l1Fee)}`;
+            tableEntries["Total fee (USD)"] =
+              `$${convertWeiToUsd(l2Fee + l1Fee)}`;
           }
 
           collectResult(this.currentTest!.title, name, tableEntries);
@@ -197,7 +212,6 @@ describe("Benchmark", function () {
         });
 
         it(`Runtime: Native transfer`, async function () {
-
           if (name === "Biconomy v2") {
             // Biconomy V2 doesn't support runtime native transfers.
             return;
@@ -307,7 +321,7 @@ describe("Benchmark", function () {
 
         describe("Session Key", function () {
           it(`[${name}]: Add Session Key`, async function () {
-            const {owner, beneficiary, entryPoint, usdc, usdt, sessionKeys} =
+            const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
               await loadFixture(baseFixture);
             const {
               getAccountAddress,
@@ -336,8 +350,17 @@ describe("Benchmark", function () {
               installSessionKeyPlugin &&
                 (await installSessionKeyPlugin(accountAddress, owner));
 
+              const publicClient = await hre.viem.getPublicClient();
+
+              const account = getContract({
+                address: accountAddress,
+                abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
+                publicClient,
+                walletClient: owner,
+              });
+
               // use 5 keys
-              const keys = (await sessionKeys.getAddresses()).slice(0, 5);
+              const keys = (await sessionKey.getAddresses()).slice(0, 5);
 
               const nonce = await entryPoint.read.getNonce([
                 accountAddress,
@@ -348,12 +371,14 @@ describe("Benchmark", function () {
                 sender: accountAddress,
                 nonce,
                 initCode: "0x" as `0x${string}`,
-                callData: addSessionKeyCalldata(keys, ZERO_ADDRESS, [
-                  usdc,
-                  usdt,
-                ]),
-                callGasLimit: 1_000_000n,
-                verificationGasLimit: 2_000_000n,
+                callData: addSessionKeyCalldata(
+                  keys,
+                  nativeTokenTransferTarget,
+                  [usdc, usdt],
+                  accountAddress,
+                ),
+                callGasLimit: 1_500_000n,
+                verificationGasLimit: 1_000_000n,
                 preVerificationGas: 21_000n,
                 maxFeePerGas: 1n,
                 maxPriorityFeePerGas: 1n,
@@ -384,7 +409,7 @@ describe("Benchmark", function () {
           });
 
           it(`[${name}]: Session Key Native Transfer`, async function () {
-            const {owner, beneficiary, entryPoint, usdc, usdt, sessionKeys} =
+            const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
               await loadFixture(baseFixture);
             const {
               getAccountAddress,
@@ -393,44 +418,53 @@ describe("Benchmark", function () {
               createAccount,
               installSessionKeyPlugin,
               addSessionKeyCalldata,
+              useSessionKeyNativeTokenTransferCalldata,
+              getSessionKeySignature,
             } = await loadFixture(fixture);
 
+            const keys = (await sessionKey.getAddresses()).slice(0, 5);
+
+            const accountAddress = await getAccountAddress(
+              0n,
+              owner.account.address,
+            );
+            const value = 0n;
+
+            await hre.network.provider.send("hardhat_setBalance", [
+              accountAddress,
+              toHex(parseEther("100")),
+            ]);
+            await createAccount(0n, owner.account.address);
+            installSessionKeyPlugin &&
+              (await installSessionKeyPlugin(accountAddress, owner));
+
             if (addSessionKeyCalldata) {
-              const accountAddress = await getAccountAddress(
-                0n,
-                owner.account.address,
-              );
-              await hre.network.provider.send("hardhat_setBalance", [
-                accountAddress,
-                toHex(parseEther("100")),
-              ]);
               balanceBefore = await getAccountBalance(
                 accountAddress,
                 entryPoint,
               );
 
-              await createAccount(0n, owner.account.address);
-              installSessionKeyPlugin &&
-                (await installSessionKeyPlugin(accountAddress, owner));
+              const publicClient = await hre.viem.getPublicClient();
 
-              // use 5 keys
-              const keys = (await sessionKeys.getAddresses()).slice(0, 5);
+              const account = getContract({
+                address: accountAddress,
+                abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
+                publicClient,
+                walletClient: owner,
+              });
 
-              const nonce = await entryPoint.read.getNonce([
-                accountAddress,
-                0n,
-              ]);
-              const value = 0n;
               userOp = {
                 sender: accountAddress,
-                nonce,
+                nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
                 initCode: "0x" as `0x${string}`,
-                callData: addSessionKeyCalldata(keys, ZERO_ADDRESS, [
-                  usdc,
-                  usdt,
-                ]),
-                callGasLimit: 1_000_000n,
-                verificationGasLimit: 2_000_000n,
+                callData: addSessionKeyCalldata(
+                  keys,
+                  nativeTokenTransferTarget,
+                  [usdc, usdt],
+                  accountAddress,
+                ),
+                callGasLimit: 1_500_000n,
+                verificationGasLimit: 1_000_000n,
                 preVerificationGas: 21_000n,
                 maxFeePerGas: 1n,
                 maxPriorityFeePerGas: 1n,
@@ -457,6 +491,62 @@ describe("Benchmark", function () {
                 entryPoint,
                 value,
               );
+
+              const sessionKeyPlugin = getContract({
+                address: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.address,
+                abi: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.abi,
+                publicClient,
+                walletClient: owner,
+              });
+
+              if (
+                useSessionKeyNativeTokenTransferCalldata &&
+                getSessionKeySignature
+              ) {
+                balanceBefore = await getAccountBalance(
+                  accountAddress,
+                  entryPoint,
+                );
+
+                userOp = {
+                  sender: accountAddress,
+                  nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+                  initCode: "0x" as `0x${string}`,
+                  callData: useSessionKeyNativeTokenTransferCalldata(
+                    keys[3],
+                    nativeTokenTransferTarget,
+                    value,
+                  ), // key 3 =
+                  callGasLimit: 5_000_000n,
+                  verificationGasLimit: 2_000_000n,
+                  preVerificationGas: 21_000n,
+                  maxFeePerGas: 1n,
+                  maxPriorityFeePerGas: 1n,
+                  paymasterAndData: "0x" as `0x${string}`,
+                  signature: "0x" as `0x${string}`,
+                };
+                userOp.signature = getDummySignature(userOp);
+                userOp.preVerificationGas = BigInt(
+                  calcPreVerificationGas(userOp),
+                );
+                userOp.signature = await getSessionKeySignature(
+                  sessionKey,
+                  userOp,
+                  entryPoint,
+                );
+
+                await entryPoint.write.handleOps([
+                  [userOp],
+                  beneficiary.account.address,
+                ]);
+
+                // Add the value sent back to calculate gas properly.
+                balanceAfter = await getAccountBalance(
+                  accountAddress,
+                  entryPoint,
+                  value,
+                );
+              }
             }
           });
 
