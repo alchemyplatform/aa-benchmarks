@@ -64,7 +64,7 @@ export interface AccountFixtureReturnType {
     owner: WalletClient<Transport, Chain, Account>,
   ) => void;
   addSessionKeyCalldata?: (
-    keys: `0x${string}`[],
+    key: `0x${string}`,
     target: `0x${string}`,
     tokens: GetContractReturnType<
       typeof TOKEN_ARTIFACTS.USDC.abi,
@@ -108,7 +108,6 @@ const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   biconomy_v2,
 ];
 
-const tokenTransferTarget = "0x0000000000000000000000000000000000000001";
 const tokenTransferAmt = parseEther("1");
 
 describe("Benchmark", function () {
@@ -249,23 +248,32 @@ describe("Benchmark", function () {
         });
 
         afterEach(async function (this: Context) {
-          if (!userOp || balanceAfter == null || balanceBefore == null) {
-            return;
+          const tableEntries = {
+            "L2 gas used": "",
+            "L2 fee (ETH)": "",
+            "L1 gas used": "",
+            "L1 fee (ETH)": "",
+            "Total fee (ETH)": "",
+            "Total fee (USD)": "Unsupported",
+          };
+
+          if (userOp && balanceAfter != null && balanceBefore != null) {
+            // This works because the gas price is set to 1.
+            const gasUsed = balanceBefore - balanceAfter;
+            const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
+            const l1Fee = getL1FeeForUserOp(userOp);
+
+            tableEntries["L2 gas used"] = `${gasUsed}`;
+            tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
+            tableEntries["L1 gas used"] = `${getL1GasUsedForUserOp(userOp)}`;
+            tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
+            tableEntries["Total fee (ETH)"] =
+              `${formatEtherTruncated(l2Fee + l1Fee)}`;
+            tableEntries["Total fee (USD)"] =
+              `$${convertWeiToUsd(l2Fee + l1Fee)}`;
           }
 
-          // This works because the gas price is set to 1.
-          const gasUsed = balanceBefore - balanceAfter;
-          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
-          const l1Fee = getL1FeeForUserOp(userOp);
-
-          collectResult(this.currentTest!.title, name, {
-            "L2 gas used": `${gasUsed}`,
-            "L2 fee (ETH)": `${formatEtherTruncated(l2Fee)}`,
-            "L1 gas used": `${getL1GasUsedForUserOp(userOp)}`,
-            "L1 fee (ETH)": `${formatEtherTruncated(l1Fee)}`,
-            "Total fee (ETH)": `${formatEtherTruncated(l2Fee + l1Fee)}`,
-            "Total fee (USD)": `$${convertWeiToUsd(l2Fee + l1Fee)}`,
-          });
+          collectResult(this.currentTest!.title, name, tableEntries);
         });
 
         it(`User Operation: Account creation`, async function () {
@@ -320,9 +328,15 @@ describe("Benchmark", function () {
         });
 
         describe("Session Key", function () {
-          it(`[${name}]: Add Session Key`, async function () {
-            const {owner, alice, beneficiary, entryPoint, usdc, usdt, sessionKey} =
-              await loadFixture(baseFixture);
+          it(`Add Session Key`, async function () {
+            const {
+              owner,
+              alice,
+              beneficiary,
+              entryPoint,
+              usdc,
+              sessionKey,
+            } = await loadFixture(baseFixture);
             const {
               getAccountAddress,
               getDummySignature,
@@ -346,9 +360,6 @@ describe("Benchmark", function () {
             installSessionKeyPlugin &&
               (await installSessionKeyPlugin(accountAddress, owner));
 
-            // use 5 keys
-            const keys = (await sessionKey.getAddresses()).slice(0, 5);
-
             const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
             const value = 0n;
             userOp = {
@@ -356,9 +367,9 @@ describe("Benchmark", function () {
               nonce,
               initCode: "0x" as `0x${string}`,
               callData: addSessionKeyCalldata(
-                keys,
-                tokenTransferTarget,
-                [usdc, usdt],
+                sessionKey.account.address!,
+                alice.account.address!,
+                [usdc],
                 tokenTransferAmt,
                 accountAddress,
               ),
@@ -390,8 +401,8 @@ describe("Benchmark", function () {
             );
           });
 
-          it(`[${name}]: Session Key Native Transfer`, async function () {
-            const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
+          it(`Session Key Native Transfer`, async function () {
+            const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
               await loadFixture(baseFixture);
             const {
               getAccountAddress,
@@ -411,7 +422,6 @@ describe("Benchmark", function () {
               this.skip();
 
             // setup
-            const keys = (await sessionKey.getAddresses()).slice(0, 5);
             const accountAddress = await getAccountAddress(
               0n,
               owner.account.address,
@@ -428,9 +438,9 @@ describe("Benchmark", function () {
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
               callData: addSessionKeyCalldata(
-                keys,
-                tokenTransferTarget,
-                [usdc, usdt],
+                sessionKey.account.address!,
+                alice.account.address,
+                [usdc],
                 tokenTransferAmt,
                 accountAddress,
               ),
@@ -461,8 +471,8 @@ describe("Benchmark", function () {
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
               callData: useSessionKeyNativeTokenTransferCalldata(
-                keys[3],
-                tokenTransferTarget,
+                sessionKey.account.address!,
+                alice.account.address!,
                 tokenTransferAmt,
               ), // key 3 = sessionKey.account.address
               callGasLimit: 5_000_000n,
@@ -492,8 +502,8 @@ describe("Benchmark", function () {
             );
           });
 
-          it(`[${name}]: Session Key ERC20 Transfer`, async function () {
-            const {owner, beneficiary, entryPoint, usdc, usdt, sessionKey} =
+          it(`Session Key ERC20 Transfer`, async function () {
+            const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
               await loadFixture(baseFixture);
             const {
               getAccountAddress,
@@ -514,7 +524,6 @@ describe("Benchmark", function () {
               this.skip();
 
             // setup
-            const keys = (await sessionKey.getAddresses()).slice(0, 5);
             const accountAddress = await getAccountAddress(
               0n,
               owner.account.address,
@@ -532,14 +541,14 @@ describe("Benchmark", function () {
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
               callData: addSessionKeyCalldata(
-                keys,
-                tokenTransferTarget,
-                [usdc, usdt],
+                sessionKey.account.address,
+                alice.account.address!,
+                [usdc],
                 tokenTransferAmt,
                 accountAddress,
               ),
               callGasLimit: 1_500_000n,
-              verificationGasLimit: 1_000_000n,
+              verificationGasLimit: 4_000_000n,
               preVerificationGas: 21_000n,
               maxFeePerGas: 1n,
               maxPriorityFeePerGas: 1n,
@@ -566,8 +575,8 @@ describe("Benchmark", function () {
               initCode: "0x" as `0x${string}`,
               callData: useSessionKeyERC20TransferCalldata(
                 usdc,
-                keys[3],
-                tokenTransferTarget,
+                sessionKey.account.address!,
+                alice.account.address!,
                 tokenTransferAmt,
               ), // key 3 = sessionKey.account.address
               callGasLimit: 5_000_000n,
@@ -581,10 +590,13 @@ describe("Benchmark", function () {
             userOp.signature = getDummySignature(userOp);
             userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
             userOp.signature = await getSessionKeySignature(
-              sessionKey,
+              sessionKey!,
               userOp,
               entryPoint,
             );
+
+            console.log(`${name} Session Key ERC20 Transfer calldata: `, userOp.callData);
+            console.log(`${name} Session Key ERC20 Transfer signature: `, userOp.signature);
 
             await entryPoint.write.handleOps([
               [userOp],
