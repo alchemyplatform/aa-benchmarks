@@ -11,6 +11,7 @@ import {
   WalletClient,
   getContract,
   parseEther,
+  serializeTransaction,
   toHex,
   zeroAddress,
   getAddress,
@@ -23,8 +24,8 @@ import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {
   convertWeiToUsd,
   formatEtherTruncated,
-  getL1FeeForCallData,
-  getL1GasUsedForCallData,
+  getL1Fee,
+  getL1GasUsed,
 } from "./utils/fees";
 import {UserOperation} from "./utils/userOp";
 import {collectResult, writeResults} from "./utils/writer";
@@ -182,15 +183,35 @@ describe("Benchmark", function () {
           const {gasUsed} = await publicClient.getTransactionReceipt({
             hash,
           });
-          const {input} = await publicClient.getTransaction({
+          // Legacy transaction type
+          const tx = await publicClient.getTransaction({
             hash,
           });
+          const serializedTx = serializeTransaction(
+            {
+              from: tx.from,
+              to: tx.to,
+              value: tx.value,
+              data: tx.input,
+              nonce: tx.nonce,
+              gas: tx.gas,
+              gasPrice: tx.gasPrice,
+              type: tx.type,
+            },
+            {
+              r: tx.r,
+              s: tx.s,
+              v: tx.v,
+            },
+          );
+
           const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
-          const l1Fee = getL1FeeForCallData(input);
+          const l1GasUsed = getL1GasUsed(serializedTx);
+          const l1Fee = getL1Fee(l1GasUsed);
 
           tableEntries["L2 gas used"] = `${gasUsed}`;
           tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
-          tableEntries["L1 gas used"] = `${getL1GasUsedForCallData(input)}`;
+          tableEntries["L1 gas used"] = `${l1GasUsed}`;
           tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
           tableEntries["Total fee (ETH)"] =
             `${formatEtherTruncated(l2Fee + l1Fee)}`;
