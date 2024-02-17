@@ -22,7 +22,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Sat, 17 Feb 2024 21:38:54 GMT
+Last run: Sat, 17 Feb 2024 21:47:24 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) | `0.005` |
@@ -42,7 +42,18 @@ Last run: Sat, 17 Feb 2024 21:38:54 GMT
 | Total fee (ETH) |   `0.000236299` | `0.000275030` | `0.000268246` |
 | Total fee (USD) |         `$0.59` |       `$0.69` |       `$0.67` |
 
-### User Operation: Session key addition
+### User Operation: Native transfer
+
+|                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
+| :-------------- | --------------: | ------------: | ------------: |
+| L2 gas used     |        `165100` |      `152989` |      `161912` |
+| L2 fee (ETH)    |   `0.000000825` | `0.000000765` | `0.000000810` |
+| L1 gas used     |          `7304` |        `7420` |        `7928` |
+| L1 fee (ETH)    |   `0.000209829` | `0.000213162` | `0.000227756` |
+| Total fee (ETH) |   `0.000210655` | `0.000213927` | `0.000228565` |
+| Total fee (USD) |         `$0.53` |       `$0.53` |       `$0.57` |
+
+### User Operation: Session key creation
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |

@@ -50,7 +50,7 @@ export function encodeUserOp(userOp: UserOperation) {
 interface GetUnsignedUserOpInput {
   sender: `0x${string}`;
   nonce: bigint;
-  initCode: `0x${string}`;
+  initCode?: `0x${string}`;
   callData: `0x${string}`;
   getDummySignature: AccountFixtureReturnType["getDummySignature"];
 }
@@ -58,7 +58,7 @@ interface GetUnsignedUserOpInput {
 export function getUnsignedUserOp({
   sender,
   nonce,
-  initCode,
+  initCode = "0x",
   callData,
   getDummySignature,
 }: GetUnsignedUserOpInput) {
