@@ -1,17 +1,8 @@
+import {encodeFunctionData, encodePacked, getAbiItem, getContract} from "viem";
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
-import {
-  encodeFunctionData,
-  encodePacked,
-  getAbiItem,
-  getContract,
-  keccak256,
-  encodeFunctionResult,
-  encodeAbiParameters,
-} from "viem";
 
-import {MODULAR_ACCOUNT_ARTIFACTS} from "../artifacts/modularAccount";
-import {ERC20_APPROVE_SELECTOR, ERC20_TRANSFER_SELECTOR} from "../utils/consts";
 import hre from "hardhat";
+import {MODULAR_ACCOUNT_ARTIFACTS} from "../artifacts/modularAccount";
 
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
@@ -20,13 +11,6 @@ async function fixture(): Promise<AccountFixtureReturnType> {
   for (const {address, bytecode} of Object.values(MODULAR_ACCOUNT_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
   }
-
-  const sessionKeyPlugin = getContract({
-    address: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.address,
-    abi: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.abi,
-    publicClient,
-    walletClient,
-  });
 
   const multiOwnerModularAccountFactory = getContract({
     address: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerModularAccountFactory.address,

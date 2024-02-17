@@ -1,22 +1,20 @@
-import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 import {
+  encodeAbiParameters,
   encodeFunctionData,
   encodePacked,
-  encodeAbiParameters,
   getAbiItem,
   getContract,
+  hexToBigInt,
+  keccak256,
   parseEther,
   toHex,
   walletActions,
-  zeroAddress,
-  hexToBigInt,
-  keccak256,
-  recoverMessageAddress,
 } from "viem";
+import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 
+import hre from "hardhat";
 import {BICONOMY_V2_ARTIFACTS} from "../artifacts/biconomy-v2";
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
-import hre from "hardhat";
 
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
