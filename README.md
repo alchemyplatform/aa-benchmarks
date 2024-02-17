@@ -1,17 +1,28 @@
 # 👷 AA Benchmark Hardhat
 
-A comprehensive benchmark for smart contract accounts that support account abstraction (ERC-4337), built on Hardhat for accurate runtime execution benchmarking and use of official utilities for calculating pre-verification gas and L1 data fees. This work was inspired by ZeroDev's work on [aa-benchmark](https://github.com/zerodevapp/aa-benchmark), which is built on Foundry.
+A comprehensive benchmark for smart contract accounts that support account abstraction (ERC-4337), built on Hardhat for accurate, transaction-based, fee measurements (see [Methodology](#methodology)) and for use of existing TypeScript utilities around fee calculations. This work was inspired by ZeroDev's work on [aa-benchmark](https://github.com/zerodevapp/aa-benchmark), which is built on Foundry.
+
+## Methodology
+
+This tool seeks to measure the cost of the entire transaction landed on-chain for each action, including associated L1 fees. As smart accounts are expected to proliferate on L2s, it's important to consider L1 fees (measured as a function of the RLP-encoded signed transaction) on top of L2 execution costs. Generally, L1 fees tend to dominate the cost of transactions on L2s, and therefore, optimizing the size of calldata is important.
+
+The L1 fee calculations are done following the formula and constants specified in [Optimism Bedrock](https://docs.optimism.io/stack/transactions/fees#bedrock).
+
+There are two different categories of benchmarks measured in this test: **Runtime** and **User Operation**.
+
+- **Runtime**: Runtime transactions are defined as those performed outside of the user operation flow, with the owner key interacting directly with the account factory or account, akin to the way you might use MetaMask today to interact with smart contracts. For this flow, fees are calculated based on the transaction's receipt and the serialized signed transaction.
+- **User Operation**: Measuring the cost of user operations are tricky because each bundler may calculate pre-verification gas differently and the costs may differ based on the number of user operations in the bundle. In this test, the on-chain cost for a bundler to execute the user operation in a bundle of size 1 is measured, to present a lower-bound fee required for the user operation to land in an exclusive bundle. In other words, fees are calculated based on the transaction receipt and the serialized signed transaction for `entryPoint.handleUserOp([userOp])`. As multi-user-op bundles become more prevalent, we can expect actual fees to undercut the data presented here.
 
 ## Results
 
-These numbers are derived from local simulations with fixed inputs (see [Run benchmark](#run-benchmark) below to try different inputs) and actual on-chain numbers may differ. The L1 data fee calculations were done following the formula and variables specified in [Optimism Bedrock](https://docs.optimism.io/stack/transactions/fees#bedrock).
+These numbers are derived from local simulations with fixed inputs (see [Run benchmark](#run-benchmark) below to try different inputs) and actual on-chain numbers may differ.
 
 <!-- BENCHMARK_RESULTS -->
 
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Fri, 16 Feb 2024 23:51:25 GMT
+Last run: Sat, 17 Feb 2024 20:10:28 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) | `0.005` |
@@ -53,7 +64,7 @@ Last run: Fri, 16 Feb 2024 23:51:25 GMT
 | Total fee (ETH) |   `0.000236299` | `0.000275030` | `0.000268246` |
 | Total fee (USD) |         `$0.59` |       `$0.69` |       `$0.67` |
 
-### Add Session Key
+### User Operation: Session key addition
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
@@ -64,7 +75,7 @@ Last run: Fri, 16 Feb 2024 23:51:25 GMT
 | Total fee (ETH) |   `0.000330016` |           `-` | `0.000245998` |
 | Total fee (USD) |         `$0.83` | `Unsupported` |       `$0.61` |
 
-### Session Key Native Transfer
+### User Operation: Session key native transfer
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
@@ -75,7 +86,7 @@ Last run: Fri, 16 Feb 2024 23:51:25 GMT
 | Total fee (ETH) |   `0.000234320` |           `-` |           `-` |
 | Total fee (USD) |         `$0.59` | `Unsupported` | `Unsupported` |
 
-### Session Key ERC20 Transfer
+### User Operation: Session key ERC-20 transfer
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
