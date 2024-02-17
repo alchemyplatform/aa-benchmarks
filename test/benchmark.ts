@@ -255,7 +255,47 @@ describe("Benchmark", function () {
           ]);
         });
 
-        it("User Operation: Session key addition", async function () {
+        it(`User Operation: Native transfer`, async function () {
+          const {owner, alice, beneficiary, entryPoint} =
+            await loadFixture(baseFixture);
+          const {
+            createAccount,
+            encodeExecute,
+            getAccountAddress,
+            getDummySignature,
+            getOwnerSignature,
+          } = await loadFixture(fixture);
+
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await hre.network.provider.send("hardhat_setBalance", [
+            accountAddress,
+            toHex(NATIVE_INITIAL_BALANCE),
+          ]);
+          await createAccount(0n, owner.account.address);
+
+          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          const userOp = getUnsignedUserOp({
+            sender: accountAddress,
+            nonce,
+            callData: encodeExecute(
+              alice.account.address,
+              NATIVE_TRANSFER_AMOUNT,
+              "0x",
+            ),
+            getDummySignature,
+          });
+          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
+
+          hash = await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
+        });
+
+        it("User Operation: Session key creation", async function () {
           const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
             await loadFixture(baseFixture);
           const {
@@ -289,7 +329,6 @@ describe("Benchmark", function () {
           const userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
-            initCode: "0x" as `0x${string}`,
             callData: addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
@@ -348,7 +387,6 @@ describe("Benchmark", function () {
           let userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
-            initCode: "0x" as `0x${string}`,
             callData: addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
@@ -369,7 +407,6 @@ describe("Benchmark", function () {
           userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
-            initCode: "0x" as `0x${string}`,
             callData: useSessionKeyNativeTokenTransferCalldata(
               sessionKey.account.address,
               alice.account.address,
@@ -431,7 +468,6 @@ describe("Benchmark", function () {
           let userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
-            initCode: "0x" as `0x${string}`,
             callData: addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
@@ -452,7 +488,6 @@ describe("Benchmark", function () {
           userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
-            initCode: "0x" as `0x${string}`,
             callData: useSessionKeyERC20TransferCalldata(
               usdc,
               sessionKey.account.address,
