@@ -291,7 +291,7 @@ describe("Benchmark", function () {
         });
 
         describe("Session Key", function () {
-          it(`Add Session Key`, async function () {
+          it("User Operation: Session key addition", async function () {
             const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
               await loadFixture(baseFixture);
             const {
@@ -353,7 +353,7 @@ describe("Benchmark", function () {
             ]);
           });
 
-          it(`Session Key Native Transfer`, async function () {
+          it("User Operation: Session key native transfer", async function () {
             const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
               await loadFixture(baseFixture);
             const {
@@ -449,7 +449,7 @@ describe("Benchmark", function () {
             ]);
           });
 
-          it(`Session Key ERC20 Transfer`, async function () {
+          it("User Operation: Session key ERC-20 transfer", async function () {
             const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
               await loadFixture(baseFixture);
             const {
