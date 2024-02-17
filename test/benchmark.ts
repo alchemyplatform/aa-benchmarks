@@ -212,39 +212,6 @@ describe("Benchmark", function () {
         collectResult(this.currentTest!.title, name, tableEntries);
       });
 
-      describe("Runtime", function () {
-        it(`Runtime: Account creation`, async function () {
-          const {owner} = await loadFixture(baseFixture);
-          const {createAccount} = await loadFixture(fixture);
-          hash = await createAccount(0n, owner.account.address);
-        });
-
-        it(`Runtime: Native transfer`, async function () {
-          if (name === "Biconomy v2") {
-            // Biconomy V2 doesn't support runtime native transfers.
-            return this.skip();
-          }
-
-          const {owner, alice} = await loadFixture(baseFixture);
-          const {getAccountAddress, createAccount, encodeExecute} =
-            await loadFixture(fixture);
-          const accountAddress = await getAccountAddress(
-            0n,
-            owner.account.address,
-          );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(parseEther("10000")),
-          ]);
-          await createAccount(0n, owner.account.address);
-
-          hash = await owner.sendTransaction({
-            to: accountAddress,
-            data: encodeExecute(alice.account.address, parseEther("0.5"), "0x"),
-          });
-        });
-      });
-
       describe("User Operation", function () {
         it(`User Operation: Account creation`, async function () {
           const {owner, beneficiary, entryPoint} =
@@ -290,262 +257,281 @@ describe("Benchmark", function () {
           ]);
         });
 
-        describe("Session Key", function () {
-          it("User Operation: Session key addition", async function () {
-            const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
-              await loadFixture(baseFixture);
-            const {
-              getAccountAddress,
-              getDummySignature,
-              getOwnerSignature,
-              createAccount,
-              installSessionKeyPlugin,
-              addSessionKeyCalldata,
-            } = await loadFixture(fixture);
+        it("User Operation: Session key addition", async function () {
+          const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
+            await loadFixture(baseFixture);
+          const {
+            getAccountAddress,
+            getDummySignature,
+            getOwnerSignature,
+            createAccount,
+            installSessionKeyPlugin,
+            addSessionKeyCalldata,
+          } = await loadFixture(fixture);
 
-            if (!addSessionKeyCalldata) {
-              return this.skip();
-            }
+          if (!addSessionKeyCalldata) {
+            return this.skip();
+          }
 
-            const accountAddress = await getAccountAddress(
-              0n,
-              owner.account.address,
-            );
-            await hre.network.provider.send("hardhat_setBalance", [
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await hre.network.provider.send("hardhat_setBalance", [
+            accountAddress,
+            toHex(parseEther("100")),
+          ]);
+          await createAccount(0n, owner.account.address);
+          installSessionKeyPlugin &&
+            (await installSessionKeyPlugin(accountAddress, owner));
+          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          const value = 0n;
+          let userOp = {
+            sender: accountAddress,
+            nonce,
+            initCode: "0x" as `0x${string}`,
+            callData: addSessionKeyCalldata(
+              sessionKey.account.address,
+              alice.account.address,
+              [usdc],
+              tokenTransferAmt,
               accountAddress,
-              toHex(parseEther("100")),
-            ]);
-            await createAccount(0n, owner.account.address);
-            installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner));
-            const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-            const value = 0n;
-            let userOp = {
-              sender: accountAddress,
-              nonce,
-              initCode: "0x" as `0x${string}`,
-              callData: addSessionKeyCalldata(
-                sessionKey.account.address,
-                alice.account.address,
-                [usdc],
-                tokenTransferAmt,
-                accountAddress,
-              ),
-              callGasLimit: 1_500_000n,
-              verificationGasLimit: 1_000_000n,
-              preVerificationGas: 21_000n,
-              maxFeePerGas: 1n,
-              maxPriorityFeePerGas: 1n,
-              paymasterAndData: "0x" as `0x${string}`,
-              signature: "0x" as `0x${string}`,
-            };
-            userOp.signature = getDummySignature(userOp);
-            userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
-            userOp.signature = await getOwnerSignature(
-              owner,
-              userOp,
-              entryPoint,
-            );
+            ),
+            callGasLimit: 1_500_000n,
+            verificationGasLimit: 1_000_000n,
+            preVerificationGas: 21_000n,
+            maxFeePerGas: 1n,
+            maxPriorityFeePerGas: 1n,
+            paymasterAndData: "0x" as `0x${string}`,
+            signature: "0x" as `0x${string}`,
+          };
+          userOp.signature = getDummySignature(userOp);
+          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
 
-            hash = await entryPoint.write.handleOps([
-              [userOp],
-              beneficiary.account.address,
-            ]);
-          });
+          hash = await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
+        });
 
-          it("User Operation: Session key native transfer", async function () {
-            const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
-              await loadFixture(baseFixture);
-            const {
-              getAccountAddress,
-              getDummySignature,
-              getOwnerSignature,
-              createAccount,
-              installSessionKeyPlugin,
-              addSessionKeyCalldata,
-              useSessionKeyNativeTokenTransferCalldata,
-              getSessionKeySignature,
-            } = await loadFixture(fixture);
+        it("User Operation: Session key native transfer", async function () {
+          const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
+            await loadFixture(baseFixture);
+          const {
+            getAccountAddress,
+            getDummySignature,
+            getOwnerSignature,
+            createAccount,
+            installSessionKeyPlugin,
+            addSessionKeyCalldata,
+            useSessionKeyNativeTokenTransferCalldata,
+            getSessionKeySignature,
+          } = await loadFixture(fixture);
 
-            if (
-              !addSessionKeyCalldata ||
-              !useSessionKeyNativeTokenTransferCalldata ||
-              !getSessionKeySignature
-            ) {
-              return this.skip();
-            }
+          if (
+            !addSessionKeyCalldata ||
+            !useSessionKeyNativeTokenTransferCalldata ||
+            !getSessionKeySignature
+          ) {
+            return this.skip();
+          }
 
-            // setup
-            const accountAddress = await getAccountAddress(
-              0n,
-              owner.account.address,
-            );
-            await hre.network.provider.send("hardhat_setBalance", [
+          // setup
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await hre.network.provider.send("hardhat_setBalance", [
+            accountAddress,
+            toHex(parseEther("100")),
+          ]);
+          await createAccount(0n, owner.account.address);
+          installSessionKeyPlugin &&
+            (await installSessionKeyPlugin(accountAddress, owner));
+          let userOp = {
+            sender: accountAddress,
+            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            initCode: "0x" as `0x${string}`,
+            callData: addSessionKeyCalldata(
+              sessionKey.account.address,
+              alice.account.address,
+              [usdc],
+              tokenTransferAmt,
               accountAddress,
-              toHex(parseEther("100")),
-            ]);
-            await createAccount(0n, owner.account.address);
-            installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner));
-            let userOp = {
-              sender: accountAddress,
-              nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
-              initCode: "0x" as `0x${string}`,
-              callData: addSessionKeyCalldata(
-                sessionKey.account.address,
-                alice.account.address,
-                [usdc],
-                tokenTransferAmt,
-                accountAddress,
-              ),
-              callGasLimit: 1_500_000n,
-              verificationGasLimit: 1_000_000n,
-              preVerificationGas: 21_000n,
-              maxFeePerGas: 1n,
-              maxPriorityFeePerGas: 1n,
-              paymasterAndData: "0x" as `0x${string}`,
-              signature: "0x" as `0x${string}`,
-            };
-            userOp.signature = getDummySignature(userOp);
-            userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
-            userOp.signature = await getOwnerSignature(
-              owner,
-              userOp,
-              entryPoint,
-            );
-            await entryPoint.write.handleOps([
-              [userOp],
-              beneficiary.account.address,
-            ]);
+            ),
+            callGasLimit: 1_500_000n,
+            verificationGasLimit: 1_000_000n,
+            preVerificationGas: 21_000n,
+            maxFeePerGas: 1n,
+            maxPriorityFeePerGas: 1n,
+            paymasterAndData: "0x" as `0x${string}`,
+            signature: "0x" as `0x${string}`,
+          };
+          userOp.signature = getDummySignature(userOp);
+          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
+          await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
 
-            // test
-            userOp = {
-              sender: accountAddress,
-              nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
-              initCode: "0x" as `0x${string}`,
-              callData: useSessionKeyNativeTokenTransferCalldata(
-                sessionKey.account.address,
-                alice.account.address,
-                tokenTransferAmt,
-              ), // key 3 = sessionKey.account.address
-              callGasLimit: 5_000_000n,
-              verificationGasLimit: 2_000_000n,
-              preVerificationGas: 21_000n,
-              maxFeePerGas: 1n,
-              maxPriorityFeePerGas: 1n,
-              paymasterAndData: "0x" as `0x${string}`,
-              signature: "0x" as `0x${string}`,
-            };
-            userOp.signature = getDummySignature(userOp);
-            userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
-            userOp.signature = await getSessionKeySignature(
-              sessionKey,
-              userOp,
-              entryPoint,
-            );
-            hash = await entryPoint.write.handleOps([
-              [userOp],
-              beneficiary.account.address,
-            ]);
-          });
+          // test
+          userOp = {
+            sender: accountAddress,
+            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            initCode: "0x" as `0x${string}`,
+            callData: useSessionKeyNativeTokenTransferCalldata(
+              sessionKey.account.address,
+              alice.account.address,
+              tokenTransferAmt,
+            ), // key 3 = sessionKey.account.address
+            callGasLimit: 5_000_000n,
+            verificationGasLimit: 2_000_000n,
+            preVerificationGas: 21_000n,
+            maxFeePerGas: 1n,
+            maxPriorityFeePerGas: 1n,
+            paymasterAndData: "0x" as `0x${string}`,
+            signature: "0x" as `0x${string}`,
+          };
+          userOp.signature = getDummySignature(userOp);
+          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+          userOp.signature = await getSessionKeySignature(
+            sessionKey,
+            userOp,
+            entryPoint,
+          );
+          hash = await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
+        });
 
-          it("User Operation: Session key ERC-20 transfer", async function () {
-            const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
-              await loadFixture(baseFixture);
-            const {
-              getAccountAddress,
-              getDummySignature,
-              getOwnerSignature,
-              createAccount,
-              installSessionKeyPlugin,
-              addSessionKeyCalldata,
-              useSessionKeyERC20TransferCalldata,
-              getSessionKeySignature,
-            } = await loadFixture(fixture);
+        it("User Operation: Session key ERC-20 transfer", async function () {
+          const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
+            await loadFixture(baseFixture);
+          const {
+            getAccountAddress,
+            getDummySignature,
+            getOwnerSignature,
+            createAccount,
+            installSessionKeyPlugin,
+            addSessionKeyCalldata,
+            useSessionKeyERC20TransferCalldata,
+            getSessionKeySignature,
+          } = await loadFixture(fixture);
 
-            if (
-              !addSessionKeyCalldata ||
-              !useSessionKeyERC20TransferCalldata ||
-              !getSessionKeySignature
-            ) {
-              return this.skip();
-            }
+          if (
+            !addSessionKeyCalldata ||
+            !useSessionKeyERC20TransferCalldata ||
+            !getSessionKeySignature
+          ) {
+            return this.skip();
+          }
 
-            // setup
-            const accountAddress = await getAccountAddress(
-              0n,
-              owner.account.address,
-            );
-            await hre.network.provider.send("hardhat_setBalance", [
+          // setup
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await hre.network.provider.send("hardhat_setBalance", [
+            accountAddress,
+            toHex(parseEther("100")),
+          ]);
+          await createAccount(0n, owner.account.address);
+          await usdc.write.mint([accountAddress, parseEther("100")]);
+          installSessionKeyPlugin &&
+            (await installSessionKeyPlugin(accountAddress, owner));
+          let userOp = {
+            sender: accountAddress,
+            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            initCode: "0x" as `0x${string}`,
+            callData: addSessionKeyCalldata(
+              sessionKey.account.address,
+              alice.account.address,
+              [usdc],
+              tokenTransferAmt,
               accountAddress,
-              toHex(parseEther("100")),
-            ]);
-            await createAccount(0n, owner.account.address);
-            await usdc.write.mint([accountAddress, parseEther("100")]);
-            installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner));
-            let userOp = {
-              sender: accountAddress,
-              nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
-              initCode: "0x" as `0x${string}`,
-              callData: addSessionKeyCalldata(
-                sessionKey.account.address,
-                alice.account.address,
-                [usdc],
-                tokenTransferAmt,
-                accountAddress,
-              ),
-              callGasLimit: 1_500_000n,
-              verificationGasLimit: 4_000_000n,
-              preVerificationGas: 21_000n,
-              maxFeePerGas: 1n,
-              maxPriorityFeePerGas: 1n,
-              paymasterAndData: "0x" as `0x${string}`,
-              signature: "0x" as `0x${string}`,
-            };
-            userOp.signature = getDummySignature(userOp);
-            userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
-            userOp.signature = await getOwnerSignature(
-              owner,
-              userOp,
-              entryPoint,
-            );
-            await entryPoint.write.handleOps([
-              [userOp],
-              beneficiary.account.address,
-            ]);
+            ),
+            callGasLimit: 1_500_000n,
+            verificationGasLimit: 4_000_000n,
+            preVerificationGas: 21_000n,
+            maxFeePerGas: 1n,
+            maxPriorityFeePerGas: 1n,
+            paymasterAndData: "0x" as `0x${string}`,
+            signature: "0x" as `0x${string}`,
+          };
+          userOp.signature = getDummySignature(userOp);
+          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
+          await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
 
-            // test
-            userOp = {
-              sender: accountAddress,
-              nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
-              initCode: "0x" as `0x${string}`,
-              callData: useSessionKeyERC20TransferCalldata(
-                usdc,
-                sessionKey.account.address,
-                alice.account.address,
-                tokenTransferAmt,
-              ), // key 3 = sessionKey.account.address
-              callGasLimit: 5_000_000n,
-              verificationGasLimit: 2_000_000n,
-              preVerificationGas: 21_000n,
-              maxFeePerGas: 1n,
-              maxPriorityFeePerGas: 1n,
-              paymasterAndData: "0x" as `0x${string}`,
-              signature: "0x" as `0x${string}`,
-            };
-            userOp.signature = getDummySignature(userOp);
-            userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
-            userOp.signature = await getSessionKeySignature(
-              sessionKey,
-              userOp,
-              entryPoint,
-            );
+          // test
+          userOp = {
+            sender: accountAddress,
+            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            initCode: "0x" as `0x${string}`,
+            callData: useSessionKeyERC20TransferCalldata(
+              usdc,
+              sessionKey.account.address,
+              alice.account.address,
+              tokenTransferAmt,
+            ), // key 3 = sessionKey.account.address
+            callGasLimit: 5_000_000n,
+            verificationGasLimit: 2_000_000n,
+            preVerificationGas: 21_000n,
+            maxFeePerGas: 1n,
+            maxPriorityFeePerGas: 1n,
+            paymasterAndData: "0x" as `0x${string}`,
+            signature: "0x" as `0x${string}`,
+          };
+          userOp.signature = getDummySignature(userOp);
+          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+          userOp.signature = await getSessionKeySignature(
+            sessionKey,
+            userOp,
+            entryPoint,
+          );
 
-            hash = await entryPoint.write.handleOps([
-              [userOp],
-              beneficiary.account.address,
-            ]);
+          hash = await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
+        });
+      });
+
+      describe("Runtime", function () {
+        it(`Runtime: Account creation`, async function () {
+          const {owner} = await loadFixture(baseFixture);
+          const {createAccount} = await loadFixture(fixture);
+          hash = await createAccount(0n, owner.account.address);
+        });
+
+        it(`Runtime: Native transfer`, async function () {
+          if (name === "Biconomy v2") {
+            // Biconomy V2 doesn't support runtime native transfers.
+            return this.skip();
+          }
+
+          const {owner, alice} = await loadFixture(baseFixture);
+          const {getAccountAddress, createAccount, encodeExecute} =
+            await loadFixture(fixture);
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await hre.network.provider.send("hardhat_setBalance", [
+            accountAddress,
+            toHex(parseEther("10000")),
+          ]);
+          await createAccount(0n, owner.account.address);
+
+          hash = await owner.sendTransaction({
+            to: accountAddress,
+            data: encodeExecute(alice.account.address, parseEther("0.5"), "0x"),
           });
         });
       });
