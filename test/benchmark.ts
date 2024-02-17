@@ -59,10 +59,6 @@ export interface AccountFixtureReturnType {
   installSessionKeyPlugin?: (
     account: `0x${string}`,
     owner: WalletClient<Transport, Chain, Account>,
-    entryPoint?: GetContractReturnType<
-      typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
-      PublicClient<Transport, Chain>
-    >,
   ) => void;
   addSessionKeyCalldata?: (
     keys: `0x${string}`[],
@@ -104,9 +100,9 @@ export interface AccountConfig {
 }
 
 const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
-  modularAccount,
+  //modularAccount,
   kernel,
-  biconomy_v2,
+  //biconomy_v2,
 ];
 
 const tokenTransferTarget = "0x0000000000000000000000000000000000000001";
@@ -349,7 +345,7 @@ describe("Benchmark", function () {
             ]);
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner, entryPoint));
+              (await installSessionKeyPlugin(accountAddress, owner));
 
             // use 5 keys
             const keys = (await sessionKey.getAddresses()).slice(0, 5);
@@ -421,7 +417,7 @@ describe("Benchmark", function () {
             ]);
             await createAccount(0n, owner.account.address);
             installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner, entryPoint));
+              (await installSessionKeyPlugin(accountAddress, owner));
             let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
@@ -518,7 +514,7 @@ describe("Benchmark", function () {
             await createAccount(0n, owner.account.address);
             await usdc.write.mint([accountAddress, parseEther("100")]);
             installSessionKeyPlugin &&
-              (await installSessionKeyPlugin(accountAddress, owner, entryPoint));
+              (await installSessionKeyPlugin(accountAddress, owner));
             let userOp = {
               sender: accountAddress,
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),

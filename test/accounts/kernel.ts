@@ -15,7 +15,6 @@ import {
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
-import { encode } from "punycode";
 
 async function fixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
@@ -65,17 +64,6 @@ async function fixture(): Promise<AccountFixtureReturnType> {
   
   // session key stuff
   let sessionKeyNonce = 1n;
-
-  /**
-   * enableData = 
-   *  0:20      - sessionkey addr (0xfffffffff....)
-   *  20:52     - merkle root (0xffffffff....)
-   *  52:58     - validafter (0x000)
-   *  58:64     - validuntil (0x000)
-   *  64:84     - paymaster (0xfffff)
-   *  84:116    - nonce
-   */
-  const enableDataInstallValidator = "0x" + "FF".repeat(64) + "00".repeat(12) + "FF".repeat(20) + toHex(sessionKeyNonce, {size:32}) as `0x${string}`;
 
   return {
     createAccount: async (salt, ownerAddress) => {
@@ -134,6 +122,8 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       );
     },
     installSessionKeyPlugin: async (accountAddr, owner) => {
+      console.log("in here, nonce: ", sessionKeyNonce)
+
       const sessionKeyValidator = getContract({
         address: KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
         abi: KERNEL_ARTIFACTS.KernelSessionKeyValidator.abi,
@@ -148,7 +138,12 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         walletClient,
       });
 
-      if (!entryPoint) { throw new Error("entryPoint is required"); }
+      const entryPoint = getContract({
+        address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.address,
+        abi: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
+        publicClient,
+        walletClient: owner,
+      });
 
       const executeSelector = getFunctionSelector(
           getAbiItem({
@@ -175,66 +170,104 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
 
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      const signature = await owner.signMessage({
-        message: {raw: userOpHash},
-      });
+
+      const validAfter = "0x" + "00".repeat(6) as `0x${string}`;
+      const validUntil = "0x" + "00".repeat(6) as `0x${string}`;
+      const mockSessionKey = "0x" + "FF".repeat(20) as `0x${string}`;
+      const mockMerkleRoot = "0x" + "FF".repeat(32)  as `0x${string}`;
+ 
+      const enableDataInstallValidator = encodePacked([
+        "address",
+        "bytes32",
+        "bytes6",
+        "bytes6",
+        "address",
+        "uint256",
+      ], [
+        mockSessionKey, // session key
+        mockMerkleRoot, // merkle root
+        validAfter, // validafter
+        validUntil, // validuntil
+        zeroAddress, // paymaster
+        sessionKeyNonce // nonce
+      ]);
 
       const enableDigest = keccak256(
         encodePacked([
           "bytes32",
           "bytes4",
-          "bytes32",
+          "bytes6",
+          "bytes6",
+          "address",
           "address",
           "bytes32"
         ], [
-          "0x3ce406685c1b3551d706d85a68afdaa49ac4e07b451ad9b8ff8b58c3ee964176",
-          executeSelector,
-          "0x" + "FF".repeat(32) as `0x${string}`,
-          accountAddr,
-          keccak256(encodePacked(["uint256"], [sessionKeyNonce]))
+          "0x3ce406685c1b3551d706d85a68afdaa49ac4e07b451ad9b8ff8b58c3ee964176", // struct_hash
+          executeSelector, // sig
+          validAfter, // valid after 
+          validUntil, // valid until
+          KERNEL_ARTIFACTS.KernelSessionKeyValidator.address, // validator addr
+          accountAddr, // executor
+          keccak256(encodePacked(["bytes"], [enableDataInstallValidator]))
         ])
       )
-
-      // console.log("enable digest: ", encodePacked([
-      //   "bytes32",
-      //   "bytes4",
-      //   "bytes32",
-      //   "address",
-      //   "bytes32"
-      // ], [
-      //   "0x3ce406685c1b3551d706d85a68afdaa49ac4e07b451ad9b8ff8b58c3ee964176",
-      //   executeSelector,
-      //   "0x" + "FF".repeat(32) as `0x${string}`,
-      //   accountAddr,
-      //   keccak256(encodePacked(["uint256"], [sessionKeyNonce]))
-      // ]));
-      // console.log("h(enable digest): ", enableDigest)
       
+      console.log("nonces: ", await sessionKeyValidator.read.nonces([owner.account.address]));
+
+      await sessionKeyValidator.write.enable([
+        enableDataInstallValidator])
+
+      await sessionKeyValidator.write.invalidateNonce([100n])
+      
+      console.log("nonces: ", await sessionKeyValidator.read.nonces([owner.account.address]));
+      console.log("nonces: ", await sessionKeyValidator.read.nonces([accountAddr]));
+
+      /**
+       * userop sig structure:
+       * 
+       * 0:4        - mode                0x00000002 for JIT
+       * 4:10       - validAfter
+       * 10:16      - validUntil
+       * 16:36      - validator addr
+       * 36:56      - executor            (accountAddr)
+       * 56:88      - enableDataLen (a)
+       * 88:88+a    - enableData
+       * 88+a:110+a - enableSigLen (b)
+       * 110+a:110+a+b - enableSig
+       */
       userOp.signature = encodePacked([
-        "bytes12",
+        "bytes4",
+        "bytes6",
+        "bytes6",
         "address",
         "address",
         "bytes",
+        "bytes",
         "bytes"
       ], [
-        "0x" + "00".repeat(12) as `0x${string}`,
+        "0x00000002",
+        validAfter,
+        validUntil,
         KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
         accountAddr,
         enableDataInstallValidator,
-        signature
+        await owner.signMessage({
+          message: {raw: enableDigest},
+        }),
+        await owner.signMessage({
+          message: {raw: userOpHash},
+        })
       ])
 
       console.log("userOp.signature: ", userOp.signature);
         
       sessionKeyNonce++;
 
-      const entryPoint = getContract({
-        address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.address,
-        abi: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
-        publicClient,
-        walletClient: owner,
-      });
+      console.log("is installed: ", await sessionKeyValidator.read.sessionData(['0x' + 'FF'.repeat(20) as `0x${string}`, accountAddr]));
 
+      await entryPoint.write.handleOps([[userOp], owner.account.address]);
+
+      console.log("nonces: ", await sessionKeyValidator.read.nonces([accountAddr]));
       console.log("is installed: ", await sessionKeyValidator.read.sessionData(['0x' + 'FF'.repeat(20) as `0x${string}`, accountAddr]));
     },
     addSessionKeyCalldata: (keys, target, tokens, spendLimit, account) => {
