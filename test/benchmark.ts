@@ -218,9 +218,24 @@ describe("Benchmark", function () {
         collectResult(this.currentTest!.title, name, tableEntries);
       });
 
+      async function fundAccount(
+        accountAddress: `0x${string}`,
+        usdc: GetContractReturnType<
+          typeof TOKEN_ARTIFACTS.USDC.abi,
+          PublicClient<Transport, Chain>,
+          WalletClient<Transport, Chain, Account>
+        >,
+      ) {
+        await hre.network.provider.send("hardhat_setBalance", [
+          accountAddress,
+          toHex(NATIVE_INITIAL_BALANCE),
+        ]);
+        await usdc.write.mint([accountAddress, USDC_INITIAL_BALANCE]);
+      }
+
       describe("User Operation", function () {
         it(`User Operation: Account creation`, async function () {
-          const {owner, beneficiary, entryPoint} =
+          const {owner, beneficiary, entryPoint, usdc} =
             await loadFixture(baseFixture);
           const {
             encodeExecute,
@@ -234,10 +249,7 @@ describe("Benchmark", function () {
             0n,
             owner.account.address,
           );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(NATIVE_INITIAL_BALANCE),
-          ]);
+          await fundAccount(accountAddress, usdc);
 
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
           const userOp = getUnsignedUserOp({
@@ -256,7 +268,7 @@ describe("Benchmark", function () {
         });
 
         it(`User Operation: Native transfer`, async function () {
-          const {owner, alice, beneficiary, entryPoint} =
+          const {owner, alice, beneficiary, entryPoint, usdc} =
             await loadFixture(baseFixture);
           const {
             createAccount,
@@ -270,10 +282,7 @@ describe("Benchmark", function () {
             0n,
             owner.account.address,
           );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(NATIVE_INITIAL_BALANCE),
-          ]);
+          await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
 
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
@@ -284,6 +293,51 @@ describe("Benchmark", function () {
               alice.account.address,
               NATIVE_TRANSFER_AMOUNT,
               "0x",
+            ),
+            getDummySignature,
+          });
+          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
+
+          hash = await entryPoint.write.handleOps([
+            [userOp],
+            beneficiary.account.address,
+          ]);
+        });
+
+        it(`User Operation: ERC-20 transfer`, async function () {
+          const {owner, alice, beneficiary, entryPoint, usdc} =
+            await loadFixture(baseFixture);
+          const {
+            createAccount,
+            encodeExecute,
+            getAccountAddress,
+            getDummySignature,
+            getOwnerSignature,
+          } = await loadFixture(fixture);
+
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await fundAccount(accountAddress, usdc);
+          await createAccount(0n, owner.account.address);
+
+          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          const userOp = getUnsignedUserOp({
+            sender: accountAddress,
+            nonce,
+            callData: encodeExecute(
+              usdc.address,
+              0n,
+              encodeFunctionData({
+                abi: [
+                  getAbiItem({
+                    abi: usdc.abi,
+                    name: "transfer",
+                  }),
+                ],
+                args: [alice.account.address, USDC_TRANSFER_AMOUNT],
+              }),
             ),
             getDummySignature,
           });
@@ -311,15 +365,11 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
-          // Create account
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(NATIVE_INITIAL_BALANCE),
-          ]);
+          await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
 
           installSessionKeyPlugin &&
@@ -368,15 +418,11 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
-          // Create account
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(NATIVE_INITIAL_BALANCE),
-          ]);
+          await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
 
           installSessionKeyPlugin &&
@@ -448,17 +494,12 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
-          // Create account
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(NATIVE_INITIAL_BALANCE),
-          ]);
+          await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
-          await usdc.write.mint([accountAddress, USDC_INITIAL_BALANCE]);
 
           installSessionKeyPlugin &&
             (await installSessionKeyPlugin(accountAddress, owner));
@@ -522,17 +563,15 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
-          const {owner, alice} = await loadFixture(baseFixture);
+          const {owner, alice, usdc} = await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeExecute} =
             await loadFixture(fixture);
+
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(NATIVE_INITIAL_BALANCE),
-          ]);
+          await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
 
           hash = await owner.sendTransaction({
@@ -554,16 +593,13 @@ describe("Benchmark", function () {
           const {owner, alice, usdc} = await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeExecute} =
             await loadFixture(fixture);
+
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
-          await hre.network.provider.send("hardhat_setBalance", [
-            accountAddress,
-            toHex(NATIVE_INITIAL_BALANCE),
-          ]);
+          await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
-          await usdc.write.mint([accountAddress, USDC_INITIAL_BALANCE]);
 
           hash = await owner.sendTransaction({
             to: accountAddress,
