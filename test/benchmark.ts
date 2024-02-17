@@ -1,4 +1,3 @@
-import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import hre from "hardhat";
 import {Context} from "mocha";
@@ -30,7 +29,7 @@ import {
   getL1Fee,
   getL1GasUsed,
 } from "./utils/fees";
-import {UserOperation} from "./utils/userOp";
+import {UserOperation, getUnsignedUserOp} from "./utils/userOp";
 import {collectResult, writeResults} from "./utils/writer";
 
 export interface AccountFixtureReturnType {
@@ -108,9 +107,10 @@ const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   biconomy_v2,
 ];
 
+const NATIVE_INITIAL_BALANCE = parseEther("10000");
 const NATIVE_TRANSFER_AMOUNT = parseEther("0.5");
 const USDC_DECIMALS = 6;
-const USDC_ORIGINAL_AMOUNT = parseUnits("100", USDC_DECIMALS);
+const USDC_INITIAL_BALANCE = parseUnits("100", USDC_DECIMALS);
 const USDC_TRANSFER_AMOUNT = parseUnits("50", USDC_DECIMALS);
 
 describe("Benchmark", function () {
@@ -229,32 +229,24 @@ describe("Benchmark", function () {
             getInitCode,
             getOwnerSignature,
           } = await loadFixture(fixture);
+
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("10000")),
+            toHex(NATIVE_INITIAL_BALANCE),
           ]);
 
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          const value = 0n;
-          const userOp = {
+          const userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
             initCode: getInitCode(0n, owner.account.address),
-            callData: encodeExecute(zeroAddress, value, "0x"),
-            callGasLimit: 1_000_000n,
-            verificationGasLimit: 2_000_000n,
-            preVerificationGas: 21_000n,
-            maxFeePerGas: 1n,
-            maxPriorityFeePerGas: 1n,
-            paymasterAndData: "0x" as `0x${string}`,
-            signature: "0x" as `0x${string}`,
-          };
-          userOp.signature = getDummySignature(userOp);
-          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+            callData: encodeExecute(zeroAddress, 0n, "0x"),
+            getDummySignature,
+          });
           userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
 
           hash = await entryPoint.write.handleOps([
@@ -279,20 +271,22 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
+          // Create account
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("100")),
+            toHex(NATIVE_INITIAL_BALANCE),
           ]);
           await createAccount(0n, owner.account.address);
+
           installSessionKeyPlugin &&
             (await installSessionKeyPlugin(accountAddress, owner));
+
           const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          const value = 0n;
-          let userOp = {
+          const userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
             initCode: "0x" as `0x${string}`,
@@ -303,16 +297,8 @@ describe("Benchmark", function () {
               USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
-            callGasLimit: 1_500_000n,
-            verificationGasLimit: 1_000_000n,
-            preVerificationGas: 21_000n,
-            maxFeePerGas: 1n,
-            maxPriorityFeePerGas: 1n,
-            paymasterAndData: "0x" as `0x${string}`,
-            signature: "0x" as `0x${string}`,
-          };
-          userOp.signature = getDummySignature(userOp);
-          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+            getDummySignature,
+          });
           userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
 
           hash = await entryPoint.write.handleOps([
@@ -343,21 +329,25 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
-          // setup
+          // Create account
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("100")),
+            toHex(NATIVE_INITIAL_BALANCE),
           ]);
           await createAccount(0n, owner.account.address);
+
           installSessionKeyPlugin &&
             (await installSessionKeyPlugin(accountAddress, owner));
-          let userOp = {
+
+          // Add session key
+          let nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          let userOp = getUnsignedUserOp({
             sender: accountAddress,
-            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            nonce,
             initCode: "0x" as `0x${string}`,
             callData: addSessionKeyCalldata(
               sessionKey.account.address,
@@ -366,47 +356,33 @@ describe("Benchmark", function () {
               USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
-            callGasLimit: 1_500_000n,
-            verificationGasLimit: 1_000_000n,
-            preVerificationGas: 21_000n,
-            maxFeePerGas: 1n,
-            maxPriorityFeePerGas: 1n,
-            paymasterAndData: "0x" as `0x${string}`,
-            signature: "0x" as `0x${string}`,
-          };
-          userOp.signature = getDummySignature(userOp);
-          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+            getDummySignature,
+          });
           userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
+
           await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
 
-          // test
-          userOp = {
+          nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          userOp = getUnsignedUserOp({
             sender: accountAddress,
-            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            nonce,
             initCode: "0x" as `0x${string}`,
             callData: useSessionKeyNativeTokenTransferCalldata(
               sessionKey.account.address,
               alice.account.address,
               USDC_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
-            callGasLimit: 5_000_000n,
-            verificationGasLimit: 2_000_000n,
-            preVerificationGas: 21_000n,
-            maxFeePerGas: 1n,
-            maxPriorityFeePerGas: 1n,
-            paymasterAndData: "0x" as `0x${string}`,
-            signature: "0x" as `0x${string}`,
-          };
-          userOp.signature = getDummySignature(userOp);
-          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+            getDummySignature,
+          });
           userOp.signature = await getSessionKeySignature(
             sessionKey,
             userOp,
             entryPoint,
           );
+
           hash = await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
@@ -435,22 +411,26 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
-          // setup
+          // Create account
           const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("100")),
+            toHex(NATIVE_INITIAL_BALANCE),
           ]);
           await createAccount(0n, owner.account.address);
-          await usdc.write.mint([accountAddress, USDC_ORIGINAL_AMOUNT]);
+          await usdc.write.mint([accountAddress, USDC_INITIAL_BALANCE]);
+
           installSessionKeyPlugin &&
             (await installSessionKeyPlugin(accountAddress, owner));
-          let userOp = {
+
+          // Add session key
+          let nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          let userOp = getUnsignedUserOp({
             sender: accountAddress,
-            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            nonce,
             initCode: "0x" as `0x${string}`,
             callData: addSessionKeyCalldata(
               sessionKey.account.address,
@@ -459,26 +439,19 @@ describe("Benchmark", function () {
               USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
-            callGasLimit: 1_500_000n,
-            verificationGasLimit: 4_000_000n,
-            preVerificationGas: 21_000n,
-            maxFeePerGas: 1n,
-            maxPriorityFeePerGas: 1n,
-            paymasterAndData: "0x" as `0x${string}`,
-            signature: "0x" as `0x${string}`,
-          };
-          userOp.signature = getDummySignature(userOp);
-          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+            getDummySignature,
+          });
           userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
+
           await entryPoint.write.handleOps([
             [userOp],
             beneficiary.account.address,
           ]);
 
-          // test
-          userOp = {
+          nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
+          userOp = getUnsignedUserOp({
             sender: accountAddress,
-            nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
+            nonce,
             initCode: "0x" as `0x${string}`,
             callData: useSessionKeyERC20TransferCalldata(
               usdc,
@@ -486,16 +459,8 @@ describe("Benchmark", function () {
               alice.account.address,
               USDC_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
-            callGasLimit: 5_000_000n,
-            verificationGasLimit: 2_000_000n,
-            preVerificationGas: 21_000n,
-            maxFeePerGas: 1n,
-            maxPriorityFeePerGas: 1n,
-            paymasterAndData: "0x" as `0x${string}`,
-            signature: "0x" as `0x${string}`,
-          };
-          userOp.signature = getDummySignature(userOp);
-          userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+            getDummySignature,
+          });
           userOp.signature = await getSessionKeySignature(
             sessionKey,
             userOp,
@@ -531,7 +496,7 @@ describe("Benchmark", function () {
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("10000")),
+            toHex(NATIVE_INITIAL_BALANCE),
           ]);
           await createAccount(0n, owner.account.address);
 
@@ -560,10 +525,10 @@ describe("Benchmark", function () {
           );
           await hre.network.provider.send("hardhat_setBalance", [
             accountAddress,
-            toHex(parseEther("10000")),
+            toHex(NATIVE_INITIAL_BALANCE),
           ]);
           await createAccount(0n, owner.account.address);
-          await usdc.write.mint([accountAddress, USDC_ORIGINAL_AMOUNT]);
+          await usdc.write.mint([accountAddress, USDC_INITIAL_BALANCE]);
 
           hash = await owner.sendTransaction({
             to: accountAddress,

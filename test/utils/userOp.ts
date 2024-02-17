@@ -1,4 +1,6 @@
+import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import {encodeAbiParameters} from "viem";
+import {AccountFixtureReturnType} from "../benchmark";
 
 export interface UserOperation {
   sender: `0x${string}`;
@@ -43,4 +45,37 @@ export function encodeUserOp(userOp: UserOperation) {
       userOp.signature,
     ],
   );
+}
+
+interface GetUnsignedUserOpInput {
+  sender: `0x${string}`;
+  nonce: bigint;
+  initCode: `0x${string}`;
+  callData: `0x${string}`;
+  getDummySignature: AccountFixtureReturnType["getDummySignature"];
+}
+
+export function getUnsignedUserOp({
+  sender,
+  nonce,
+  initCode,
+  callData,
+  getDummySignature,
+}: GetUnsignedUserOpInput) {
+  const userOp = {
+    sender,
+    nonce,
+    initCode,
+    callData,
+    callGasLimit: 1_000_000n,
+    verificationGasLimit: 2_000_000n,
+    preVerificationGas: 21_000n,
+    maxFeePerGas: 1n,
+    maxPriorityFeePerGas: 1n,
+    paymasterAndData: "0x" as `0x${string}`,
+    signature: "0x" as `0x${string}`,
+  };
+  userOp.signature = getDummySignature(userOp);
+  userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+  return userOp;
 }
