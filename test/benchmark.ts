@@ -135,13 +135,6 @@ describe("Benchmark", function () {
       walletClient: owner,
     });
 
-    const usdt = getContract({
-      address: TOKEN_ARTIFACTS.USDT.address,
-      abi: TOKEN_ARTIFACTS.USDC.abi,
-      publicClient,
-      walletClient: owner,
-    });
-
     return {
       alice,
       beneficiary,
@@ -149,7 +142,6 @@ describe("Benchmark", function () {
       owner,
       publicClient,
       usdc,
-      usdt,
       sessionKey,
     };
   }
@@ -218,8 +210,6 @@ describe("Benchmark", function () {
         }
 
         collectResult(this.currentTest!.title, name, tableEntries);
-
-        collectResult(this.currentTest!.title, name, tableEntries);
       });
 
       describe("Runtime", function () {
@@ -232,7 +222,7 @@ describe("Benchmark", function () {
         it(`Runtime: Native transfer`, async function () {
           if (name === "Biconomy v2") {
             // Biconomy V2 doesn't support runtime native transfers.
-            return;
+            return this.skip();
           }
 
           const {owner, alice} = await loadFixture(baseFixture);
@@ -312,7 +302,10 @@ describe("Benchmark", function () {
               installSessionKeyPlugin,
               addSessionKeyCalldata,
             } = await loadFixture(fixture);
-            if (!addSessionKeyCalldata) this.skip();
+
+            if (!addSessionKeyCalldata) {
+              return this.skip();
+            }
 
             const accountAddress = await getAccountAddress(
               0n,
@@ -332,8 +325,8 @@ describe("Benchmark", function () {
               nonce,
               initCode: "0x" as `0x${string}`,
               callData: addSessionKeyCalldata(
-                sessionKey.account.address!,
-                alice.account.address!,
+                sessionKey.account.address,
+                alice.account.address,
                 [usdc],
                 tokenTransferAmt,
                 accountAddress,
@@ -373,12 +366,14 @@ describe("Benchmark", function () {
               useSessionKeyNativeTokenTransferCalldata,
               getSessionKeySignature,
             } = await loadFixture(fixture);
+
             if (
               !addSessionKeyCalldata ||
               !useSessionKeyNativeTokenTransferCalldata ||
               !getSessionKeySignature
-            )
-              this.skip();
+            ) {
+              return this.skip();
+            }
 
             // setup
             const accountAddress = await getAccountAddress(
@@ -397,7 +392,7 @@ describe("Benchmark", function () {
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
               callData: addSessionKeyCalldata(
-                sessionKey.account.address!,
+                sessionKey.account.address,
                 alice.account.address,
                 [usdc],
                 tokenTransferAmt,
@@ -429,8 +424,8 @@ describe("Benchmark", function () {
               nonce: await entryPoint.read.getNonce([accountAddress, 0n]),
               initCode: "0x" as `0x${string}`,
               callData: useSessionKeyNativeTokenTransferCalldata(
-                sessionKey.account.address!,
-                alice.account.address!,
+                sessionKey.account.address,
+                alice.account.address,
                 tokenTransferAmt,
               ), // key 3 = sessionKey.account.address
               callGasLimit: 5_000_000n,
@@ -472,8 +467,9 @@ describe("Benchmark", function () {
               !addSessionKeyCalldata ||
               !useSessionKeyERC20TransferCalldata ||
               !getSessionKeySignature
-            )
-              this.skip();
+            ) {
+              return this.skip();
+            }
 
             // setup
             const accountAddress = await getAccountAddress(
@@ -494,7 +490,7 @@ describe("Benchmark", function () {
               initCode: "0x" as `0x${string}`,
               callData: addSessionKeyCalldata(
                 sessionKey.account.address,
-                alice.account.address!,
+                alice.account.address,
                 [usdc],
                 tokenTransferAmt,
                 accountAddress,
@@ -526,8 +522,8 @@ describe("Benchmark", function () {
               initCode: "0x" as `0x${string}`,
               callData: useSessionKeyERC20TransferCalldata(
                 usdc,
-                sessionKey.account.address!,
-                alice.account.address!,
+                sessionKey.account.address,
+                alice.account.address,
                 tokenTransferAmt,
               ), // key 3 = sessionKey.account.address
               callGasLimit: 5_000_000n,
@@ -541,7 +537,7 @@ describe("Benchmark", function () {
             userOp.signature = getDummySignature(userOp);
             userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
             userOp.signature = await getSessionKeySignature(
-              sessionKey!,
+              sessionKey,
               userOp,
               entryPoint,
             );
