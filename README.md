@@ -10,8 +10,8 @@ The L1 fee calculations are done following the formula and constants specified i
 
 There are two different categories of benchmarks measured in this test: **User Operation** and **Runtime**.
 
-- **User Operation**: Measuring the cost of user operations are tricky because each bundler may calculate pre-verification gas differently and the costs may differ based on the number of user operations in the bundle. In this test, the on-chain cost for a bundler to execute the user operation in a bundle of size 1 is measured, to present a lower-bound fee required for the user operation to land in an exclusive bundle. In other words, fees are calculated based on the transaction receipt and the serialized signed transaction for `entryPoint.handleUserOp([userOp])`. As multi-user-op bundles become more prevalent, we can expect actual fees to undercut the data presented here.
-- **Runtime**: Runtime transactions are defined as those performed outside of the user operation flow, with the owner key interacting directly with the account factory or account, akin to the way you might use MetaMask today to interact with smart contracts. For this flow, fees are calculated based on the transaction's receipt and the serialized signed transaction.
+- **User Operation**: Measuring the cost of user operations are tricky because each bundler may calculate pre-verification gas differently and the costs may differ based on the number of user operations in the bundle. In this test, the on-chain cost for a bundler to execute the user operation in a bundle of size 1 is measured, to present a lower-bound fee required for the user operation to land in an exclusive bundle. In other words, fees are calculated based on the transaction receipt and the serialized signed transaction (legacy transaction type) for `entryPoint.handleUserOp([userOp])`. As multi-user-op bundles become more prevalent, we can expect actual fees to undercut the data presented here.
+- **Runtime**: Runtime transactions are defined as those performed outside of the user operation flow, with the owner key interacting directly with the account factory or account, akin to the way you might use MetaMask today to interact with smart contracts. For this flow, fees are calculated based on the transaction's receipt and the serialized signed transaction (legacy transaction type).
 
 ## Results
 
@@ -22,7 +22,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Sat, 17 Feb 2024 20:33:29 GMT
+Last run: Sat, 17 Feb 2024 21:03:13 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) | `0.005` |
@@ -46,34 +46,34 @@ Last run: Sat, 17 Feb 2024 20:33:29 GMT
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
-| L2 gas used     |        `365416` |           `-` |      `178236` |
+| L2 gas used     |        `365344` |           `-` |      `178224` |
 | L2 fee (ETH)    |   `0.000001827` |           `-` | `0.000000891` |
-| L1 gas used     |         `11424` |           `-` |        `8532` |
-| L1 fee (ETH)    |   `0.000328189` |           `-` | `0.000245107` |
-| Total fee (ETH) |   `0.000330016` |           `-` | `0.000245998` |
-| Total fee (USD) |         `$0.83` | `Unsupported` |       `$0.61` |
+| L1 gas used     |         `11352` |           `-` |        `8520` |
+| L1 fee (ETH)    |   `0.000326120` |           `-` | `0.000244763` |
+| Total fee (ETH) |   `0.000327947` |           `-` | `0.000245654` |
+| Total fee (USD) |         `$0.82` | `Unsupported` |       `$0.61` |
 
 ### User Operation: Session key native transfer
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
-| L2 gas used     |        `163716` |           `-` |           `-` |
-| L2 fee (ETH)    |   `0.000000819` |           `-` |           `-` |
-| L1 gas used     |          `8128` |           `-` |           `-` |
-| L1 fee (ETH)    |   `0.000233501` |           `-` |           `-` |
-| Total fee (ETH) |   `0.000234320` |           `-` |           `-` |
-| Total fee (USD) |         `$0.59` | `Unsupported` | `Unsupported` |
+| L2 gas used     |        `163692` |           `-` |           `-` |
+| L2 fee (ETH)    |   `0.000000818` |           `-` |           `-` |
+| L1 gas used     |          `8104` |           `-` |           `-` |
+| L1 fee (ETH)    |   `0.000232812` |           `-` |           `-` |
+| Total fee (ETH) |   `0.000233630` |           `-` |           `-` |
+| Total fee (USD) |         `$0.58` | `Unsupported` | `Unsupported` |
 
 ### User Operation: Session key ERC-20 transfer
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
 | :-------------- | --------------: | ------------: | ------------: |
-| L2 gas used     |        `194966` |           `-` |      `147071` |
+| L2 gas used     |        `194942` |           `-` |      `147011` |
 | L2 fee (ETH)    |   `0.000000975` |           `-` | `0.000000735` |
-| L1 gas used     |          `8812` |           `-` |       `11464` |
-| L1 fee (ETH)    |   `0.000253151` |           `-` | `0.000329338` |
-| Total fee (ETH) |   `0.000254126` |           `-` | `0.000330073` |
-| Total fee (USD) |         `$0.64` | `Unsupported` |       `$0.83` |
+| L1 gas used     |          `8788` |           `-` |       `11404` |
+| L1 fee (ETH)    |   `0.000252462` |           `-` | `0.000327614` |
+| Total fee (ETH) |   `0.000253436` |           `-` | `0.000328349` |
+| Total fee (USD) |         `$0.63` | `Unsupported` |       `$0.82` |
 
 ### Runtime: Account creation
 
@@ -96,6 +96,17 @@ Last run: Sat, 17 Feb 2024 20:33:29 GMT
 | L1 fee (ETH)    |   `0.000079519` | `0.000083311` |           `-` |
 | Total fee (ETH) |   `0.000079771` | `0.000083508` |           `-` |
 | Total fee (USD) |         `$0.20` |       `$0.21` | `Unsupported` |
+
+### Runtime: ERC-20 transfer
+
+|                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |
+| :-------------- | --------------: | ------------: | ------------: |
+| L2 gas used     |         `74693` |       `63284` |           `-` |
+| L2 fee (ETH)    |   `0.000000373` | `0.000000316` |           `-` |
+| L1 gas used     |          `3444` |        `3588` |           `-` |
+| L1 fee (ETH)    |   `0.000098939` | `0.000103076` |           `-` |
+| Total fee (ETH) |   `0.000099313` | `0.000103392` |           `-` |
+| Total fee (USD) |         `$0.25` |       `$0.26` | `Unsupported` |
 
 <!-- /BENCHMARK_RESULTS -->
 
