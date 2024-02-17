@@ -9,8 +9,11 @@ import {
   PublicClient,
   Transport,
   WalletClient,
+  encodeFunctionData,
+  getAbiItem,
   getContract,
   parseEther,
+  parseUnits,
   serializeTransaction,
   toHex,
   zeroAddress,
@@ -105,7 +108,10 @@ const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   biconomy_v2,
 ];
 
-const tokenTransferAmt = parseEther("1");
+const NATIVE_TRANSFER_AMOUNT = parseEther("0.5");
+const USDC_DECIMALS = 6;
+const USDC_ORIGINAL_AMOUNT = parseUnits("100", USDC_DECIMALS);
+const USDC_TRANSFER_AMOUNT = parseUnits("50", USDC_DECIMALS);
 
 describe("Benchmark", function () {
   async function baseFixture() {
@@ -294,7 +300,7 @@ describe("Benchmark", function () {
               sessionKey.account.address,
               alice.account.address,
               [usdc],
-              tokenTransferAmt,
+              USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
             callGasLimit: 1_500_000n,
@@ -357,7 +363,7 @@ describe("Benchmark", function () {
               sessionKey.account.address,
               alice.account.address,
               [usdc],
-              tokenTransferAmt,
+              USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
             callGasLimit: 1_500_000n,
@@ -384,7 +390,7 @@ describe("Benchmark", function () {
             callData: useSessionKeyNativeTokenTransferCalldata(
               sessionKey.account.address,
               alice.account.address,
-              tokenTransferAmt,
+              USDC_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
             callGasLimit: 5_000_000n,
             verificationGasLimit: 2_000_000n,
@@ -439,7 +445,7 @@ describe("Benchmark", function () {
             toHex(parseEther("100")),
           ]);
           await createAccount(0n, owner.account.address);
-          await usdc.write.mint([accountAddress, parseEther("100")]);
+          await usdc.write.mint([accountAddress, USDC_ORIGINAL_AMOUNT]);
           installSessionKeyPlugin &&
             (await installSessionKeyPlugin(accountAddress, owner));
           let userOp = {
@@ -450,7 +456,7 @@ describe("Benchmark", function () {
               sessionKey.account.address,
               alice.account.address,
               [usdc],
-              tokenTransferAmt,
+              USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
             callGasLimit: 1_500_000n,
@@ -478,7 +484,7 @@ describe("Benchmark", function () {
               usdc,
               sessionKey.account.address,
               alice.account.address,
-              tokenTransferAmt,
+              USDC_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
             callGasLimit: 5_000_000n,
             verificationGasLimit: 2_000_000n,
@@ -531,7 +537,49 @@ describe("Benchmark", function () {
 
           hash = await owner.sendTransaction({
             to: accountAddress,
-            data: encodeExecute(alice.account.address, parseEther("0.5"), "0x"),
+            data: encodeExecute(
+              alice.account.address,
+              NATIVE_TRANSFER_AMOUNT,
+              "0x",
+            ),
+          });
+        });
+
+        it(`Runtime: ERC-20 transfer`, async function () {
+          if (name === "Biconomy v2") {
+            // Biconomy V2 doesn't support runtime ERC-20 transfers.
+            return this.skip();
+          }
+
+          const {owner, alice, usdc} = await loadFixture(baseFixture);
+          const {getAccountAddress, createAccount, encodeExecute} =
+            await loadFixture(fixture);
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await hre.network.provider.send("hardhat_setBalance", [
+            accountAddress,
+            toHex(parseEther("10000")),
+          ]);
+          await createAccount(0n, owner.account.address);
+          await usdc.write.mint([accountAddress, USDC_ORIGINAL_AMOUNT]);
+
+          hash = await owner.sendTransaction({
+            to: accountAddress,
+            data: encodeExecute(
+              usdc.address,
+              0n,
+              encodeFunctionData({
+                abi: [
+                  getAbiItem({
+                    abi: usdc.abi,
+                    name: "transfer",
+                  }),
+                ],
+                args: [alice.account.address, USDC_TRANSFER_AMOUNT],
+              }),
+            ),
           });
         });
       });
