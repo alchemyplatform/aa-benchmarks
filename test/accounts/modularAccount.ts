@@ -41,7 +41,18 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         message: {raw: userOpHash},
       });
     },
-    encodeExecute: (to, value, data) => {
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
       return encodeFunctionData({
         abi: [
           getAbiItem({

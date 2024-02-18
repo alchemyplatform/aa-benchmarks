@@ -80,7 +80,18 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         [signature, BICONOMY_V2_ARTIFACTS.EcdsaOwnershipRegistryModule.address],
       );
     },
-    encodeExecute: (to, value, data) => {
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
       return encodeFunctionData({
         abi: [
           getAbiItem({

@@ -77,7 +77,18 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       });
       return encodePacked(["bytes4", "bytes"], ["0x00000000", signature]);
     },
-    encodeExecute: (to, value, data) => {
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: KERNEL_ARTIFACTS.Kernel.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data, 0], // Operation.CALL = 0
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
       return encodeFunctionData({
         abi: [
           getAbiItem({
