@@ -21,6 +21,7 @@ import {L2_GAS_PRICE} from "../hardhat.config";
 import {biconomy_v2} from "./accounts/biconomy-v2";
 import {kernel} from "./accounts/kernel";
 import {modularAccount} from "./accounts/modularAccount";
+import {safe} from "./accounts/safe";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 import {
@@ -49,11 +50,18 @@ export interface AccountFixtureReturnType {
       PublicClient<Transport, Chain>
     >,
   ) => Promise<`0x${string}`>;
-  encodeExecute: (
+  encodeUserOpExecute: (
     to: `0x${string}`,
     value: bigint,
     data: `0x${string}`,
   ) => `0x${string}`;
+  encodeRuntimeExecute: (
+    to: `0x${string}`,
+    value: bigint,
+    data: `0x${string}`,
+    owner?: WalletClient<Transport, Chain, Account>,
+    accountAddress?: `0x${string}`,
+  ) => Promise<`0x${string}`>;
   getDummySignature: (userOp: UserOperation) => `0x${string}`;
   getInitCode: (salt: bigint, ownerAddress: `0x${string}`) => `0x${string}`;
 
@@ -101,17 +109,18 @@ export interface AccountConfig {
   fixture: () => Promise<AccountFixtureReturnType>;
 }
 
-const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
-  modularAccount,
-  kernel,
-  biconomy_v2,
-];
-
 const NATIVE_INITIAL_BALANCE = parseEther("10000");
 const NATIVE_TRANSFER_AMOUNT = parseEther("0.5");
 const USDC_DECIMALS = 6;
 const USDC_INITIAL_BALANCE = parseUnits("100", USDC_DECIMALS);
 const USDC_TRANSFER_AMOUNT = parseUnits("50", USDC_DECIMALS);
+
+const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
+  modularAccount,
+  kernel,
+  biconomy_v2,
+  safe,
+];
 
 describe("Benchmark", function () {
   async function baseFixture() {
@@ -238,7 +247,7 @@ describe("Benchmark", function () {
           const {owner, beneficiary, entryPoint, usdc} =
             await loadFixture(baseFixture);
           const {
-            encodeExecute,
+            encodeUserOpExecute,
             getAccountAddress,
             getDummySignature,
             getInitCode,
@@ -256,7 +265,7 @@ describe("Benchmark", function () {
             sender: accountAddress,
             nonce,
             initCode: getInitCode(0n, owner.account.address),
-            callData: encodeExecute(zeroAddress, 0n, "0x"),
+            callData: encodeUserOpExecute(zeroAddress, 0n, "0x"),
             getDummySignature,
           });
           userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
@@ -272,7 +281,7 @@ describe("Benchmark", function () {
             await loadFixture(baseFixture);
           const {
             createAccount,
-            encodeExecute,
+            encodeUserOpExecute,
             getAccountAddress,
             getDummySignature,
             getOwnerSignature,
@@ -289,7 +298,7 @@ describe("Benchmark", function () {
           const userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
-            callData: encodeExecute(
+            callData: encodeUserOpExecute(
               alice.account.address,
               NATIVE_TRANSFER_AMOUNT,
               "0x",
@@ -309,7 +318,7 @@ describe("Benchmark", function () {
             await loadFixture(baseFixture);
           const {
             createAccount,
-            encodeExecute,
+            encodeUserOpExecute,
             getAccountAddress,
             getDummySignature,
             getOwnerSignature,
@@ -326,7 +335,7 @@ describe("Benchmark", function () {
           const userOp = getUnsignedUserOp({
             sender: accountAddress,
             nonce,
-            callData: encodeExecute(
+            callData: encodeUserOpExecute(
               usdc.address,
               0n,
               encodeFunctionData({
@@ -564,7 +573,7 @@ describe("Benchmark", function () {
           }
 
           const {owner, alice, usdc} = await loadFixture(baseFixture);
-          const {getAccountAddress, createAccount, encodeExecute} =
+          const {getAccountAddress, createAccount, encodeRuntimeExecute} =
             await loadFixture(fixture);
 
           const accountAddress = await getAccountAddress(
@@ -574,13 +583,17 @@ describe("Benchmark", function () {
           await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
 
+          const data = await encodeRuntimeExecute(
+            alice.account.address,
+            NATIVE_TRANSFER_AMOUNT,
+            "0x",
+            owner,
+            accountAddress,
+          );
+
           hash = await owner.sendTransaction({
             to: accountAddress,
-            data: encodeExecute(
-              alice.account.address,
-              NATIVE_TRANSFER_AMOUNT,
-              "0x",
-            ),
+            data,
           });
         });
 
@@ -591,7 +604,7 @@ describe("Benchmark", function () {
           }
 
           const {owner, alice, usdc} = await loadFixture(baseFixture);
-          const {getAccountAddress, createAccount, encodeExecute} =
+          const {getAccountAddress, createAccount, encodeRuntimeExecute} =
             await loadFixture(fixture);
 
           const accountAddress = await getAccountAddress(
@@ -601,21 +614,24 @@ describe("Benchmark", function () {
           await fundAccount(accountAddress, usdc);
           await createAccount(0n, owner.account.address);
 
+          const data = await encodeRuntimeExecute(
+            usdc.address,
+            0n,
+            encodeFunctionData({
+              abi: [
+                getAbiItem({
+                  abi: usdc.abi,
+                  name: "transfer",
+                }),
+              ],
+              args: [alice.account.address, USDC_TRANSFER_AMOUNT],
+            }),
+            owner,
+            accountAddress,
+          );
           hash = await owner.sendTransaction({
             to: accountAddress,
-            data: encodeExecute(
-              usdc.address,
-              0n,
-              encodeFunctionData({
-                abi: [
-                  getAbiItem({
-                    abi: usdc.abi,
-                    name: "transfer",
-                  }),
-                ],
-                args: [alice.account.address, USDC_TRANSFER_AMOUNT],
-              }),
-            ),
+            data,
           });
         });
       });
