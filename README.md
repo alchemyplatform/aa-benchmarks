@@ -22,7 +22,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Sun, 18 Feb 2024 22:47:45 GMT
+Last run: Sun, 18 Feb 2024 23:23:21 GMT
 | Option              |   Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) | `0.005` |
@@ -79,12 +79,12 @@ Last run: Sun, 18 Feb 2024 22:47:45 GMT
 
 |                 | Modular Account |   Kernel v2.1 |   Biconomy v2 |          Safe |
 | :-------------- | --------------: | ------------: | ------------: | ------------: |
-| L2 gas used     |        `163692` |           `-` |           `-` |           `-` |
-| L2 fee (ETH)    |   `0.000000818` |           `-` |           `-` |           `-` |
-| L1 gas used     |          `8104` |           `-` |           `-` |           `-` |
-| L1 fee (ETH)    |   `0.000232812` |           `-` |           `-` |           `-` |
-| Total fee (ETH) |   `0.000233630` |           `-` |           `-` |           `-` |
-| Total fee (USD) |         `$0.58` | `Unsupported` | `Unsupported` | `Unsupported` |
+| L2 gas used     |        `163716` |           `-` |           `-` |           `-` |
+| L2 fee (ETH)    |   `0.000000819` |           `-` |           `-` |           `-` |
+| L1 gas used     |          `8128` |           `-` |           `-` |           `-` |
+| L1 fee (ETH)    |   `0.000233501` |           `-` |           `-` |           `-` |
+| Total fee (ETH) |   `0.000234320` |           `-` |           `-` |           `-` |
+| Total fee (USD) |         `$0.59` | `Unsupported` | `Unsupported` | `Unsupported` |
 
 ### User Operation: Session key ERC-20 transfer
 

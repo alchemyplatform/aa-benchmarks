@@ -1,4 +1,5 @@
 import {loadFixture} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
+import {expect} from "chai";
 import hre from "hardhat";
 import {Context} from "mocha";
 import {
@@ -244,7 +245,7 @@ describe("Benchmark", function () {
 
       describe("User Operation", function () {
         it(`User Operation: Account creation`, async function () {
-          const {owner, beneficiary, entryPoint, usdc} =
+          const {owner, beneficiary, entryPoint, usdc, publicClient} =
             await loadFixture(baseFixture);
           const {
             encodeUserOpExecute,
@@ -274,10 +275,16 @@ describe("Benchmark", function () {
             [userOp],
             beneficiary.account.address,
           ]);
+
+          // Check that the account was created
+          const code = await publicClient.getBytecode({
+            address: accountAddress,
+          });
+          expect(code).to.not.equal("0x");
         });
 
         it(`User Operation: Native transfer`, async function () {
-          const {owner, alice, beneficiary, entryPoint, usdc} =
+          const {owner, alice, beneficiary, entryPoint, usdc, publicClient} =
             await loadFixture(baseFixture);
           const {
             createAccount,
@@ -311,6 +318,14 @@ describe("Benchmark", function () {
             [userOp],
             beneficiary.account.address,
           ]);
+
+          // Check that the transfer was successful
+          const aliceBalance = await publicClient.getBalance({
+            address: alice.account.address,
+          });
+          expect(aliceBalance).to.equal(
+            NATIVE_INITIAL_BALANCE + NATIVE_TRANSFER_AMOUNT,
+          );
         });
 
         it(`User Operation: ERC-20 transfer`, async function () {
@@ -356,6 +371,12 @@ describe("Benchmark", function () {
             [userOp],
             beneficiary.account.address,
           ]);
+
+          // Check that the ERC-20 transfer was successful
+          const aliceBalance = await usdc.read.balanceOf([
+            alice.account.address,
+          ]);
+          expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
         });
 
         it("User Operation: Session key creation", async function () {
@@ -406,8 +427,15 @@ describe("Benchmark", function () {
         });
 
         it("User Operation: Session key native transfer", async function () {
-          const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
-            await loadFixture(baseFixture);
+          const {
+            alice,
+            beneficiary,
+            entryPoint,
+            owner,
+            publicClient,
+            sessionKey,
+            usdc,
+          } = await loadFixture(baseFixture);
           const {
             getAccountAddress,
             getDummySignature,
@@ -445,8 +473,8 @@ describe("Benchmark", function () {
             callData: addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
-              [usdc],
-              USDC_TRANSFER_AMOUNT,
+              [],
+              NATIVE_TRANSFER_AMOUNT,
               accountAddress,
             ),
             getDummySignature,
@@ -465,7 +493,7 @@ describe("Benchmark", function () {
             callData: useSessionKeyNativeTokenTransferCalldata(
               sessionKey.account.address,
               alice.account.address,
-              USDC_TRANSFER_AMOUNT,
+              NATIVE_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
             getDummySignature,
           });
@@ -479,6 +507,14 @@ describe("Benchmark", function () {
             [userOp],
             beneficiary.account.address,
           ]);
+
+          // Check that the transfer was successful
+          const aliceBalance = await publicClient.getBalance({
+            address: alice.account.address,
+          });
+          expect(aliceBalance).to.equal(
+            NATIVE_INITIAL_BALANCE + NATIVE_TRANSFER_AMOUNT,
+          );
         });
 
         it("User Operation: Session key ERC-20 transfer", async function () {
@@ -556,14 +592,30 @@ describe("Benchmark", function () {
             [userOp],
             beneficiary.account.address,
           ]);
+
+          // Check that the ERC-20 transfer was successful
+          const aliceBalance = await usdc.read.balanceOf([
+            alice.account.address,
+          ]);
+          expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
         });
       });
 
       describe("Runtime", function () {
         it(`Runtime: Account creation`, async function () {
-          const {owner} = await loadFixture(baseFixture);
-          const {createAccount} = await loadFixture(fixture);
+          const {owner, publicClient} = await loadFixture(baseFixture);
+          const {createAccount, getAccountAddress} = await loadFixture(fixture);
           hash = await createAccount(0n, owner.account.address);
+
+          // Check that the account was created
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          const code = await publicClient.getBytecode({
+            address: accountAddress,
+          });
+          expect(code).to.not.equal("0x");
         });
 
         it(`Runtime: Native transfer`, async function () {
@@ -572,7 +624,8 @@ describe("Benchmark", function () {
             return this.skip();
           }
 
-          const {owner, alice, usdc} = await loadFixture(baseFixture);
+          const {owner, alice, usdc, publicClient} =
+            await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
             await loadFixture(fixture);
 
@@ -595,6 +648,14 @@ describe("Benchmark", function () {
             to: accountAddress,
             data,
           });
+
+          // Check that the transfer was successful
+          const aliceBalance = await publicClient.getBalance({
+            address: alice.account.address,
+          });
+          expect(aliceBalance).to.equal(
+            NATIVE_INITIAL_BALANCE + NATIVE_TRANSFER_AMOUNT,
+          );
         });
 
         it(`Runtime: ERC-20 transfer`, async function () {
@@ -629,10 +690,17 @@ describe("Benchmark", function () {
             owner,
             accountAddress,
           );
+
           hash = await owner.sendTransaction({
             to: accountAddress,
             data,
           });
+
+          // Check that the ERC-20 transfer was successful
+          const aliceBalance = await usdc.read.balanceOf([
+            alice.account.address,
+          ]);
+          expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
         });
       });
     });
