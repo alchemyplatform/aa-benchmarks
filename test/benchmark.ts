@@ -21,6 +21,7 @@ import {
 import {L2_GAS_PRICE} from "../hardhat.config";
 import {biconomy_v2} from "./accounts/biconomy-v2";
 import {kernel} from "./accounts/kernel";
+import {lightAccount} from "./accounts/lightAccount";
 import {modularAccount} from "./accounts/modularAccount";
 import {safe} from "./accounts/safe";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
@@ -117,9 +118,10 @@ const USDC_INITIAL_BALANCE = parseUnits("100", USDC_DECIMALS);
 const USDC_TRANSFER_AMOUNT = parseUnits("50", USDC_DECIMALS);
 
 const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
-  modularAccount,
-  kernel,
   biconomy_v2,
+  kernel,
+  lightAccount,
+  modularAccount,
   safe,
 ];
 
