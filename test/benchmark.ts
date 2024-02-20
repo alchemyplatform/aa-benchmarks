@@ -19,11 +19,7 @@ import {
   zeroAddress,
 } from "viem";
 import {L2_GAS_PRICE} from "../hardhat.config";
-import {biconomy_v2} from "./accounts/biconomy-v2";
-import {kernel} from "./accounts/kernel";
-import {lightAccount} from "./accounts/lightAccount";
-import {modularAccount} from "./accounts/modularAccount";
-import {safe} from "./accounts/safe";
+import {ACCOUNTS_TO_BENCHMARK} from "./accounts";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 import {
@@ -108,7 +104,7 @@ export interface AccountFixtureReturnType {
 
 export interface AccountConfig {
   name: string;
-  fixture: () => Promise<AccountFixtureReturnType>;
+  accountFixture: () => Promise<AccountFixtureReturnType>;
 }
 
 const NATIVE_INITIAL_BALANCE = parseEther("10000");
@@ -116,14 +112,6 @@ const NATIVE_TRANSFER_AMOUNT = parseEther("0.5");
 const USDC_DECIMALS = 6;
 const USDC_INITIAL_BALANCE = parseUnits("100", USDC_DECIMALS);
 const USDC_TRANSFER_AMOUNT = parseUnits("50", USDC_DECIMALS);
-
-const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
-  modularAccount,
-  biconomy_v2,
-  kernel,
-  safe,
-  lightAccount,
-];
 
 describe("Benchmark", function () {
   async function baseFixture() {
@@ -168,7 +156,7 @@ describe("Benchmark", function () {
     await writeResults();
   });
 
-  ACCOUNTS_TO_BENCHMARK.forEach(({name, fixture}) => {
+  ACCOUNTS_TO_BENCHMARK.forEach(({name, accountFixture}) => {
     describe(name, function () {
       let hash: `0x${string}` | undefined;
 
@@ -255,7 +243,7 @@ describe("Benchmark", function () {
             getDummySignature,
             getInitCode,
             getOwnerSignature,
-          } = await loadFixture(fixture);
+          } = await loadFixture(accountFixture);
 
           const accountAddress = await getAccountAddress(
             0n,
@@ -294,7 +282,7 @@ describe("Benchmark", function () {
             getAccountAddress,
             getDummySignature,
             getOwnerSignature,
-          } = await loadFixture(fixture);
+          } = await loadFixture(accountFixture);
 
           const accountAddress = await getAccountAddress(
             0n,
@@ -339,7 +327,7 @@ describe("Benchmark", function () {
             getAccountAddress,
             getDummySignature,
             getOwnerSignature,
-          } = await loadFixture(fixture);
+          } = await loadFixture(accountFixture);
 
           const accountAddress = await getAccountAddress(
             0n,
@@ -391,7 +379,7 @@ describe("Benchmark", function () {
             createAccount,
             installSessionKeyPlugin,
             addSessionKeyCalldata,
-          } = await loadFixture(fixture);
+          } = await loadFixture(accountFixture);
 
           if (!addSessionKeyCalldata) {
             return this.skip();
@@ -447,7 +435,7 @@ describe("Benchmark", function () {
             addSessionKeyCalldata,
             useSessionKeyNativeTokenTransferCalldata,
             getSessionKeySignature,
-          } = await loadFixture(fixture);
+          } = await loadFixture(accountFixture);
 
           if (
             !addSessionKeyCalldata ||
@@ -531,7 +519,7 @@ describe("Benchmark", function () {
             addSessionKeyCalldata,
             useSessionKeyERC20TransferCalldata,
             getSessionKeySignature,
-          } = await loadFixture(fixture);
+          } = await loadFixture(accountFixture);
 
           if (
             !addSessionKeyCalldata ||
@@ -606,7 +594,8 @@ describe("Benchmark", function () {
       describe("Runtime", function () {
         it(`Runtime: Account creation`, async function () {
           const {owner, publicClient} = await loadFixture(baseFixture);
-          const {createAccount, getAccountAddress} = await loadFixture(fixture);
+          const {createAccount, getAccountAddress} =
+            await loadFixture(accountFixture);
           hash = await createAccount(0n, owner.account.address);
 
           // Check that the account was created
@@ -629,7 +618,7 @@ describe("Benchmark", function () {
           const {owner, alice, usdc, publicClient} =
             await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
-            await loadFixture(fixture);
+            await loadFixture(accountFixture);
 
           const accountAddress = await getAccountAddress(
             0n,
@@ -668,7 +657,7 @@ describe("Benchmark", function () {
 
           const {owner, alice, usdc} = await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
-            await loadFixture(fixture);
+            await loadFixture(accountFixture);
 
           const accountAddress = await getAccountAddress(
             0n,

@@ -15,7 +15,7 @@ import {
 import {SAFE_ARTIFACTS} from "../artifacts/safe";
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 
-async function fixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
@@ -279,5 +279,5 @@ function ethSignLegacy(data: `0x${string}`) {
 
 export const safe: AccountConfig = {
   name: "Safe",
-  fixture,
+  accountFixture,
 };

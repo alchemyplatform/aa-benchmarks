@@ -16,7 +16,7 @@ import hre from "hardhat";
 import {BICONOMY_V2_ARTIFACTS} from "../artifacts/biconomy-v2";
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
 
-async function fixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
   const testClient = (await hre.viem.getTestClient()).extend(walletActions);
@@ -310,5 +310,5 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 
 export const biconomy_v2: AccountConfig = {
   name: "Biconomy v2",
-  fixture,
+  accountFixture,
 };

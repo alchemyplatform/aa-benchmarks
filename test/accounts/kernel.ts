@@ -12,7 +12,7 @@ import {
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 
-async function fixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
   const testClient = (await hre.viem.getTestClient()).extend(walletActions);
@@ -128,5 +128,5 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 
 export const kernel: AccountConfig = {
   name: "Kernel v2.1",
-  fixture,
+  accountFixture,
 };

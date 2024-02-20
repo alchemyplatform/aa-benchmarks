@@ -4,7 +4,7 @@ import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 import hre from "hardhat";
 import {LIGHT_ACCOUNT_ARTIFACTS} from "../artifacts/lightAccount";
 
-async function fixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
@@ -82,5 +82,5 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 
 export const lightAccount: AccountConfig = {
   name: "Light Account",
-  fixture,
+  accountFixture,
 };
