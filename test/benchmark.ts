@@ -118,11 +118,11 @@ const USDC_INITIAL_BALANCE = parseUnits("100", USDC_DECIMALS);
 const USDC_TRANSFER_AMOUNT = parseUnits("50", USDC_DECIMALS);
 
 const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
+  modularAccount,
   biconomy_v2,
   kernel,
-  lightAccount,
-  modularAccount,
   safe,
+  lightAccount,
 ];
 
 describe("Benchmark", function () {
