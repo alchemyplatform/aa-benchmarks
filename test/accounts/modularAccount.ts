@@ -4,7 +4,7 @@ import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 import hre from "hardhat";
 import {MODULAR_ACCOUNT_ARTIFACTS} from "../artifacts/modularAccount";
 
-async function fixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
@@ -201,5 +201,5 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 
 export const modularAccount: AccountConfig = {
   name: "Modular Account",
-  fixture,
+  accountFixture,
 };
