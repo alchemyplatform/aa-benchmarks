@@ -1,4 +1,4 @@
-# 👷 AA Benchmark Hardhat
+# AA Benchmarks
 
 A comprehensive benchmark for smart contract accounts that support account abstraction (ERC-4337), built on Hardhat for accurate, transaction-based, fee measurements (see [Methodology](#methodology)) and for use of existing TypeScript utilities around fee calculations. This work was inspired by ZeroDev's work on [aa-benchmark](https://github.com/zerodevapp/aa-benchmark), which is built on Foundry.
 
@@ -23,11 +23,11 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <summary><b>Run options</b></summary>
 
 Last run: Sun, 18 Feb 2024 23:52:08 GMT
-| Option              |   Value |
+| Option | Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) | `0.005` |
-| L1 gas price (Gwei) |    `42` |
-| ETH price (USD)     | `$2500` |
+| L1 gas price (Gwei) | `42` |
+| ETH price (USD) | `$2500` |
 
 </details>
 
