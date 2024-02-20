@@ -91,17 +91,6 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
         args: [to, value, data],
       });
     },
-    encodeRuntimeExecute: async (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
-    },
     getDummySignature: (_userOp) => {
       return encodeAbiParameters(
         [

@@ -53,7 +53,7 @@ export interface AccountFixtureReturnType {
     value: bigint,
     data: `0x${string}`,
   ) => `0x${string}`;
-  encodeRuntimeExecute: (
+  encodeRuntimeExecute?: (
     to: `0x${string}`,
     value: bigint,
     data: `0x${string}`,
@@ -610,15 +610,14 @@ describe("Benchmark", function () {
         });
 
         it(`Runtime: Native transfer`, async function () {
-          if (name === "Biconomy v2") {
-            // Biconomy V2 doesn't support runtime native transfers.
-            return this.skip();
-          }
-
           const {owner, alice, usdc, publicClient} =
             await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
             await loadFixture(accountFixture);
+
+          if (!encodeRuntimeExecute) {
+            return this.skip();
+          }
 
           const accountAddress = await getAccountAddress(
             0n,
@@ -650,14 +649,13 @@ describe("Benchmark", function () {
         });
 
         it(`Runtime: ERC-20 transfer`, async function () {
-          if (name === "Biconomy v2") {
-            // Biconomy V2 doesn't support runtime ERC-20 transfers.
-            return this.skip();
-          }
-
           const {owner, alice, usdc} = await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
             await loadFixture(accountFixture);
+
+          if (!encodeRuntimeExecute) {
+            return this.skip();
+          }
 
           const accountAddress = await getAccountAddress(
             0n,
