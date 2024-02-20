@@ -151,3 +151,14 @@ Run the benchmarks and update this file with the new results:
 ```bash
 pnpm benchmark:write
 ```
+
+## Contributing
+
+To add a new smart account to this repo, follow the steps below.
+
+1. Fork this repo.
+2. Add the account's artifacts under [test/artifacts](test/artifacts/).
+3. Implement the account's fixture and export an object matching the `AccountConfig` interface. Add this file under [test/accounts](test/accounts/).
+4. Add your account under [test/accounts.ts](test/accounts.ts) to include your account in the benchmarks.
+5. Generate the results and write to the README by running `pnpm benchmark:write`.
+6. Open a PR against this repo.
