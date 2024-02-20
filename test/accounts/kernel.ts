@@ -128,7 +128,7 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         address: KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
         abi: KERNEL_ARTIFACTS.KernelSessionKeyValidator.abi,
         publicClient,
-        walletClient,
+        walletClient: owner,
       });
 
       const account = getContract({
@@ -172,7 +172,7 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
 
       const validAfter = "0x" + "00".repeat(6) as `0x${string}`;
-      const validUntil = "0x" + "00".repeat(6) as `0x${string}`;
+      const validUntil = "0x" + "FF".repeat(6) as `0x${string}`;
       const mockSessionKey = "0x" + "FF".repeat(20) as `0x${string}`;
       const mockMerkleRoot = "0x" + "FF".repeat(32)  as `0x${string}`;
  
@@ -233,7 +233,8 @@ async function fixture(): Promise<AccountFixtureReturnType> {
        * 56:88      - enableDataLen (a)
        * 88:88+a    - enableData
        * 88+a:110+a - enableSigLen (b)
-       * 110+a:110+a+b - enableSig
+       * 110+a:110+a+b - enableSig (c)
+       * 110+a+b:    - userOpSig
        */
       userOp.signature = encodePacked([
         "bytes4",
@@ -249,7 +250,7 @@ async function fixture(): Promise<AccountFixtureReturnType> {
         validAfter,
         validUntil,
         KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
-        accountAddr,
+        zeroAddress,
         enableDataInstallValidator,
         await owner.signMessage({
           message: {raw: enableDigest},
