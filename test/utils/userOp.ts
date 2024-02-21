@@ -1,5 +1,6 @@
+import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import {encodeAbiParameters} from "viem";
-import { WalletClient } from "viem";
+import {AccountFixtureReturnType} from "../benchmark";
 
 export interface UserOperation {
   sender: `0x${string}`;
@@ -46,35 +47,35 @@ export function encodeUserOp(userOp: UserOperation) {
   );
 }
 
-// export function sendUserOp(
-//   accountAddr: `0x${string}`, 
-//   getDummySignature: (userOp: UserOperation) => `0x${string}`, 
-//   initCode: `0x${string}`, 
-//   , 
-//   callData: `0x${string}`, 
-//   getSignature: (
-//     signer: WalletClient<Transport, Chain, Account>,
-//     userOp: UserOperation,
-//     entryPoint: GetContractReturnType<
-//       typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
-//       PublicClient<Transport, Chain>
-//     >,
-//   ) => Promise<`0x${string}`>,
-//   entryPoint: any
-// ) {
-//   /**
-//    * need:
-//    * 1. accountAddr
-//    * 2. getDummySignature
-//    * 2. initCode
-//    * 3. callData
-//    * 4. getOwnerSignature
-//    * 
-//    * does:
-//    * 1. get nonce
-//    * 2. dummy sig
-//    * 3. gas estimation
-//    * 4. owner sig
-//    */
-//   return entryPoint.write.sendUserOp([encodeUserOp(userOp)]);
-// }
+interface GetUnsignedUserOpInput {
+  sender: `0x${string}`;
+  nonce: bigint;
+  initCode?: `0x${string}`;
+  callData: `0x${string}`;
+  getDummySignature: AccountFixtureReturnType["getDummySignature"];
+}
+
+export function getUnsignedUserOp({
+  sender,
+  nonce,
+  initCode = "0x",
+  callData,
+  getDummySignature,
+}: GetUnsignedUserOpInput) {
+  const userOp = {
+    sender,
+    nonce,
+    initCode,
+    callData,
+    callGasLimit: 1_000_000n,
+    verificationGasLimit: 2_000_000n,
+    preVerificationGas: 21_000n,
+    maxFeePerGas: 1n,
+    maxPriorityFeePerGas: 1n,
+    paymasterAndData: "0x" as `0x${string}`,
+    signature: "0x" as `0x${string}`,
+  };
+  userOp.signature = getDummySignature(userOp);
+  userOp.preVerificationGas = BigInt(calcPreVerificationGas(userOp));
+  return userOp;
+}

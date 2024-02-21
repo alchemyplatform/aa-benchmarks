@@ -16,7 +16,7 @@ import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
 import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 
-async function fixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
   const testClient = (await hre.viem.getTestClient()).extend(walletActions);
@@ -86,7 +86,18 @@ async function fixture(): Promise<AccountFixtureReturnType> {
       });
       return encodePacked(["bytes4", "bytes"], ["0x00000000", signature]);
     },
-    encodeExecute: (to, value, data) => {
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: KERNEL_ARTIFACTS.Kernel.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data, 0], // Operation.CALL = 0
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
       return encodeFunctionData({
         abi: [
           getAbiItem({
@@ -324,7 +335,7 @@ async function fixture(): Promise<AccountFixtureReturnType> {
 
 export const kernel: AccountConfig = {
   name: "Kernel v2.1",
-  fixture,
+  accountFixture,
 };
 
 
