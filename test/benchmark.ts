@@ -463,7 +463,7 @@ describe("Benchmark", function () {
             callData: addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
-              [],
+              [usdc],
               NATIVE_TRANSFER_AMOUNT,
               accountAddress,
             ),
