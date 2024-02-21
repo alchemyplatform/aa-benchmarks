@@ -14,6 +14,7 @@ import {
   keccak256,
   encodeAbiParameters,
   parseAbiParameters,
+  pad,
 } from "viem";
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
@@ -54,20 +55,19 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
   });
   await testClient.stopImpersonatingAccount({address: zeroAddress});
 
-  const paramRuleAbi = parseAbiParameters([
-    'ParamRule paramRule',
-    'struct ParamRule { uint256 offset; uint8 condition; bytes32 param; }'
-  ]);
-
-  // console.log({paramRuleAbi: JSON.stringify(paramRuleAbi, null, 2)});
-
   const permissionAbi = parseAbiParameters([
     'Permission permission',
     'struct Permission { address target; uint256 valueLimit; bytes4 sig; ParamRule[] rules; uint8 operation; }',
     'struct ParamRule { uint256 offset; uint8 condition; bytes32 param; }'
   ]);
 
-  // console.log({permissionAbi: JSON.stringify(permissionAbi, null, 2)});
+  const validUntil = Number(hexToBigInt("0x7d2b7500")); // 2_100_000_000
+  const validAfter = Number(hexToBigInt("0x713fb300")); // 1_900_000_000
+
+  const keyDataHolder = {
+    permissionObjects: null as any[] | null,
+    permissionHashes: null as `0x${string}`[] | null,
+  }
 
   const initializeBytecode = (owner: `0x${string}`) =>
     encodeFunctionData({
@@ -159,13 +159,6 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
         walletClient: owner,
       });
 
-      const account = getContract({
-        address: accountAddr,
-        abi: KERNEL_ARTIFACTS.Kernel.abi,
-        publicClient,
-        walletClient,
-      });
-
       const entryPoint = getContract({
         address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.address,
         abi: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
@@ -197,8 +190,6 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
       });
 
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-
-      console.log({userOpHash});
 
       const validUntil = Number(hexToBigInt("0x7d2b7500")); // 2_100_000_000
       const validAfter = Number(hexToBigInt("0x713fb300")); // 1_900_000_000
@@ -237,24 +228,6 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
       ]);
 
       const validatorData = encodePacked(["uint48", "uint48", "address"], [validAfter, validUntil, KERNEL_ARTIFACTS.KernelSessionKeyValidator.address]);
-
-      console.log({validatorData});
-
-      // const enableDigest = keccak256(
-      //   encodeAbiParameters([
-      //     { type: "bytes32", name: "structHash" },
-      //     { type: "bytes4", name: "sig" },
-      //     { type: "uint256", name: "validatorData" },
-      //     { type: "address", name: "executor" },
-      //     { type: "address", name: "enableData" },
-      //   ], [
-      //     "0x3ce406685c1b3551d706d85a68afdaa49ac4e07b451ad9b8ff8b58c3ee964176", // struct_hash
-      //     executeSelector, // sig
-      //     hexToBigInt(validatorData), // validatorData
-      //     zeroAddress, // executor
-      //     keccak256(encodePacked(["bytes"], [enableDataInstallValidator]))
-      //   ])
-      // );
 
       const enableSig = await owner.signTypedData({
         domain: {
@@ -300,7 +273,7 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
        * 110+a+b:    - userOpSig
        */
       userOp.signature = encodePacked([
-        "bytes4", // MODe
+        "bytes4", // Mode
         "uint48", // validAfter (validator)
         "uint48", // validUntil (validator)
         "address", // validator
@@ -343,64 +316,168 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
         ])
       ]);
 
-      console.log("userOp.signature: ", userOp.signature);
-
-      console.log("is installed: ", await sessionKeyValidator.read.sessionData([sessionKey.account.address, accountAddr]));
+      // console.log("is installed: ", await sessionKeyValidator.read.sessionData([sessionKey.account.address, accountAddr]));
 
       await entryPoint.write.handleOps([[userOp], owner.account.address]);
 
-      console.log("is installed: ", await sessionKeyValidator.read.sessionData([sessionKey.account.address, accountAddr]));
+      // console.log("is installed: ", await sessionKeyValidator.read.sessionData([sessionKey.account.address, accountAddr]));
     },
-    addSessionKeyCalldata: (keys, target, tokens, spendLimit, account) => {
-      /**
-       * validateuserop:
-       * userop.sig structure:
-       * -4:0     - mode = bytes4(0x00000001)
-       * 0:20     - sessionkey addr
-       * 20:84    - short sig?
-       * 85:      - Permission + merkle proof
-       * 
-       * 
-       * 
-       */
+    addSessionKeyCalldata: (key, target, tokens, spendLimit, account) => {
 
+      // for erc20 transfers
+      const permissionObject1 = {
+        valueLimit: 0n,
+        target: tokens[0].address, // only support the first token for now
+        sig: "0xa9059cbb" as `0x${string}`, // transfer(address,uint256)
+        rules: [
+          {
+            offset: BigInt(32), // offset of amount
+            condition: 4, // LESS_THAN_OR_EQUAL
+            param: pad(toHex(spendLimit), {size: 32, dir: "left"}),
+          }
+        ],
+        operation: 0,
+      };
 
-      // const enableData = encodeFunctionData({
-      //   abi: [
-      //     getAbiItem({
-      //       abi: KERNEL_ARTIFACTS.KernelSessionKeyValidator.abi,
-      //       name: "enable"
-      //     }),
-      //   ],
-      //   args: [encodePacked([
-      //     "address", // sessionkey
-      //     "bytes32", // merkle root
-      //     "uint48", // validafter
-      //     "uint48", // validbefore
-      //     "address", // paymaster
-      //     "uint256", // nonce
-      //   ], [
-      //     keys[0],
-      //     '0x', // TODO: merkle root
-      //     0,
-      //     0,
-      //     zeroAddress,
-      //     sessionKeyNonce
-      //   ])],
-      // })
+      // for native transfers
+      const permissionObject2 = {
+        valueLimit: parseEther("0.5"),
+        target,
+        sig: "0x00000000" as `0x${string}`,
+        rules: [],
+        operation: 0,
+      }
 
-      // return encodeFunctionData({
-      //   abi: [
-      //     getAbiItem({
-      //       abi: KERNEL_ARTIFACTS.Kernel.abi,
-      //       name: "execute",
-      //     }),
-      //   ],
-      //   args: [KERNEL_ARTIFACTS.KernelSessionKeyValidator.address, 0n, enableData, 0], // 0 for Operation.Call
-      // });
+      
+      const permissionEncoding1 = encodeAbiParameters(permissionAbi, [permissionObject1]);
+      const permissionEncoding2 = encodeAbiParameters(permissionAbi, [permissionObject2]);
 
-      return "0x";
-    }
+      // NOTE: this only works if the hash of the first permission object is less than the hash of the second permission object.
+      keyDataHolder.permissionObjects = [permissionObject1, permissionObject2];
+      keyDataHolder.permissionHashes = [keccak256(permissionEncoding1), keccak256(permissionEncoding2)];
+      
+      const merkleRoot = keccak256(encodePacked(["bytes32", "bytes32"], [keyDataHolder.permissionHashes[0], keyDataHolder.permissionHashes[1]]));
+
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: KERNEL_ARTIFACTS.Kernel.abi,
+            name: "execute",
+          }),
+        ],
+        args: [
+          KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
+          0n,
+          encodeFunctionData({
+            abi: [
+              getAbiItem({
+                abi: KERNEL_ARTIFACTS.KernelSessionKeyValidator.abi,
+                name: "enable",
+              }),
+            ],
+            args: [encodePacked([
+              "address", // sessionKey
+              "bytes32", // merkleRoot
+              "uint48", // validAfter
+              "uint48", // validUntil
+              "address" // paymaster
+            ], [key, merkleRoot, validAfter, validUntil, zeroAddress])],
+          }),
+          0 // Operation.CALL = 0
+        ],
+      });
+    },
+    useSessionKeyERC20TransferCalldata: (token, key, to, amount) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: KERNEL_ARTIFACTS.Kernel.abi,
+            name: "execute",
+          }),
+        ],
+        args: [
+          token.address,
+          0n,
+          encodeFunctionData({
+            abi: [
+              getAbiItem({
+                abi: token.abi,
+                name: "transfer",
+              }),
+            ],
+            args: [to, amount],
+          }),
+          0, // Operation.CALL = 0
+        ],
+      });
+    },
+    useSessionKeyNativeTokenTransferCalldata: (key, to, amount) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: KERNEL_ARTIFACTS.Kernel.abi,
+            name: "execute",
+          }),
+        ],
+        args: [
+          to,
+          amount,
+          "0x00000000", // data, needs to be the zero selector for the session key permission
+          0, // Operation.CALL = 0
+        ],
+      });
+    },
+    getSessionKeySignature: async (key, userOp, entryPoint) => {
+      // for now, assume it is the session key used to perform the erc-20 transfer
+
+      const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
+      const keySignature = await key.signMessage({
+        message: {raw: userOpHash},
+      });
+
+      if (userOp.callData.slice(330, 338) === "a9059cbb") {
+        // calling "transfer" on an erc-20 token
+        return encodePacked([
+          "bytes4", // mode
+          "address", // session key
+          "bytes", // uo hash session key signature
+          "bytes", // Permission used (including merkle proof)
+        ], [
+          "0x00000001",
+          key.account.address,
+          keySignature,
+          encodeAbiParameters(
+            [
+              ...permissionAbi,
+              { name: "proof", type: "bytes32[]" },
+            ], [
+              keyDataHolder.permissionObjects![0],
+              [keyDataHolder.permissionHashes![1]]
+            ])
+        ]);
+      } else {
+        // This is the native transfer test
+
+        return encodePacked([
+          "bytes4", // mode
+          "address", // session key
+          "bytes", // uo hash session key signature
+          "bytes", // Permission used (including merkle proof)
+        ], [
+          "0x00000001",
+          key.account.address,
+          keySignature,
+          encodeAbiParameters(
+            [
+              ...permissionAbi,
+              { name: "proof", type: "bytes32[]" },
+            ], [
+              keyDataHolder.permissionObjects![1],
+              [keyDataHolder.permissionHashes![0]]
+            ])
+        ]);
+      }
+    },
   };
 }
 
@@ -408,39 +485,3 @@ export const kernel: AccountConfig = {
   name: "Kernel v2.1",
   accountFixture,
 };
-
-
-      /**
-       *      
-       * userop sig structure:
-       * 
-       * 0:4        - mode                0x00000002 for JIT
-       * 4:10       - validAfter
-       * 10:16      - validUntil
-       * 16:36      - validator addr
-       * 36:56      - executor            (accountAddr)
-       * 56:88      - enableDataLen (a)
-       * 88:88+a    - enableData
-       * 88+a:110+a - enableSigLen (b)
-       * 110+a:110+a+b - enableSig
-       *
-       * enableDigest = hashtypedData of: keccak256(
-       *     struct_hash,   // 0x3ce406685c1b3551d706d85a68afdaa49ac4e07b451ad9b8ff8b58c3ee964176
-       *     bytes4(sig),
-       *     pack(validAfter, validUntil, validator addr),
-       *     (36-56?)
-       *     keccak256(enableData)
-       * )
-       * 
-       * enableData = 
-       *  0:20      - sessionkey addr (0xfffffffff....)
-       *  20:52     - merkle root (0xffffffff....)
-       *  52:58     - validafter (0x000)
-       *  58:64     - validuntil (0x000)
-       *  64:84     - paymaster (0xfffff)
-       *  84:116    - nonce (0x1) -----> persistent storage this fucker
-       * 
-       * sig: needs to pass ECDSAValidator.validateSignature
-       * 
-       * test: SessionKeyValidator.sessionData()
-       */ 
