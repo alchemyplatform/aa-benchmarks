@@ -22,12 +22,12 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Fri, 03 May 2024 01:21:59 GMT
-| Option                |         Value |
-| :-------------------- | ------------: |
-| L2 gas price (Gwei)   |        `0.06` |
-| L1 fee per gas (Gwei) | `0.019935596` |
-| ETH price (USD)       |       `$3000` |
+Last run: Fri, 03 May 2024 01:22:16 GMT
+| Option                         |         Value |
+| :----------------------------- | ------------: |
+| L2 gas price (Gwei)            |        `0.06` |
+| L1 fee per calldata gas (Gwei) | `0.019935596` |
+| ETH price (USD)                |       `$3000` |
 
 </details>
 
