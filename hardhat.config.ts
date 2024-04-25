@@ -1,7 +1,7 @@
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "dotenv/config";
 
-import { HardhatUserConfig } from "hardhat/config";
+import {HardhatUserConfig} from "hardhat/config";
 
 export const L2_GAS_PRICE = Number(process.env.L2_GAS_PRICE);
 export const ETH_PRICE_USD = Number(process.env.ETH_PRICE_USD);

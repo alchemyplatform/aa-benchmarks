@@ -6,7 +6,5 @@
 import "hardhat/types/artifacts";
 
 declare module "hardhat/types/artifacts" {
-  interface ArtifactsMap {
-    
-  }
+  interface ArtifactsMap {}
 }

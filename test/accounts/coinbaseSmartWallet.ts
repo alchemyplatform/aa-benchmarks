@@ -1,15 +1,23 @@
-import { encodeAbiParameters, encodeFunctionData, encodePacked, getAbiItem, getContract } from "viem";
-import { SignReturnType, sign } from "viem/accounts";
-import { AccountConfig, AccountFixtureReturnType } from "../benchmark";
+import {
+  encodeAbiParameters,
+  encodeFunctionData,
+  encodePacked,
+  getAbiItem,
+  getContract,
+} from "viem";
+import {SignReturnType, sign} from "viem/accounts";
+import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
 
 import hre from "hardhat";
-import { COINBASE_SMART_WALLET_ARTIFACTS } from "../artifacts/coinbaseSmartWallet";
+import {COINBASE_SMART_WALLET_ARTIFACTS} from "../artifacts/coinbaseSmartWallet";
 
 async function accountFixture(): Promise<AccountFixtureReturnType> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
-  for (const { address, bytecode } of Object.values(COINBASE_SMART_WALLET_ARTIFACTS)) {
+  for (const {address, bytecode} of Object.values(
+    COINBASE_SMART_WALLET_ARTIFACTS,
+  )) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
   }
 
@@ -22,23 +30,32 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
 
   return {
     createAccount: async (salt, ownerAddress) => {
-      const abiEncodedOwner = encodeAbiParameters([{ type: 'address' }], [ownerAddress])
+      const abiEncodedOwner = encodeAbiParameters(
+        [{type: "address"}],
+        [ownerAddress],
+      );
       return await coinbaseSmartWalletFactory.write.createAccount([
         [abiEncodedOwner],
-        salt
+        salt,
       ]);
     },
     getAccountAddress: async (salt, ownerAddress) => {
-      const abiEncodedOwner = encodeAbiParameters([{ type: 'address' }], [ownerAddress])
-      return await coinbaseSmartWalletFactory.read.getAddress([[abiEncodedOwner], salt]);
+      const abiEncodedOwner = encodeAbiParameters(
+        [{type: "address"}],
+        [ownerAddress],
+      );
+      return await coinbaseSmartWalletFactory.read.getAddress([
+        [abiEncodedOwner],
+        salt,
+      ]);
     },
     getOwnerSignature: async (owner, userOp, entryPoint) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       // Key of owner account.
       const privateKey =
         "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-      const signature = await sign({ hash: userOpHash, privateKey });
-      return buildSignatureWrapperForEOA({ signature, ownerIndex: 0n })
+      const signature = await sign({hash: userOpHash, privateKey});
+      return buildSignatureWrapperForEOA({signature, ownerIndex: 0n});
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
@@ -66,7 +83,10 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
       return "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000041000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
     },
     getInitCode: (salt, ownerAddress) => {
-      const abiEncodedOwner = encodeAbiParameters([{ type: 'address' }], [ownerAddress])
+      const abiEncodedOwner = encodeAbiParameters(
+        [{type: "address"}],
+        [ownerAddress],
+      );
       return encodePacked(
         ["address", "bytes"],
         [
@@ -106,16 +126,16 @@ const SignatureWrapperStruct = {
   type: "tuple",
 };
 
-function buildSignatureWrapperForEOA(
-  { signature, ownerIndex }: { signature: SignReturnType; ownerIndex: bigint },
-) {
+function buildSignatureWrapperForEOA({
+  signature,
+  ownerIndex,
+}: {
+  signature: SignReturnType;
+  ownerIndex: bigint;
+}) {
   const signatureData = encodePacked(
     ["bytes32", "bytes32", "uint8"],
-    [
-      signature.r,
-      signature.s,
-      parseInt(signature.v.toString()),
-    ],
+    [signature.r, signature.s, parseInt(signature.v.toString())],
   );
   return encodeAbiParameters(
     [SignatureWrapperStruct],
