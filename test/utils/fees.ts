@@ -1,27 +1,24 @@
-import {calldataCost} from "@eth-optimism/core-utils";
-import {formatEther} from "viem";
-import {ETH_PRICE_USD, L1_GAS_PRICE} from "../../hardhat.config";
+import { Hex, formatEther, hexToBytes } from "viem";
+import { ETH_PRICE_USD } from "../../hardhat.config";
 
 const OP_FIXED_OVERHEAD = 188;
-const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
-const SCALAR_DECIMALS = 3;
+// from https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L24
+const DECIMALS = 6n;
+const L1_BASE_FEE = BigInt(process.env.L1_BASE_FEE || '');
+const L1_BLOB_BASE_FEE = BigInt(process.env.L1_BLOB_BASE_FEE || '');
+const L1_BASE_FEE_SCALAR = BigInt(process.env.L1_BASE_FEE_SCALAR || '');
+const L1_BLOB_BASE_FEE_SCALAR = BigInt(process.env.L1_BLOB_BASE_FEE_SCALAR || '');
 
-/**
- * NOTE: The Optimism docs also factor in the dynamic overhead into the gas
- * used, but Etherscan does not. We follow Etherscan here and multiply by the
- * dynamic overhead during the fee calculation.
- */
-export function getL1GasUsed(serializedTx: `0x${string}`) {
-  return calldataCost(serializedTx).toBigInt() + BigInt(OP_FIXED_OVERHEAD);
+export function getL1GasUsed(serializedTx: Hex) {
+  return calldataGas(serializedTx) + BigInt(OP_FIXED_OVERHEAD);
 }
 
+// matches https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L138
 export function getL1Fee(gasUsed: bigint) {
-  return (
-    (gasUsed *
-      BigInt(L1_GAS_PRICE) *
-      BigInt(OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** SCALAR_DECIMALS)) /
-    BigInt(10 ** SCALAR_DECIMALS)
-  );
+  const scaledBaseFee = L1_BASE_FEE_SCALAR * 16n * L1_BASE_FEE
+  const scaledBlobBaseFee = L1_BLOB_BASE_FEE_SCALAR * L1_BLOB_BASE_FEE
+  const fee = gasUsed * (scaledBaseFee + scaledBlobBaseFee)
+  return fee / (16n * 10n ** DECIMALS)
 }
 
 export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
@@ -30,4 +27,25 @@ export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
 
 export function convertWeiToUsd(wei: bigint) {
   return (Number(formatEther(wei)) * ETH_PRICE_USD).toFixed(2);
+}
+
+// matches https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L149
+const calldataGas = (data: Hex): bigint => {
+  const { zeros, ones } = zeroesAndOnes(data)
+  const total = zeros * 4n + ones * 16n
+  return total + (68n * 16n)
+}
+
+const zeroesAndOnes = (data: Hex): { zeros: bigint, ones: bigint } => {
+  const bytes = hexToBytes(data)
+  let zeros = 0n
+  let ones = 0n
+  for (const byte of bytes) {
+    if (byte === 0) {
+      zeros++
+    } else {
+      ones++
+    }
+  }
+  return { zeros, ones }
 }
