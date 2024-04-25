@@ -31,7 +31,7 @@ export async function writeResults() {
   const configTable = [
     ["Option", "Value"],
     ["L2 gas price (Gwei)", `${monospace(formatGwei(BigInt(L2_GAS_PRICE)))}`],
-    ["L1 fee per gas (Gwei)", `${monospace(formatGwei(getL1Fee(1n)))}`],
+    ["L1 fee per calldata gas (Gwei)", `${monospace(formatGwei(getL1Fee(1n)))}`],
     ["ETH price (USD)", `${monospace(`$${ETH_PRICE_USD}`)}`],
   ];
   buffer += markdownTable(configTable, { align: ["l", "r"] }) + "\n\n";
