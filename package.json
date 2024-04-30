@@ -3,7 +3,9 @@
     "compile": "hardhat compile",
     "test": "DRY_RUN=1 hardhat test",
     "benchmark": "DRY_RUN=1 hardhat test",
-    "benchmark:write": "hardhat test"
+    "benchmark:write": "hardhat test",
+    "lint:fix": "prettier . --write",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@account-abstraction/sdk": "^0.6.0",
@@ -22,6 +24,8 @@
     "ethereum-cryptography": "^2.1.3",
     "hardhat": "^2.19.5",
     "hardhat-gas-reporter": "^1.0.8",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
     "markdown-table": "2",
     "prettier": "3.2.5",
     "replace-in-file": "^7.1.0",
@@ -29,5 +33,8 @@
     "ts-node": ">=8.0.0",
     "typescript": "~5.0.4",
     "viem": "^1.15.1"
+  },
+  "lint-staged": {
+    "*.{ts,js,md}": "prettier --write"
   }
 }

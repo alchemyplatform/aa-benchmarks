@@ -23,11 +23,11 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <summary><b>Run options</b></summary>
 
 Last run: Wed, 21 Feb 2024 05:53:32 GMT
-| Option              |   Value |
+| Option | Value |
 | :------------------ | ------: |
 | L2 gas price (Gwei) | `0.004` |
-| L1 gas price (Gwei) |    `40` |
-| ETH price (USD)     | `$2500` |
+| L1 gas price (Gwei) | `40` |
+| ETH price (USD) | `$2500` |
 
 </details>
 
