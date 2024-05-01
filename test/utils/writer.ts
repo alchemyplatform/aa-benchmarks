@@ -6,7 +6,7 @@ import {
   ETH_PRICE_USD,
   L1_GAS_PRICE,
   L2_GAS_PRICE,
-} from "../../hardhat.config";
+} from "../../settings";
 
 const resultMap: {
   [test: string]: {[account: string]: {[metric: string]: string}};
@@ -30,8 +30,8 @@ export async function writeResults() {
 
   const configTable = [
     ["Option", "Value"],
-    ["L2 gas price (Gwei)", `${monospace(formatGwei(BigInt(L2_GAS_PRICE)))}`],
-    ["L1 gas price (Gwei)", `${monospace(formatGwei(BigInt(L1_GAS_PRICE)))}`],
+    ["L2 gas price (Gwei)", `${monospace(formatGwei(L2_GAS_PRICE))}`],
+    ["L1 gas price (Gwei)", `${monospace(formatGwei(L1_GAS_PRICE))}`],
     ["ETH price (USD)", `${monospace(`$${ETH_PRICE_USD}`)}`],
   ];
   buffer += markdownTable(configTable, {align: ["l", "r"]}) + "\n\n";

@@ -41,6 +41,9 @@ devDependencies:
   chai:
     specifier: ^4.2.0
     version: 4.4.1
+  commander:
+    specifier: ^12.0.0
+    version: 12.0.0
   dotenv:
     specifier: ^16.4.4
     version: 16.4.4
@@ -1807,6 +1810,11 @@ packages:
   /commander@11.1.0:
     resolution: {integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==}
     engines: {node: '>=16'}
+    dev: true
+
+  /commander@12.0.0:
+    resolution: {integrity: sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==}
+    engines: {node: '>=18'}
     dev: true
 
   /commander@3.0.2:

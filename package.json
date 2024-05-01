@@ -5,6 +5,7 @@
     "benchmark": "DRY_RUN=1 hardhat test",
     "benchmark:write": "hardhat test",
     "lint:fix": "prettier . --write",
+    "verify-l1-gas": "./scripts/verifyOptimismL1Gas.ts",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -20,6 +21,7 @@
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=16.0.0",
     "chai": "^4.2.0",
+    "commander": "^12.0.0",
     "dotenv": "^16.4.4",
     "ethereum-cryptography": "^2.1.3",
     "hardhat": "^2.19.5",

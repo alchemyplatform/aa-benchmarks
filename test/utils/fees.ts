@@ -1,6 +1,6 @@
 import {calldataCost} from "@eth-optimism/core-utils";
 import {formatEther} from "viem";
-import {ETH_PRICE_USD, L1_GAS_PRICE} from "../../hardhat.config";
+import {ETH_PRICE_USD} from "../../settings";
 
 const OP_FIXED_OVERHEAD = 188;
 const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
@@ -15,10 +15,10 @@ export function getL1GasUsed(serializedTx: `0x${string}`) {
   return calldataCost(serializedTx).toBigInt() + BigInt(OP_FIXED_OVERHEAD);
 }
 
-export function getL1Fee(gasUsed: bigint) {
+export function getL1Fee(l1GasUsed: bigint, l1GasPrice: bigint) {
   return (
-    (gasUsed *
-      BigInt(L1_GAS_PRICE) *
+    (l1GasUsed *
+      l1GasPrice *
       BigInt(OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** SCALAR_DECIMALS)) /
     BigInt(10 ** SCALAR_DECIMALS)
   );
