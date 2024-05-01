@@ -1,7 +1,8 @@
 import markdownTable from "markdown-table";
 import replaceInFile from "replace-in-file";
 import {formatGwei} from "viem";
-import {DRY_RUN, ETH_PRICE_USD, L2_GAS_PRICE} from "../../hardhat.config";
+
+import {DRY_RUN, ETH_PRICE_USD, L2_GAS_PRICE} from "../../settings";
 import {getL1Fee} from "./fees";
 
 const resultMap: {

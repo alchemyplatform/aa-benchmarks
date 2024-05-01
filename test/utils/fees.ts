@@ -1,5 +1,5 @@
 import {Hex, formatEther, hexToBytes} from "viem";
-import {ETH_PRICE_USD} from "../../hardhat.config";
+import {ETH_PRICE_USD} from "../../settings";
 
 // from https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L24
 const DECIMALS = 6n;
