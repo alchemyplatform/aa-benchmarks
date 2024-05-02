@@ -1,27 +1,32 @@
 import {calldataCost} from "@eth-optimism/core-utils";
 import {formatEther} from "viem";
-import {ETH_PRICE_USD} from "../../settings";
+import {
+  ETH_PRICE_USD,
+  L1_BASE_FEE_SCALAR,
+  L1_BLOB_BASE_FEE_SCALAR,
+} from "../../settings";
 
-const OP_FIXED_OVERHEAD = 188;
-const OP_DYNAMIC_OVERHEAD_SCALAR = 0.684;
-const SCALAR_DECIMALS = 3;
+const DECIMALS = 6n;
 
 /**
- * NOTE: The Optimism docs also factor in the dynamic overhead into the gas
- * used, but Etherscan does not. We follow Etherscan here and multiply by the
- * dynamic overhead during the fee calculation.
+ * NOTE: This is only accurate for post-Ecotone transactions.
  */
 export function getL1GasUsed(serializedTx: `0x${string}`) {
-  return calldataCost(serializedTx).toBigInt() + BigInt(OP_FIXED_OVERHEAD);
+  return calldataCost(serializedTx).toBigInt();
 }
 
-export function getL1Fee(l1GasUsed: bigint, l1GasPrice: bigint) {
-  return (
-    (l1GasUsed *
-      l1GasPrice *
-      BigInt(OP_DYNAMIC_OVERHEAD_SCALAR * 10 ** SCALAR_DECIMALS)) /
-    BigInt(10 ** SCALAR_DECIMALS)
-  );
+/**
+ * NOTE: This is only accurate for post-Ecotone transactions.
+ */
+export function getL1Fee(
+  l1GasUsed: bigint,
+  l1BaseFee: bigint,
+  l1BlobBaseFee: bigint,
+) {
+  const scaledBaseFee = L1_BASE_FEE_SCALAR * 16n * l1BaseFee;
+  const scaledBlobBaseFee = L1_BLOB_BASE_FEE_SCALAR * l1BlobBaseFee;
+  const fee = l1GasUsed * (scaledBaseFee + scaledBlobBaseFee);
+  return fee / (16n * 10n ** DECIMALS);
 }
 
 export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
