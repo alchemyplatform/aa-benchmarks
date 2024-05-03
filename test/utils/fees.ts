@@ -1,7 +1,6 @@
 import {Hex, formatEther, hexToBytes} from "viem";
 import {ETH_PRICE_USD} from "../../hardhat.config";
 
-const OP_FIXED_OVERHEAD = 188;
 // from https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L24
 const DECIMALS = 6n;
 const L1_BASE_FEE = BigInt(process.env.L1_BASE_FEE || "");
@@ -12,7 +11,7 @@ const L1_BLOB_BASE_FEE_SCALAR = BigInt(
 );
 
 export function getL1GasUsed(serializedTx: Hex) {
-  return calldataGas(serializedTx) + BigInt(OP_FIXED_OVERHEAD);
+  return calldataGas(serializedTx);
 }
 
 // matches https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L138
