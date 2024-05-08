@@ -18,7 +18,7 @@ import {
   toHex,
   zeroAddress,
 } from "viem";
-import {L2_GAS_PRICE} from "../hardhat.config";
+import {L1_BASE_FEE, L1_BLOB_BASE_FEE, L2_BASE_FEE} from "../settings";
 import {ACCOUNTS_TO_BENCHMARK} from "./accounts";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
@@ -201,9 +201,9 @@ describe("Benchmark", function () {
             },
           );
 
-          const l2Fee = gasUsed * BigInt(L2_GAS_PRICE);
+          const l2Fee = gasUsed * L2_BASE_FEE;
           const l1GasUsed = getL1GasUsed(serializedTx);
-          const l1Fee = getL1Fee(l1GasUsed);
+          const l1Fee = getL1Fee(l1GasUsed, L1_BASE_FEE, L1_BLOB_BASE_FEE);
 
           tableEntries["L2 gas used"] = `${gasUsed}`;
           tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;

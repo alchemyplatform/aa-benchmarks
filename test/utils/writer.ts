@@ -1,8 +1,15 @@
 import markdownTable from "markdown-table";
 import replaceInFile from "replace-in-file";
 import {formatGwei} from "viem";
-import {DRY_RUN, ETH_PRICE_USD, L2_GAS_PRICE} from "../../hardhat.config";
-import {getL1Fee} from "./fees";
+import {
+  DRY_RUN,
+  ETH_PRICE_USD,
+  L1_BASE_FEE,
+  L1_BASE_FEE_SCALAR,
+  L1_BLOB_BASE_FEE,
+  L1_BLOB_BASE_FEE_SCALAR,
+  L2_BASE_FEE,
+} from "../../settings";
 
 const resultMap: {
   [test: string]: {[account: string]: {[metric: string]: string}};
@@ -26,11 +33,11 @@ export async function writeResults() {
 
   const configTable = [
     ["Option", "Value"],
-    ["L2 gas price (Gwei)", `${monospace(formatGwei(BigInt(L2_GAS_PRICE)))}`],
-    [
-      "L1 fee per calldata gas (Gwei)",
-      `${monospace(formatGwei(getL1Fee(1n)))}`,
-    ],
+    ["L2 base fee (gwei)", `${monospace(formatGwei(L2_BASE_FEE))}`],
+    ["L1 base fee (gwei)", `${monospace(formatGwei(L1_BASE_FEE))}`],
+    ["L1 base fee scalar", `${monospace("" + L1_BASE_FEE_SCALAR)}`],
+    ["Blob base fee (wei)", `${monospace("" + L1_BLOB_BASE_FEE)}`],
+    ["Blob base fee scalar", `${monospace("" + L1_BLOB_BASE_FEE_SCALAR)}`],
     ["ETH price (USD)", `${monospace(`$${ETH_PRICE_USD}`)}`],
   ];
   buffer += markdownTable(configTable, {align: ["l", "r"]}) + "\n\n";
