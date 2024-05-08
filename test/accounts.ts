@@ -15,6 +15,7 @@ import {lightAccount} from "./accounts/lightAccount";
 import {lightAccountV2} from "./accounts/lightAccountV2";
 import {modularAccount} from "./accounts/modularAccount";
 import {safe} from "./accounts/safe";
+import {simpleAccount} from "./accounts/simpleAccount";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 import {EntryPointV06, EntryPointV07} from "./utils/entryPoint";
 import {PackedUserOperation, UserOperation} from "./utils/userOp";
@@ -96,6 +97,7 @@ export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   biconomy_v2,
   kernel,
   safe,
+  simpleAccount,
   lightAccount,
   lightAccountV2,
   coinbaseSmartWallet,
