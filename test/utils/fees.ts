@@ -34,5 +34,5 @@ export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
 }
 
 export function convertWeiToUsd(wei: bigint) {
-  return (Number(formatEther(wei)) * ETH_PRICE_USD).toFixed(2);
+  return (Number(formatEther(wei)) * ETH_PRICE_USD).toFixed(4);
 }
