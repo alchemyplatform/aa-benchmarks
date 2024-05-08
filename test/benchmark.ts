@@ -328,7 +328,7 @@ describe("Benchmark", function () {
             getSignature: accountData.getOwnerSignature,
           });
 
-          await wrappedHandleOps({
+          hash = await wrappedHandleOps({
             accountData,
             signer: sessionKey,
             beneficiary,
@@ -389,7 +389,7 @@ describe("Benchmark", function () {
             getSignature: accountData.getOwnerSignature,
           });
 
-          await wrappedHandleOps({
+          hash = await wrappedHandleOps({
             accountData,
             signer: sessionKey,
             beneficiary,
