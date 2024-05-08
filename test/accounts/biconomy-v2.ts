@@ -13,7 +13,6 @@ import {
 } from "viem";
 import {AccountConfig, AccountDataV06} from "../accounts";
 import {BICONOMY_V2_ARTIFACTS} from "../artifacts/biconomy-v2";
-import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
 import {getEntryPointV06} from "../utils/entryPoint";
 
 async function accountFixture(): Promise<AccountDataV06> {
@@ -52,8 +51,10 @@ async function accountFixture(): Promise<AccountDataV06> {
     moduleData: null,
   };
 
+  const entryPoint = getEntryPointV06({publicClient, walletClient});
+
   return {
-    entryPoint: getEntryPointV06({publicClient, walletClient}),
+    entryPoint,
     createAccount: async (salt, ownerAddress) => {
       return await biconomyV2Factory.write.deployCounterFactualAccount([
         BICONOMY_V2_ARTIFACTS.EcdsaOwnershipRegistryModule.address,
@@ -134,10 +135,10 @@ async function accountFixture(): Promise<AccountDataV06> {
       // });
 
       await testClient.impersonateAccount({
-        address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT_V06.address,
+        address: entryPoint.address,
       }); // Mock a self-call to allow the call through
       await hre.network.provider.send("hardhat_setBalance", [
-        ENTRY_POINT_ARTIFACTS.ENTRY_POINT_V06.address,
+        entryPoint.address,
         toHex(parseEther("10000")),
       ]);
       await testClient.writeContract({
@@ -145,10 +146,10 @@ async function accountFixture(): Promise<AccountDataV06> {
         abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
         functionName: "enableModule",
         args: [BICONOMY_V2_ARTIFACTS.SessionKeyManager.address],
-        account: ENTRY_POINT_ARTIFACTS.ENTRY_POINT_V06.address,
+        account: entryPoint.address,
       });
       await testClient.stopImpersonatingAccount({
-        address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT_V06.address,
+        address: entryPoint.address,
       }); // Stop mocking the self-call
 
       // If we want to test using batched session routing, we need to also install that module as below.

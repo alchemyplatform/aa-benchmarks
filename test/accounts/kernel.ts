@@ -16,7 +16,6 @@ import {
   zeroAddress,
 } from "viem";
 import {AccountConfig, AccountDataV06} from "../accounts";
-import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
 import {getEntryPointV06} from "../utils/entryPoint";
 import {getUnsignedUserOp} from "../utils/userOp";
@@ -84,8 +83,10 @@ async function accountFixture(): Promise<AccountDataV06> {
       ],
     });
 
+  const entryPoint = getEntryPointV06({publicClient, walletClient});
+
   return {
-    entryPoint: getEntryPointV06({publicClient, walletClient}),
+    entryPoint,
     createAccount: async (salt, ownerAddress) => {
       return await kernelFactory.write.createAccount([
         KERNEL_ARTIFACTS.Kernel.address,
@@ -156,13 +157,6 @@ async function accountFixture(): Promise<AccountDataV06> {
       const sessionKeyValidator = getContract({
         address: KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
         abi: KERNEL_ARTIFACTS.KernelSessionKeyValidator.abi,
-        publicClient,
-        walletClient: owner,
-      });
-
-      const entryPoint = getContract({
-        address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT_V06.address,
-        abi: ENTRY_POINT_ARTIFACTS.ENTRY_POINT_V06.abi,
         publicClient,
         walletClient: owner,
       });
