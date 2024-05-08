@@ -22,7 +22,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <details>
 <summary><b>Run options</b></summary>
 
-Last run: Wed, 08 May 2024 19:36:03 GMT
+Last run: Wed, 08 May 2024 19:38:11 GMT
 | Option | Value |
 | :------------------- | -------------: |
 | L2 base fee (gwei) | `0.06` |
@@ -84,27 +84,27 @@ Last run: Wed, 08 May 2024 19:36:03 GMT
 
 ### User Operation: Session key native transfer
 
-|                       | L2 gas used | L2 fee (ETH) | L1 gas used | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
-| :-------------------- | ----------: | -----------: | ----------: | -----------: | --------------: | --------------: |
-| Modular Account       |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Biconomy v2           |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Kernel v2.1           |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Safe                  |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Light Account         |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Light Account v2      |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Coinbase Smart Wallet |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
+|                       | L2 gas used |  L2 fee (ETH) | L1 gas used |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
+| :-------------------- | ----------: | ------------: | ----------: | ------------: | --------------: | --------------: |
+| Modular Account       |    `163716` | `0.000009823` |      `7944` | `0.000000197` |   `0.000010020` |       `$0.0301` |
+| Biconomy v2           |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
+| Kernel v2.1           |    `127202` | `0.000007632` |      `9700` | `0.000000240` |   `0.000007872` |       `$0.0236` |
+| Safe                  |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
+| Light Account         |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
+| Light Account v2      |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
+| Coinbase Smart Wallet |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
 
 ### User Operation: Session key ERC-20 transfer
 
-|                       | L2 gas used | L2 fee (ETH) | L1 gas used | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
-| :-------------------- | ----------: | -----------: | ----------: | -----------: | --------------: | --------------: |
-| Modular Account       |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Biconomy v2           |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Kernel v2.1           |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Safe                  |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Light Account         |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Light Account v2      |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
-| Coinbase Smart Wallet |         `-` |          `-` |         `-` |          `-` |             `-` |   `Unsupported` |
+|                       | L2 gas used |  L2 fee (ETH) | L1 gas used |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
+| :-------------------- | ----------: | ------------: | ----------: | ------------: | --------------: | --------------: |
+| Modular Account       |    `194942` | `0.000011697` |      `8604` | `0.000000213` |   `0.000011910` |       `$0.0357` |
+| Biconomy v2           |    `147023` | `0.000008821` |     `11232` | `0.000000278` |   `0.000009100` |       `$0.0273` |
+| Kernel v2.1           |    `153240` | `0.000009194` |     `10688` | `0.000000265` |   `0.000009459` |       `$0.0284` |
+| Safe                  |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
+| Light Account         |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
+| Light Account v2      |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
+| Coinbase Smart Wallet |         `-` |           `-` |         `-` |           `-` |             `-` |   `Unsupported` |
 
 ### Runtime: Account creation
 
