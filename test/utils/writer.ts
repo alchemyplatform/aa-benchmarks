@@ -47,23 +47,20 @@ export async function writeResults() {
   for (const test in resultMap) {
     buffer += `### ${test}\n\n`;
     const testResults = resultMap[test];
-    const accountNames = Object.keys(testResults);
-    // Account names, with the first column left intentionally blank.
-    const tableHeader = ["", ...accountNames];
+    const metricNames = Object.keys(Object.values(testResults)[0]);
+    // Metric names, with the first column left intentionally blank.
+    const tableHeader = ["", ...metricNames];
     if (!align) {
       align = ["l", ...tableHeader.map(() => "r")];
     }
-    const tableRowObject: {[key: string]: string[]} = {};
-    for (const accountName of accountNames) {
-      const metrics = testResults[accountName];
-      for (const metricName in metrics) {
-        if (!tableRowObject[metricName]) {
-          tableRowObject[metricName] = [metricName];
-        }
-        tableRowObject[metricName].push(monospace(metrics[metricName]));
-      }
+    const tableRows = [];
+    for (const [accountName, metrics] of Object.entries(testResults)) {
+      tableRows.push([
+        accountName,
+        ...metricNames.map((metricName) => monospace(metrics[metricName])),
+      ]);
     }
-    const table = [tableHeader, ...Object.values(tableRowObject)];
+    const table = [tableHeader, ...tableRows];
     buffer += markdownTable(table, {align}) + "\n\n";
   }
 
