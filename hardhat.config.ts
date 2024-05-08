@@ -1,6 +1,5 @@
 import "@nomicfoundation/hardhat-toolbox-viem";
 import "dotenv/config";
-
 import {HardhatUserConfig} from "hardhat/config";
 import {L2_BASE_FEE} from "./settings";
 

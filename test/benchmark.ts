@@ -6,6 +6,7 @@ import {
   Account,
   Chain,
   GetContractReturnType,
+  Hex,
   PublicClient,
   Transport,
   WalletClient,
@@ -28,84 +29,8 @@ import {
   getL1Fee,
   getL1GasUsed,
 } from "./utils/fees";
-import {UserOperation, getUnsignedUserOp} from "./utils/userOp";
+import {wrappedHandleOps} from "./utils/userOp";
 import {collectResult, writeResults} from "./utils/writer";
-
-export interface AccountFixtureReturnType {
-  createAccount: (
-    salt: bigint,
-    ownerAddress: `0x${string}`,
-  ) => Promise<`0x${string}`>;
-  getAccountAddress: (
-    salt: bigint,
-    ownerAddress: `0x${string}`,
-  ) => Promise<`0x${string}`>;
-  getOwnerSignature: (
-    owner: WalletClient<Transport, Chain, Account>,
-    userOp: UserOperation,
-    entryPoint: GetContractReturnType<
-      typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
-      PublicClient<Transport, Chain>
-    >,
-  ) => Promise<`0x${string}`>;
-  encodeUserOpExecute: (
-    to: `0x${string}`,
-    value: bigint,
-    data: `0x${string}`,
-  ) => `0x${string}`;
-  encodeRuntimeExecute?: (
-    to: `0x${string}`,
-    value: bigint,
-    data: `0x${string}`,
-    owner?: WalletClient<Transport, Chain, Account>,
-    accountAddress?: `0x${string}`,
-  ) => Promise<`0x${string}`>;
-  getDummySignature: (userOp: UserOperation) => `0x${string}`;
-  getInitCode: (salt: bigint, ownerAddress: `0x${string}`) => `0x${string}`;
-
-  // session key methods
-  installSessionKeyPlugin?: (
-    account: `0x${string}`,
-    owner: WalletClient<Transport, Chain, Account>,
-  ) => void;
-  addSessionKeyCalldata?: (
-    key: `0x${string}`,
-    target: `0x${string}`,
-    tokens: GetContractReturnType<
-      typeof TOKEN_ARTIFACTS.USDC.abi,
-      PublicClient<Transport, Chain>
-    >[],
-    spendLimit: bigint,
-    account?: `0x${string}`,
-  ) => `0x${string}`;
-  getSessionKeySignature?: (
-    signer: WalletClient<Transport, Chain, Account>,
-    userOp: UserOperation,
-    entryPoint: GetContractReturnType<
-      typeof ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
-      PublicClient<Transport, Chain>
-    >,
-  ) => Promise<`0x${string}`>;
-  useSessionKeyERC20TransferCalldata?: (
-    token: GetContractReturnType<
-      typeof TOKEN_ARTIFACTS.USDC.abi,
-      PublicClient<Transport, Chain>
-    >,
-    key: `0x${string}`,
-    to: `0x${string}`,
-    amount: bigint,
-  ) => `0x${string}`;
-  useSessionKeyNativeTokenTransferCalldata?: (
-    key: `0x${string}`,
-    to: `0x${string}`,
-    amount: bigint,
-  ) => `0x${string}`;
-}
-
-export interface AccountConfig {
-  name: string;
-  accountFixture: () => Promise<AccountFixtureReturnType>;
-}
 
 const NATIVE_INITIAL_BALANCE = parseEther("10000");
 const NATIVE_TRANSFER_AMOUNT = parseEther("0.5");
@@ -127,13 +52,6 @@ describe("Benchmark", function () {
       await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
     }
 
-    const entryPoint = getContract({
-      address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.address,
-      abi: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
-      publicClient,
-      walletClient: owner,
-    });
-
     const usdc = getContract({
       address: TOKEN_ARTIFACTS.USDC.address,
       abi: TOKEN_ARTIFACTS.USDC.abi,
@@ -144,7 +62,6 @@ describe("Benchmark", function () {
     return {
       alice,
       beneficiary,
-      entryPoint,
       owner,
       publicClient,
       usdc,
@@ -158,7 +75,7 @@ describe("Benchmark", function () {
 
   ACCOUNTS_TO_BENCHMARK.forEach(({name, accountFixture}) => {
     describe(name, function () {
-      let hash: `0x${string}` | undefined;
+      let hash: Hex | undefined;
 
       beforeEach(function () {
         hash = undefined;
@@ -219,7 +136,7 @@ describe("Benchmark", function () {
       });
 
       async function fundAccount(
-        accountAddress: `0x${string}`,
+        accountAddress: Hex,
         usdc: GetContractReturnType<
           typeof TOKEN_ARTIFACTS.USDC.abi,
           PublicClient<Transport, Chain>,
@@ -234,37 +151,27 @@ describe("Benchmark", function () {
       }
 
       describe("User Operation", function () {
-        it(`User Operation: Account creation`, async function () {
-          const {owner, beneficiary, entryPoint, usdc, publicClient} =
+        it("User Operation: Account creation", async function () {
+          const {owner, beneficiary, usdc, publicClient} =
             await loadFixture(baseFixture);
-          const {
-            encodeUserOpExecute,
-            getAccountAddress,
-            getDummySignature,
-            getInitCode,
-            getOwnerSignature,
-          } = await loadFixture(accountFixture);
+          const accountData = await loadFixture(accountFixture);
 
-          const accountAddress = await getAccountAddress(
+          const accountAddress = await accountData.getAccountAddress(
             0n,
             owner.account.address,
           );
           await fundAccount(accountAddress, usdc);
 
-          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          const userOp = getUnsignedUserOp({
+          hash = await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            initCode: getInitCode(0n, owner.account.address),
-            callData: encodeUserOpExecute(zeroAddress, 0n, "0x"),
-            getDummySignature,
+            initCode: accountData.getInitCode(0n, owner.account.address),
+            callData: accountData.encodeUserOpExecute(zeroAddress, 0n, "0x"),
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
           });
-          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
-
-          hash = await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
 
           // Check that the account was created
           const code = await publicClient.getBytecode({
@@ -273,41 +180,31 @@ describe("Benchmark", function () {
           expect(code).to.not.equal("0x");
         });
 
-        it(`User Operation: Native transfer`, async function () {
-          const {owner, alice, beneficiary, entryPoint, usdc, publicClient} =
+        it("User Operation: Native transfer", async function () {
+          const {owner, alice, beneficiary, usdc, publicClient} =
             await loadFixture(baseFixture);
-          const {
-            createAccount,
-            encodeUserOpExecute,
-            getAccountAddress,
-            getDummySignature,
-            getOwnerSignature,
-          } = await loadFixture(accountFixture);
+          const accountData = await loadFixture(accountFixture);
 
-          const accountAddress = await getAccountAddress(
+          const accountAddress = await accountData.getAccountAddress(
             0n,
             owner.account.address,
           );
           await fundAccount(accountAddress, usdc);
-          await createAccount(0n, owner.account.address);
+          await accountData.createAccount(0n, owner.account.address);
 
-          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          const userOp = getUnsignedUserOp({
+          hash = await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            callData: encodeUserOpExecute(
+            callData: accountData.encodeUserOpExecute(
               alice.account.address,
               NATIVE_TRANSFER_AMOUNT,
               "0x",
             ),
-            getDummySignature,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
           });
-          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
-
-          hash = await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
 
           // Check that the transfer was successful
           const aliceBalance = await publicClient.getBalance({
@@ -318,29 +215,24 @@ describe("Benchmark", function () {
           );
         });
 
-        it(`User Operation: ERC-20 transfer`, async function () {
-          const {owner, alice, beneficiary, entryPoint, usdc} =
+        it("User Operation: ERC-20 transfer", async function () {
+          const {owner, alice, beneficiary, usdc} =
             await loadFixture(baseFixture);
-          const {
-            createAccount,
-            encodeUserOpExecute,
-            getAccountAddress,
-            getDummySignature,
-            getOwnerSignature,
-          } = await loadFixture(accountFixture);
+          const accountData = await loadFixture(accountFixture);
 
-          const accountAddress = await getAccountAddress(
+          const accountAddress = await accountData.getAccountAddress(
             0n,
             owner.account.address,
           );
           await fundAccount(accountAddress, usdc);
-          await createAccount(0n, owner.account.address);
+          await accountData.createAccount(0n, owner.account.address);
 
-          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          const userOp = getUnsignedUserOp({
+          hash = await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            callData: encodeUserOpExecute(
+            callData: accountData.encodeUserOpExecute(
               usdc.address,
               0n,
               encodeFunctionData({
@@ -353,14 +245,9 @@ describe("Benchmark", function () {
                 args: [alice.account.address, USDC_TRANSFER_AMOUNT],
               }),
             ),
-            getDummySignature,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
           });
-          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
-
-          hash = await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
 
           // Check that the ERC-20 transfer was successful
           const aliceBalance = await usdc.read.balanceOf([
@@ -370,133 +257,90 @@ describe("Benchmark", function () {
         });
 
         it("User Operation: Session key creation", async function () {
-          const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
+          const {owner, alice, beneficiary, usdc, sessionKey} =
             await loadFixture(baseFixture);
-          const {
-            getAccountAddress,
-            getDummySignature,
-            getOwnerSignature,
-            createAccount,
-            installSessionKeyPlugin,
-            addSessionKeyCalldata,
-          } = await loadFixture(accountFixture);
+          const accountData = await loadFixture(accountFixture);
 
-          if (!addSessionKeyCalldata) {
+          if (!accountData.addSessionKeyCalldata) {
             return this.skip();
           }
 
-          const accountAddress = await getAccountAddress(
+          const accountAddress = await accountData.getAccountAddress(
             0n,
             owner.account.address,
           );
           await fundAccount(accountAddress, usdc);
-          await createAccount(0n, owner.account.address);
+          await accountData.createAccount(0n, owner.account.address);
+          await accountData.installSessionKeyPlugin?.(accountAddress, owner);
 
-          installSessionKeyPlugin &&
-            (await installSessionKeyPlugin(accountAddress, owner));
-
-          const nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          const userOp = getUnsignedUserOp({
+          hash = await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            callData: addSessionKeyCalldata(
+            callData: accountData.addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
               [usdc],
               USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
-            getDummySignature,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
           });
-          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
-
-          hash = await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
         });
 
         it("User Operation: Session key native transfer", async function () {
-          const {
-            alice,
-            beneficiary,
-            entryPoint,
-            owner,
-            publicClient,
-            sessionKey,
-            usdc,
-          } = await loadFixture(baseFixture);
-          const {
-            getAccountAddress,
-            getDummySignature,
-            getOwnerSignature,
-            createAccount,
-            installSessionKeyPlugin,
-            addSessionKeyCalldata,
-            useSessionKeyNativeTokenTransferCalldata,
-            getSessionKeySignature,
-          } = await loadFixture(accountFixture);
+          const {alice, beneficiary, owner, publicClient, sessionKey, usdc} =
+            await loadFixture(baseFixture);
+          const accountData = await loadFixture(accountFixture);
 
           if (
-            !addSessionKeyCalldata ||
-            !useSessionKeyNativeTokenTransferCalldata ||
-            !getSessionKeySignature
+            !accountData.addSessionKeyCalldata ||
+            !accountData.useSessionKeyNativeTokenTransferCalldata ||
+            !accountData.getSessionKeySignature
           ) {
             return this.skip();
           }
 
-          const accountAddress = await getAccountAddress(
+          const accountAddress = await accountData.getAccountAddress(
             0n,
             owner.account.address,
           );
           await fundAccount(accountAddress, usdc);
-          await createAccount(0n, owner.account.address);
-
-          installSessionKeyPlugin &&
-            (await installSessionKeyPlugin(accountAddress, owner));
+          await accountData.createAccount(0n, owner.account.address);
+          await accountData.installSessionKeyPlugin?.(accountAddress, owner);
 
           // Add session key
-          let nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          let userOp = getUnsignedUserOp({
+          await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            callData: addSessionKeyCalldata(
+            callData: accountData.addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
               [usdc],
               NATIVE_TRANSFER_AMOUNT,
               accountAddress,
             ),
-            getDummySignature,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
           });
-          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
 
-          await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
-
-          nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          userOp = getUnsignedUserOp({
+          await wrappedHandleOps({
+            accountData,
+            signer: sessionKey,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            callData: useSessionKeyNativeTokenTransferCalldata(
+            callData: accountData.useSessionKeyNativeTokenTransferCalldata(
               sessionKey.account.address,
               alice.account.address,
               NATIVE_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
-            getDummySignature,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getSessionKeySignature,
           });
-          userOp.signature = await getSessionKeySignature(
-            sessionKey,
-            userOp,
-            entryPoint,
-          );
-
-          hash = await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
 
           // Check that the transfer was successful
           const aliceBalance = await publicClient.getBalance({
@@ -508,80 +352,57 @@ describe("Benchmark", function () {
         });
 
         it("User Operation: Session key ERC-20 transfer", async function () {
-          const {owner, alice, beneficiary, entryPoint, usdc, sessionKey} =
+          const {owner, alice, beneficiary, usdc, sessionKey} =
             await loadFixture(baseFixture);
-          const {
-            getAccountAddress,
-            getDummySignature,
-            getOwnerSignature,
-            createAccount,
-            installSessionKeyPlugin,
-            addSessionKeyCalldata,
-            useSessionKeyERC20TransferCalldata,
-            getSessionKeySignature,
-          } = await loadFixture(accountFixture);
+          const accountData = await loadFixture(accountFixture);
 
           if (
-            !addSessionKeyCalldata ||
-            !useSessionKeyERC20TransferCalldata ||
-            !getSessionKeySignature
+            !accountData.addSessionKeyCalldata ||
+            !accountData.useSessionKeyERC20TransferCalldata ||
+            !accountData.getSessionKeySignature
           ) {
             return this.skip();
           }
 
-          const accountAddress = await getAccountAddress(
+          const accountAddress = await accountData.getAccountAddress(
             0n,
             owner.account.address,
           );
           await fundAccount(accountAddress, usdc);
-          await createAccount(0n, owner.account.address);
-
-          installSessionKeyPlugin &&
-            (await installSessionKeyPlugin(accountAddress, owner));
+          await accountData.createAccount(0n, owner.account.address);
+          await accountData.installSessionKeyPlugin?.(accountAddress, owner);
 
           // Add session key
-          let nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          let userOp = getUnsignedUserOp({
+          await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            callData: addSessionKeyCalldata(
+            callData: accountData.addSessionKeyCalldata(
               sessionKey.account.address,
               alice.account.address,
               [usdc],
               USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
-            getDummySignature,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
           });
-          userOp.signature = await getOwnerSignature(owner, userOp, entryPoint);
 
-          await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
-
-          nonce = await entryPoint.read.getNonce([accountAddress, 0n]);
-          userOp = getUnsignedUserOp({
+          await wrappedHandleOps({
+            accountData,
+            signer: sessionKey,
+            beneficiary,
             sender: accountAddress,
-            nonce,
-            callData: useSessionKeyERC20TransferCalldata(
+            callData: accountData.useSessionKeyERC20TransferCalldata(
               usdc,
               sessionKey.account.address,
               alice.account.address,
               USDC_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
-            getDummySignature,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getSessionKeySignature,
           });
-          userOp.signature = await getSessionKeySignature(
-            sessionKey,
-            userOp,
-            entryPoint,
-          );
-
-          hash = await entryPoint.write.handleOps([
-            [userOp],
-            beneficiary.account.address,
-          ]);
 
           // Check that the ERC-20 transfer was successful
           const aliceBalance = await usdc.read.balanceOf([
@@ -592,7 +413,7 @@ describe("Benchmark", function () {
       });
 
       describe("Runtime", function () {
-        it(`Runtime: Account creation`, async function () {
+        it("Runtime: Account creation", async function () {
           const {owner, publicClient} = await loadFixture(baseFixture);
           const {createAccount, getAccountAddress} =
             await loadFixture(accountFixture);
@@ -609,7 +430,7 @@ describe("Benchmark", function () {
           expect(code).to.not.equal("0x");
         });
 
-        it(`Runtime: Native transfer`, async function () {
+        it("Runtime: Native transfer", async function () {
           const {owner, alice, usdc, publicClient} =
             await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
@@ -648,7 +469,7 @@ describe("Benchmark", function () {
           );
         });
 
-        it(`Runtime: ERC-20 transfer`, async function () {
+        it("Runtime: ERC-20 transfer", async function () {
           const {owner, alice, usdc} = await loadFixture(baseFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
             await loadFixture(accountFixture);

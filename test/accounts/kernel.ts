@@ -1,27 +1,26 @@
 import hre from "hardhat";
-import {calcPreVerificationGas} from "@account-abstraction/sdk";
 import {
+  encodeAbiParameters,
   encodeFunctionData,
   encodePacked,
   getAbiItem,
   getContract,
+  getFunctionSelector,
+  hexToBigInt,
+  keccak256,
+  pad,
+  parseAbiParameters,
   parseEther,
   toHex,
-  hexToBigInt,
   walletActions,
   zeroAddress,
-  getFunctionSelector,
-  keccak256,
-  encodeAbiParameters,
-  parseAbiParameters,
-  pad,
 } from "viem";
+import {AccountConfig, AccountDataV06} from "../accounts";
 import {KERNEL_ARTIFACTS} from "../artifacts/kernel";
-import {ENTRY_POINT_ARTIFACTS} from "../artifacts/entryPoint";
-import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
+import {getEntryPointV06} from "../utils/entryPoint";
 import {getUnsignedUserOp} from "../utils/userOp";
 
-async function accountFixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
   const testClient = (await hre.viem.getTestClient()).extend(walletActions);
@@ -84,7 +83,10 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
       ],
     });
 
+  const entryPoint = getEntryPointV06({publicClient, walletClient});
+
   return {
+    entryPoint,
     createAccount: async (salt, ownerAddress) => {
       return await kernelFactory.write.createAccount([
         KERNEL_ARTIFACTS.Kernel.address,
@@ -155,13 +157,6 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
       const sessionKeyValidator = getContract({
         address: KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
         abi: KERNEL_ARTIFACTS.KernelSessionKeyValidator.abi,
-        publicClient,
-        walletClient: owner,
-      });
-
-      const entryPoint = getContract({
-        address: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.address,
-        abi: ENTRY_POINT_ARTIFACTS.ENTRY_POINT.abi,
         publicClient,
         walletClient: owner,
       });

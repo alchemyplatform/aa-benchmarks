@@ -1,10 +1,10 @@
-import {encodeFunctionData, encodePacked, getAbiItem, getContract} from "viem";
-import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
-
 import hre from "hardhat";
+import {encodeFunctionData, encodePacked, getAbiItem, getContract} from "viem";
+import {AccountConfig, AccountDataV06} from "../accounts";
 import {LIGHT_ACCOUNT_ARTIFACTS} from "../artifacts/lightAccount";
+import {getEntryPointV06} from "../utils/entryPoint";
 
-async function accountFixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
@@ -20,6 +20,7 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
   });
 
   return {
+    entryPoint: getEntryPointV06({publicClient, walletClient}),
     createAccount: async (salt, ownerAddress) => {
       return await lightAccountFactory.write.createAccount([
         ownerAddress,

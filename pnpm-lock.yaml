@@ -115,7 +115,7 @@ packages:
       '@account-abstraction/contracts': 0.6.0
       '@ethersproject/abi': 5.7.0
       '@ethersproject/providers': 5.7.2
-      '@openzeppelin/contracts': 4.9.5
+      '@openzeppelin/contracts': 4.9.6
       debug: 4.3.4(supports-color@8.1.1)
       ethers: 5.7.2
     transitivePeerDependencies:
@@ -945,8 +945,8 @@ packages:
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.1
     dev: true
 
-  /@openzeppelin/contracts@4.9.5:
-    resolution: {integrity: sha512-ZK+W5mVhRppff9BE6YdR8CC52C8zAvsVAiWhEtQ5+oNxFE6h1WdeWo+FJSF8KKvtxxVYZ7MTP/5KoVpAU3aSWg==}
+  /@openzeppelin/contracts@4.9.6:
+    resolution: {integrity: sha512-xSmezSupL+y9VkHZJGDoCBpmnB2ogM13ccaYDWqJTfS3dbuHkgjuwDFUmaFauBCboQMGB/S5UqUl2y54X99BmA==}
     dev: true
 
   /@scure/base@1.1.5:

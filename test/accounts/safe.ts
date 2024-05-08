@@ -12,10 +12,11 @@ import {
   slice,
   zeroAddress,
 } from "viem";
+import {AccountConfig, AccountDataV06} from "../accounts";
 import {SAFE_ARTIFACTS} from "../artifacts/safe";
-import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
+import {getEntryPointV06} from "../utils/entryPoint";
 
-async function accountFixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
@@ -67,6 +68,7 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
   }
 
   return {
+    entryPoint: getEntryPointV06({publicClient, walletClient}),
     createAccount: async (salt, ownerAddress) => {
       return await safeProxyFactory.write.createProxyWithNonce([
         SAFE_ARTIFACTS.Safe.address,
