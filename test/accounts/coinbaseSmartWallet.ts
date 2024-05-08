@@ -1,3 +1,4 @@
+import hre from "hardhat";
 import {
   encodeAbiParameters,
   encodeFunctionData,
@@ -6,12 +7,11 @@ import {
   getContract,
 } from "viem";
 import {SignReturnType, sign} from "viem/accounts";
-import {AccountConfig, AccountFixtureReturnType} from "../benchmark";
-
-import hre from "hardhat";
+import {AccountConfig, AccountDataV06} from "../accounts";
 import {COINBASE_SMART_WALLET_ARTIFACTS} from "../artifacts/coinbaseSmartWallet";
+import {getEntryPointV06} from "../utils/entryPoint";
 
-async function accountFixture(): Promise<AccountFixtureReturnType> {
+async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
   const publicClient = await hre.viem.getPublicClient();
 
@@ -29,6 +29,7 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
   });
 
   return {
+    entryPoint: getEntryPointV06({publicClient, walletClient}),
     createAccount: async (salt, ownerAddress) => {
       const abiEncodedOwner = encodeAbiParameters(
         [{type: "address"}],
@@ -49,7 +50,7 @@ async function accountFixture(): Promise<AccountFixtureReturnType> {
         salt,
       ]);
     },
-    getOwnerSignature: async (owner, userOp, entryPoint) => {
+    getOwnerSignature: async (_owner, userOp, entryPoint) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       // Key of owner account.
       const privateKey =
