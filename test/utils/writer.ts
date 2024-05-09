@@ -29,7 +29,7 @@ export function collectResult(
 export async function writeResults() {
   let buffer = "<details>\n";
   buffer += "<summary><b>Run options</b></summary>\n\n";
-  buffer += `Last run: ${new Date().toUTCString()}\n`;
+  buffer += `Last run: ${new Date().toUTCString()}\n\n`;
 
   const configTable = [
     ["Option", "Value"],
