@@ -6,6 +6,7 @@ import {
   L1_BLOB_BASE_FEE_SCALAR,
 } from "../../settings";
 
+// From https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L24
 const DECIMALS = 6n;
 
 /**
@@ -16,6 +17,7 @@ export function getL1GasUsed(serializedTx: `0x${string}`) {
 }
 
 /**
+ * Matches https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L138
  * NOTE: This is only accurate for post-Ecotone transactions.
  */
 export function getL1Fee(

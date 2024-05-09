@@ -23,14 +23,15 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 <summary><b>Run options</b></summary>
 
 Last run: Wed, 08 May 2024 22:23:29 GMT
-| Option | Value |
+
+| Option               |          Value |
 | :------------------- | -------------: |
-| L2 base fee (gwei) | `0.06` |
-| L1 base fee (gwei) | `18.106809087` |
-| L1 base fee scalar | `1368` |
-| Blob base fee (wei) | `1` |
-| Blob base fee scalar | `810949` |
-| ETH price (USD) | `$3000` |
+| L2 base fee (gwei)   |         `0.06` |
+| L1 base fee (gwei)   | `18.106809087` |
+| L1 base fee scalar   |         `1368` |
+| Blob base fee (wei)  |            `1` |
+| Blob base fee scalar |       `810949` |
+| ETH price (USD)      |        `$3000` |
 
 </details>
 
