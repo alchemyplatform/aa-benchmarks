@@ -17,6 +17,12 @@ There are two different categories of benchmarks measured in this test: **User O
 
 These numbers are derived from local simulations with fixed inputs (see [Run benchmark](#run-benchmark) below to try different inputs) and actual on-chain numbers may differ.
 
+#### ⛽️ Benchmarks for other networks
+
+[Ethereum Mainnet](/benchmarks/ethereum.md) | [Arbitrum Mainnet](/benchmarks/arbitrum.md) | [Polygon Mainnet](/benchmarks/polygon.md) | **Optimism Mainnet** | [Base Mainnet](/benchmarks/base.md) | [Zora Mainnet](/benchmarks/zora.md)
+
+---
+
 <!-- BENCHMARK_RESULTS -->
 
 ### Optimism Mainnet

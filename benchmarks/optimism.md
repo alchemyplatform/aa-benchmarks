@@ -1,3 +1,9 @@
+#### ⛽️ Benchmarks for other networks
+
+[Ethereum Mainnet](/benchmarks/ethereum.md) | [Arbitrum Mainnet](/benchmarks/arbitrum.md) | [Polygon Mainnet](/benchmarks/polygon.md) | **Optimism Mainnet** | [Base Mainnet](/benchmarks/base.md) | [Zora Mainnet](/benchmarks/zora.md)
+
+---
+
 <!-- BENCHMARK_RESULTS -->
 
 ### Optimism Mainnet
