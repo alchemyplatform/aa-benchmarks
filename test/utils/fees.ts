@@ -1,10 +1,5 @@
 import {calldataCost} from "@eth-optimism/core-utils";
 import {formatEther} from "viem";
-import {
-  ETH_PRICE_USD,
-  L1_BASE_FEE_SCALAR,
-  L1_BLOB_BASE_FEE_SCALAR,
-} from "../../settings";
 
 // From https://github.com/ethereum-optimism/optimism/blob/ba174f4d5f4020ff16298fefd86b55a29d4724a9/packages/contracts-bedrock/src/L2/GasPriceOracle.sol#L24
 const DECIMALS = 6n;
@@ -23,10 +18,12 @@ export function getL1GasUsed(serializedTx: `0x${string}`) {
 export function getL1Fee(
   l1GasUsed: bigint,
   l1BaseFee: bigint,
-  l1BlobBaseFee: bigint,
+  l1BaseFeeScalar: bigint,
+  blobBaseFee: bigint,
+  blobBaseFeeScalar: bigint,
 ) {
-  const scaledBaseFee = L1_BASE_FEE_SCALAR * 16n * l1BaseFee;
-  const scaledBlobBaseFee = L1_BLOB_BASE_FEE_SCALAR * l1BlobBaseFee;
+  const scaledBaseFee = l1BaseFeeScalar * 16n * l1BaseFee;
+  const scaledBlobBaseFee = blobBaseFeeScalar * blobBaseFee;
   const fee = l1GasUsed * (scaledBaseFee + scaledBlobBaseFee);
   return fee / (16n * 10n ** DECIMALS);
 }
@@ -35,6 +32,6 @@ export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
   return Number(formatEther(wei)).toFixed(decimals).toString();
 }
 
-export function convertWeiToUsd(wei: bigint) {
-  return (Number(formatEther(wei)) * ETH_PRICE_USD).toFixed(4);
+export function convertWeiToUsd(wei: bigint, gasTokenPrice: number) {
+  return (Number(formatEther(wei)) * gasTokenPrice).toFixed(4);
 }

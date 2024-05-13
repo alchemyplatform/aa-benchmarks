@@ -3,6 +3,7 @@
 import {program} from "commander";
 import {Hex, createPublicClient, getContract, http} from "viem";
 import {optimism} from "viem/chains";
+import {OPT_BLOB_BASE_FEE_SCALAR, OPT_L1_BASE_FEE_SCALAR} from "../settings";
 import {getL1Fee, getL1GasUsed} from "../test/utils/fees";
 
 const publicClient = createPublicClient({
@@ -28,7 +29,9 @@ export async function verifyOptimismL1Gas(txHash: Hex) {
   const calculatedL1Fee = getL1Fee(
     calculatedL1GasUsed,
     receipt.l1GasPrice!,
+    OPT_L1_BASE_FEE_SCALAR,
     blobBaseFee,
+    OPT_BLOB_BASE_FEE_SCALAR,
   );
 
   console.log(
