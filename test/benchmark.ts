@@ -22,19 +22,13 @@ import {
   walletActions,
   zeroAddress,
 } from "viem";
-import {L1_BASE_FEE, L1_BLOB_BASE_FEE, L2_BASE_FEE} from "../settings";
 import {ACCOUNTS_TO_BENCHMARK} from "./accounts";
 import {ENTRY_POINT_ARTIFACTS} from "./artifacts/entryPoint";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 import {UNISWAP_ARTIFACTS} from "./artifacts/uniswap";
-import {
-  convertWeiToUsd,
-  formatEtherTruncated,
-  getL1Fee,
-  getL1GasUsed,
-} from "./utils/fees";
+import {getL1GasUsed} from "./utils/fees";
 import {wrappedHandleOps} from "./utils/userOp";
-import {collectResult, writeResults} from "./utils/writer";
+import {GasMetrics, collectResult, writeResults} from "./utils/writer";
 
 const NATIVE_INITIAL_BALANCE = parseEther("10000");
 const NATIVE_TRANSFER_AMOUNT = parseEther("0.5");
@@ -186,13 +180,9 @@ describe("Benchmark", function () {
       });
 
       afterEach(async function (this: Context) {
-        const tableEntries = {
-          "L2 gas used": "-",
-          "L2 fee (ETH)": "-",
-          "L1 gas used": "-",
-          "L1 fee (ETH)": "-",
-          "Total fee (ETH)": "-",
-          "Total fee (USD)": "Unsupported",
+        const gasMetrics: GasMetrics = {
+          gasUsed: null,
+          l1GasUsed: null,
         };
 
         if (hash) {
@@ -200,7 +190,6 @@ describe("Benchmark", function () {
           const {gasUsed} = await publicClient.getTransactionReceipt({
             hash,
           });
-          // Legacy transaction type
           const tx = await publicClient.getTransaction({
             hash,
           });
@@ -212,8 +201,11 @@ describe("Benchmark", function () {
               data: tx.input,
               nonce: tx.nonce,
               gas: tx.gas,
-              gasPrice: tx.gasPrice,
               type: tx.type,
+              maxFeePerGas: tx.maxFeePerGas,
+              maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
+              accessList: tx.accessList,
+              chainId: tx.chainId,
             },
             {
               r: tx.r,
@@ -221,22 +213,11 @@ describe("Benchmark", function () {
               v: tx.v,
             },
           );
-
-          const l2Fee = gasUsed * L2_BASE_FEE;
-          const l1GasUsed = getL1GasUsed(serializedTx);
-          const l1Fee = getL1Fee(l1GasUsed, L1_BASE_FEE, L1_BLOB_BASE_FEE);
-
-          tableEntries["L2 gas used"] = `${gasUsed}`;
-          tableEntries["L2 fee (ETH)"] = `${formatEtherTruncated(l2Fee)}`;
-          tableEntries["L1 gas used"] = `${l1GasUsed}`;
-          tableEntries["L1 fee (ETH)"] = `${formatEtherTruncated(l1Fee)}`;
-          tableEntries["Total fee (ETH)"] =
-            `${formatEtherTruncated(l2Fee + l1Fee)}`;
-          tableEntries["Total fee (USD)"] =
-            `$${convertWeiToUsd(l2Fee + l1Fee)}`;
+          gasMetrics.gasUsed = gasUsed;
+          gasMetrics.l1GasUsed = getL1GasUsed(serializedTx);
         }
 
-        collectResult(this.currentTest!.title, name, tableEntries);
+        collectResult(this.currentTest!.title, name, gasMetrics);
       });
 
       async function fundAccount(
@@ -366,7 +347,7 @@ describe("Benchmark", function () {
           expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
         });
 
-        it("User Operation: ERC-20 swap", async function () {
+        it("User Operation: Uniswap V3 swap", async function () {
           const {owner, beneficiary, usdc, usdt} =
             await loadFixture(baseFixture);
           const {uniswapSwapRouter} = await loadFixture(uniswapFixture);
