@@ -176,7 +176,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 </details>
 
-#### User Operation: Uniswap V3 swap
+#### User Operation: Uniswap V3 ERC-20 swap
 
 ##### Total fee (USD)
 
@@ -498,7 +498,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 </details>
 
-#### Runtime: ERC-20 swap
+#### Runtime: Uniswap V3 ERC-20 swap
 
 ##### Total fee (USD)
 

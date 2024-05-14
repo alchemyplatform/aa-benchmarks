@@ -157,7 +157,7 @@
 
 </details>
 
-#### User Operation: Uniswap V3 swap
+#### User Operation: Uniswap V3 ERC-20 swap
 
 ##### Total fee (USD)
 
@@ -479,7 +479,7 @@
 
 </details>
 
-#### Runtime: ERC-20 swap
+#### Runtime: Uniswap V3 ERC-20 swap
 
 ##### Total fee (USD)
 

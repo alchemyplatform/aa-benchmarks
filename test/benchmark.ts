@@ -347,7 +347,7 @@ describe("Benchmark", function () {
           expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
         });
 
-        it("User Operation: Uniswap V3 swap", async function () {
+        it("User Operation: Uniswap V3 ERC-20 swap", async function () {
           const {owner, beneficiary, usdc, usdt} =
             await loadFixture(baseFixture);
           const {uniswapSwapRouter} = await loadFixture(uniswapFixture);
@@ -679,7 +679,7 @@ describe("Benchmark", function () {
           expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
         });
 
-        it("Runtime: ERC-20 swap", async function () {
+        it("Runtime: Uniswap V3 ERC-20 swap", async function () {
           const {owner, usdc, usdt} = await loadFixture(baseFixture);
           const {uniswapSwapRouter} = await loadFixture(uniswapFixture);
           const {getAccountAddress, createAccount, encodeRuntimeExecute} =
