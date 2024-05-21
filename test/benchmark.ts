@@ -246,6 +246,9 @@ describe("Benchmark", function () {
           const {owner, beneficiary, usdc, publicClient} =
             await loadFixture(baseFixture);
           const accountData = await loadFixture(accountFixture);
+          if (!accountData.entryPoint) {
+            return this.skip();
+          }
 
           const accountAddress = await accountData.getAccountAddress(
             0n,
@@ -275,6 +278,9 @@ describe("Benchmark", function () {
           const {owner, alice, beneficiary, usdc, publicClient} =
             await loadFixture(baseFixture);
           const accountData = await loadFixture(accountFixture);
+          if (!accountData.entryPoint) {
+            return this.skip();
+          }
 
           const accountAddress = await accountData.getAccountAddress(
             0n,
@@ -310,6 +316,9 @@ describe("Benchmark", function () {
           const {owner, alice, beneficiary, usdc} =
             await loadFixture(baseFixture);
           const accountData = await loadFixture(accountFixture);
+          if (!accountData.entryPoint) {
+            return this.skip();
+          }
 
           const accountAddress = await accountData.getAccountAddress(
             0n,
@@ -352,6 +361,9 @@ describe("Benchmark", function () {
             await loadFixture(baseFixture);
           const {uniswapSwapRouter} = await loadFixture(uniswapFixture);
           const accountData = await loadFixture(accountFixture);
+          if (!accountData.entryPoint) {
+            return this.skip();
+          }
 
           const accountAddress = await accountData.getAccountAddress(
             0n,
@@ -426,8 +438,7 @@ describe("Benchmark", function () {
           const {owner, alice, beneficiary, usdc, sessionKey} =
             await loadFixture(baseFixture);
           const accountData = await loadFixture(accountFixture);
-
-          if (!accountData.addSessionKeyCalldata) {
+          if (!accountData.entryPoint || !accountData.addSessionKeyCalldata) {
             return this.skip();
           }
 
@@ -460,8 +471,8 @@ describe("Benchmark", function () {
           const {alice, beneficiary, owner, publicClient, sessionKey, usdc} =
             await loadFixture(baseFixture);
           const accountData = await loadFixture(accountFixture);
-
           if (
+            !accountData.entryPoint ||
             !accountData.addSessionKeyCalldata ||
             !accountData.useSessionKeyNativeTokenTransferCalldata ||
             !accountData.getSessionKeySignature
@@ -521,8 +532,8 @@ describe("Benchmark", function () {
           const {owner, alice, beneficiary, usdc, sessionKey} =
             await loadFixture(baseFixture);
           const accountData = await loadFixture(accountFixture);
-
           if (
+            !accountData.entryPoint ||
             !accountData.addSessionKeyCalldata ||
             !accountData.useSessionKeyERC20TransferCalldata ||
             !accountData.getSessionKeySignature
@@ -593,7 +604,7 @@ describe("Benchmark", function () {
           const code = await publicClient.getBytecode({
             address: accountAddress,
           });
-          expect(code).to.not.equal("0x");
+          expect(code).to.not.be.undefined;
         });
 
         it("Runtime: Native transfer", async function () {
