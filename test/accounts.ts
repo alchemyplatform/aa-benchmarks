@@ -15,6 +15,7 @@ import {lightAccount} from "./accounts/lightAccount";
 import {lightAccountV2} from "./accounts/lightAccountV2";
 import {modularAccount} from "./accounts/modularAccount";
 import {safe} from "./accounts/safe";
+import {sequence} from "./accounts/sequence";
 import {simpleAccount} from "./accounts/simpleAccount";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
 import {EntryPointV06, EntryPointV07} from "./utils/entryPoint";
@@ -28,7 +29,7 @@ export interface AccountData<
     ? UserOperation
     : PackedUserOperation,
 > {
-  entryPoint: TEntryPoint;
+  entryPoint: TEntryPoint | null;
   createAccount: (salt: bigint, ownerAddress: Address) => Promise<Address>;
   getAccountAddress: (salt: bigint, ownerAddress: Address) => Promise<Address>;
   getOwnerSignature: (
@@ -41,8 +42,8 @@ export interface AccountData<
     to: Address,
     value: bigint,
     data: Hex,
-    owner?: WalletClient<Transport, Chain, Account>,
-    accountAddress?: Address,
+    owner: WalletClient<Transport, Chain, Account>,
+    accountAddress: Address,
   ) => Promise<Hex>;
   getDummySignature: (userOp: TUserOperation) => Hex;
   getInitCode: (salt: bigint, ownerAddress: Address) => Hex;
@@ -97,6 +98,7 @@ export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   biconomy_v2,
   kernel,
   safe,
+  sequence,
   simpleAccount,
   lightAccount,
   lightAccountV2,
