@@ -14,6 +14,7 @@ import {kernel} from "./accounts/kernel";
 import {lightAccount} from "./accounts/lightAccount";
 import {lightAccountV2} from "./accounts/lightAccountV2";
 import {modularAccount} from "./accounts/modularAccount";
+import {multiOwnerLightAccount} from "./accounts/multiOwnerLightAccount";
 import {safe} from "./accounts/safe";
 import {simpleAccount} from "./accounts/simpleAccount";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
@@ -100,5 +101,6 @@ export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   simpleAccount,
   lightAccount,
   lightAccountV2,
+  multiOwnerLightAccount,
   coinbaseSmartWallet,
 ];
