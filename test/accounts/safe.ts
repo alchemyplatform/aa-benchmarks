@@ -276,6 +276,6 @@ function ethSignLegacy(data: `0x${string}`) {
 }
 
 export const safe: AccountConfig = {
-  name: "Safe",
+  name: "Safe v1.4.1",
   accountFixture,
 };
