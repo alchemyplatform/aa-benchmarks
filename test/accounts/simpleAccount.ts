@@ -6,7 +6,6 @@ import {getEntryPointV07} from "../utils/entryPoint";
 
 async function accountFixture(): Promise<AccountDataV07> {
   const [walletClient] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
 
   for (const {address, bytecode} of Object.values(SIMPLE_ACCOUNT_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
@@ -15,12 +14,11 @@ async function accountFixture(): Promise<AccountDataV07> {
   const simpleAccountFactory = getContract({
     address: SIMPLE_ACCOUNT_ARTIFACTS.SimpleAccountFactory.address,
     abi: SIMPLE_ACCOUNT_ARTIFACTS.SimpleAccountFactory.abi,
-    publicClient,
-    walletClient,
+    client: walletClient,
   });
 
   return {
-    entryPoint: getEntryPointV07({publicClient, walletClient}),
+    entryPoint: getEntryPointV07({walletClient}),
     createAccount: async (salt, ownerAddress) => {
       return await simpleAccountFactory.write.createAccount([
         ownerAddress,

@@ -18,7 +18,6 @@ import {getEntryPointV06} from "../utils/entryPoint";
 
 async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
 
   for (const {address, bytecode} of Object.values(SAFE_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
@@ -27,15 +26,13 @@ async function accountFixture(): Promise<AccountDataV06> {
   const safeProxyFactory = getContract({
     address: SAFE_ARTIFACTS.SafeProxyFactory.address,
     abi: SAFE_ARTIFACTS.SafeProxyFactory.abi,
-    publicClient,
-    walletClient,
+    client: walletClient,
   });
 
   const safe4337Module = getContract({
     address: SAFE_ARTIFACTS.Safe4337Module.address,
     abi: SAFE_ARTIFACTS.Safe4337Module.abi,
-    publicClient,
-    walletClient,
+    client: walletClient,
   });
 
   function getSetupData(ownerAddress: `0x${string}`) {
@@ -68,7 +65,7 @@ async function accountFixture(): Promise<AccountDataV06> {
   }
 
   return {
-    entryPoint: getEntryPointV06({publicClient, walletClient}),
+    entryPoint: getEntryPointV06({walletClient}),
     createAccount: async (salt, ownerAddress) => {
       return await safeProxyFactory.write.createProxyWithNonce([
         SAFE_ARTIFACTS.Safe.address,
@@ -178,8 +175,7 @@ async function accountFixture(): Promise<AccountDataV06> {
       const account = getContract({
         address: accountAddress,
         abi: SAFE_ARTIFACTS.Safe.abi,
-        publicClient,
-        walletClient: owner,
+        client: owner,
       });
       const nonce = await account.read.nonce();
       const signature = await owner.signTypedData({
