@@ -19,7 +19,6 @@ enum SignatureType {
 
 async function accountFixture(): Promise<AccountDataV07> {
   const [walletClient] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
 
   for (const {address, bytecode} of Object.values(
     MULTI_OWNER_LIGHT_ACCOUNT_ARTIFACTS,
@@ -31,12 +30,11 @@ async function accountFixture(): Promise<AccountDataV07> {
     address:
       MULTI_OWNER_LIGHT_ACCOUNT_ARTIFACTS.MultiOwnerLightAccountFactory.address,
     abi: MULTI_OWNER_LIGHT_ACCOUNT_ARTIFACTS.MultiOwnerLightAccountFactory.abi,
-    publicClient,
-    walletClient,
+    client: walletClient,
   });
 
   return {
-    entryPoint: getEntryPointV07({walletClient, publicClient}),
+    entryPoint: getEntryPointV07({walletClient}),
     createAccount: async (salt, ownerAddress) => {
       return await multiOwnerLightAccountFactory.write.createAccountSingle([
         ownerAddress,

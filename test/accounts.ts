@@ -2,9 +2,9 @@ import {
   Account,
   Address,
   Chain,
+  Client,
   GetContractReturnType,
   Hex,
-  PublicClient,
   Transport,
   WalletClient,
 } from "viem";
@@ -58,7 +58,7 @@ export interface AccountData<
     target: Address,
     tokens: GetContractReturnType<
       typeof TOKEN_ARTIFACTS.USDC.abi,
-      PublicClient<Transport, Chain>
+      Client<Transport, Chain>
     >[],
     spendLimit: bigint,
     account?: Address,
@@ -71,7 +71,7 @@ export interface AccountData<
   useSessionKeyERC20TransferCalldata?: (
     token: GetContractReturnType<
       typeof TOKEN_ARTIFACTS.USDC.abi,
-      PublicClient<Transport, Chain>
+      Client<Transport, Chain>
     >,
     key: Hex,
     to: Address,

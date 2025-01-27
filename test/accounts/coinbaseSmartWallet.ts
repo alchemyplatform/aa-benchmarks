@@ -13,7 +13,6 @@ import {getEntryPointV06} from "../utils/entryPoint";
 
 async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
 
   for (const {address, bytecode} of Object.values(
     COINBASE_SMART_WALLET_ARTIFACTS,
@@ -24,12 +23,11 @@ async function accountFixture(): Promise<AccountDataV06> {
   const coinbaseSmartWalletFactory = getContract({
     address: COINBASE_SMART_WALLET_ARTIFACTS.CoinbaseSmartWalletFactory.address,
     abi: COINBASE_SMART_WALLET_ARTIFACTS.CoinbaseSmartWalletFactory.abi,
-    publicClient,
-    walletClient,
+    client: walletClient,
   });
 
   return {
-    entryPoint: getEntryPointV06({publicClient, walletClient}),
+    entryPoint: getEntryPointV06({walletClient}),
     createAccount: async (salt, ownerAddress) => {
       const abiEncodedOwner = encodeAbiParameters(
         [{type: "address"}],
@@ -136,7 +134,7 @@ function buildSignatureWrapperForEOA({
 }) {
   const signatureData = encodePacked(
     ["bytes32", "bytes32", "uint8"],
-    [signature.r, signature.s, parseInt(signature.v.toString())],
+    [signature.r, signature.s, parseInt(signature.v!.toString())],
   );
   return encodeAbiParameters(
     [SignatureWrapperStruct],

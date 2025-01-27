@@ -7,7 +7,6 @@ import {
   Chain,
   GetContractReturnType,
   Hex,
-  PublicClient,
   Transport,
   WalletClient,
   encodeFunctionData,
@@ -55,15 +54,13 @@ describe("Benchmark", function () {
     const usdc = getContract({
       address: TOKEN_ARTIFACTS.USDC.address,
       abi: TOKEN_ARTIFACTS.USDC.abi,
-      publicClient,
-      walletClient: owner,
+      client: owner,
     });
 
     const usdt = getContract({
       address: TOKEN_ARTIFACTS.USDT.address,
       abi: TOKEN_ARTIFACTS.USDT.abi,
-      publicClient,
-      walletClient: owner,
+      client: owner,
     });
 
     return {
@@ -79,7 +76,6 @@ describe("Benchmark", function () {
 
   async function uniswapFixture() {
     const [owner] = await hre.viem.getWalletClients();
-    const publicClient = await hre.viem.getPublicClient();
     const testClient = (await hre.viem.getTestClient()).extend(walletActions);
 
     for (const {address, bytecode} of Object.values(TOKEN_ARTIFACTS)) {
@@ -93,29 +89,25 @@ describe("Benchmark", function () {
     const usdc = getContract({
       address: TOKEN_ARTIFACTS.USDC.address,
       abi: TOKEN_ARTIFACTS.USDC.abi,
-      publicClient,
-      walletClient: owner,
+      client: owner,
     });
 
     const usdt = getContract({
       address: TOKEN_ARTIFACTS.USDT.address,
       abi: TOKEN_ARTIFACTS.USDT.abi,
-      publicClient,
-      walletClient: owner,
+      client: owner,
     });
 
     const uniswapSwapRouter = getContract({
       address: UNISWAP_ARTIFACTS.SwapRouter.address,
       abi: UNISWAP_ARTIFACTS.SwapRouter.abi,
-      publicClient,
-      walletClient: owner,
+      client: owner,
     });
 
     const uniswapNonfungiblePositionManager = getContract({
       address: UNISWAP_ARTIFACTS.NonfungiblePositionManager.address,
       abi: UNISWAP_ARTIFACTS.NonfungiblePositionManager.abi,
-      publicClient,
-      walletClient: owner,
+      client: owner,
     });
 
     // Initialize the Uniswap V3 factory.
@@ -193,19 +185,19 @@ describe("Benchmark", function () {
           const tx = await publicClient.getTransaction({
             hash,
           });
+          console.log(tx);
           const serializedTx = serializeTransaction(
             {
-              from: tx.from,
               to: tx.to,
               value: tx.value,
               data: tx.input,
               nonce: tx.nonce,
               gas: tx.gas,
-              type: tx.type,
+              type: "eip1559",
               maxFeePerGas: tx.maxFeePerGas,
               maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
               accessList: tx.accessList,
-              chainId: tx.chainId,
+              chainId: tx.chainId!,
             },
             {
               r: tx.r,
@@ -224,12 +216,10 @@ describe("Benchmark", function () {
         accountAddress: Hex,
         usdc: GetContractReturnType<
           typeof TOKEN_ARTIFACTS.USDC.abi,
-          PublicClient<Transport, Chain>,
           WalletClient<Transport, Chain, Account>
         >,
         usdt?: GetContractReturnType<
           typeof TOKEN_ARTIFACTS.USDT.abi,
-          PublicClient<Transport, Chain>,
           WalletClient<Transport, Chain, Account>
         >,
       ) {

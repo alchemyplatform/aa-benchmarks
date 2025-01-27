@@ -9,4 +9,8 @@ declare module "hardhat/types/artifacts" {
   interface ArtifactsMap {
     
   }
+
+  interface ContractTypesMap {
+    
+  }
 }

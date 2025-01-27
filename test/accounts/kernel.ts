@@ -22,7 +22,6 @@ import {getUnsignedUserOp} from "../utils/userOp";
 
 async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
   const testClient = (await hre.viem.getTestClient()).extend(walletActions);
 
   for (const {address, bytecode} of Object.values(KERNEL_ARTIFACTS)) {
@@ -34,8 +33,7 @@ async function accountFixture(): Promise<AccountDataV06> {
   const kernelFactory = getContract({
     address: KERNEL_ARTIFACTS.KernelFactory.address,
     abi: KERNEL_ARTIFACTS.KernelFactory.abi,
-    publicClient,
-    walletClient,
+    client: walletClient,
   });
 
   const dummySig =
@@ -83,7 +81,7 @@ async function accountFixture(): Promise<AccountDataV06> {
       ],
     });
 
-  const entryPoint = getEntryPointV06({publicClient, walletClient});
+  const entryPoint = getEntryPointV06({walletClient});
 
   return {
     entryPoint,
@@ -157,8 +155,7 @@ async function accountFixture(): Promise<AccountDataV06> {
       const sessionKeyValidator = getContract({
         address: KERNEL_ARTIFACTS.KernelSessionKeyValidator.address,
         abi: KERNEL_ARTIFACTS.KernelSessionKeyValidator.abi,
-        publicClient,
-        walletClient: owner,
+        client: owner,
       });
 
       const executeSelector = getFunctionSelector(

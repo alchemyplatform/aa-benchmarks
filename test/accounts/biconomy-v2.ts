@@ -17,7 +17,6 @@ import {getEntryPointV06} from "../utils/entryPoint";
 
 async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
-  const publicClient = await hre.viem.getPublicClient();
   const testClient = (await hre.viem.getTestClient()).extend(walletActions);
 
   for (const {address, bytecode} of Object.values(BICONOMY_V2_ARTIFACTS)) {
@@ -29,8 +28,7 @@ async function accountFixture(): Promise<AccountDataV06> {
   const biconomyV2Factory = getContract({
     address: BICONOMY_V2_ARTIFACTS.SmartAccountFactory.address,
     abi: BICONOMY_V2_ARTIFACTS.SmartAccountFactory.abi,
-    publicClient,
-    walletClient,
+    client: walletClient,
   });
 
   // Helper function for generating "module setup data"
@@ -51,7 +49,7 @@ async function accountFixture(): Promise<AccountDataV06> {
     moduleData: null,
   };
 
-  const entryPoint = getEntryPointV06({publicClient, walletClient});
+  const entryPoint = getEntryPointV06({walletClient});
 
   return {
     entryPoint,
