@@ -185,7 +185,6 @@ describe("Benchmark", function () {
           const tx = await publicClient.getTransaction({
             hash,
           });
-          console.log(tx);
           const serializedTx = serializeTransaction(
             {
               to: tx.to,
@@ -250,6 +249,7 @@ describe("Benchmark", function () {
             sender: accountAddress,
             initCode: accountData.getInitCode(0n, owner.account.address),
             callData: accountData.encodeUserOpExecute(zeroAddress, 0n, "0x"),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -283,6 +283,7 @@ describe("Benchmark", function () {
               NATIVE_TRANSFER_AMOUNT,
               "0x",
             ),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -326,6 +327,7 @@ describe("Benchmark", function () {
                 args: [alice.account.address, USDC_TRANSFER_AMOUNT],
               }),
             ),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -368,6 +370,7 @@ describe("Benchmark", function () {
                 args: [uniswapSwapRouter.address, maxUint256],
               }),
             ),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -401,6 +404,7 @@ describe("Benchmark", function () {
                 ],
               }),
             ),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -441,6 +445,7 @@ describe("Benchmark", function () {
               USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -480,6 +485,7 @@ describe("Benchmark", function () {
               NATIVE_TRANSFER_AMOUNT,
               accountAddress,
             ),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -494,6 +500,7 @@ describe("Benchmark", function () {
               alice.account.address,
               NATIVE_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getSessionKeySignature,
           });
@@ -541,6 +548,7 @@ describe("Benchmark", function () {
               USDC_TRANSFER_AMOUNT,
               accountAddress,
             ),
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getOwnerSignature,
           });
@@ -556,6 +564,7 @@ describe("Benchmark", function () {
               alice.account.address,
               USDC_TRANSFER_AMOUNT,
             ), // key 3 = sessionKey.account.address
+            getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getSessionKeySignature,
           });

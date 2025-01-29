@@ -98,12 +98,15 @@ async function accountFixture(): Promise<AccountDataV06> {
         salt,
       ]);
     },
-    getOwnerSignature: async (owner, userOp, entryPoint) => {
+    getOwnerSignature: async (owner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       const signature = await owner.signMessage({
         message: {raw: userOpHash},
       });
       return encodePacked(["bytes4", "bytes"], ["0x00000000", signature]);
+    },
+    getNonce: async (accountAddress) => {
+      return await entryPoint.read.getNonce([accountAddress, 0n]);
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
@@ -437,7 +440,7 @@ async function accountFixture(): Promise<AccountDataV06> {
         ],
       });
     },
-    getSessionKeySignature: async (key, userOp, entryPoint) => {
+    getSessionKeySignature: async (key, userOp) => {
       // for now, assume it is the session key used to perform the erc-20 transfer
 
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);

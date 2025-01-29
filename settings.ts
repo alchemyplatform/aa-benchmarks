@@ -42,16 +42,34 @@ export const POLYGON_GAS_PRICE_HIGH = BigInt(
 );
 export const OPT_GAS_PRICE_HIGH = BigInt(process.env.OPT_GAS_PRICE_HIGH!);
 export const OPT_L1_BASE_FEE_HIGH = BigInt(process.env.OPT_L1_BASE_FEE_HIGH!);
+export const OPT_L1_BASE_FEE_SCALAR_HIGH = BigInt(
+  process.env.OPT_L1_BASE_FEE_SCALAR_HIGH!,
+);
 export const OPT_BLOB_BASE_FEE_HIGH = BigInt(
   process.env.OPT_BLOB_BASE_FEE_HIGH!,
 );
+export const OPT_BLOB_BASE_FEE_SCALAR_HIGH = BigInt(
+  process.env.OPT_BLOB_BASE_FEE_SCALAR_HIGH!,
+);
 export const BASE_GAS_PRICE_HIGH = BigInt(process.env.BASE_GAS_PRICE_HIGH!);
 export const BASE_L1_BASE_FEE_HIGH = BigInt(process.env.BASE_L1_BASE_FEE_HIGH!);
+export const BASE_L1_BASE_FEE_SCALAR_HIGH = BigInt(
+  process.env.BASE_L1_BASE_FEE_SCALAR_HIGH!,
+);
 export const BASE_BLOB_BASE_FEE_HIGH = BigInt(
   process.env.BASE_BLOB_BASE_FEE_HIGH!,
 );
+export const BASE_BLOB_BASE_FEE_SCALAR_HIGH = BigInt(
+  process.env.BASE_BLOB_BASE_FEE_SCALAR_HIGH!,
+);
 export const ZORA_GAS_PRICE_HIGH = BigInt(process.env.ZORA_GAS_PRICE_HIGH!);
 export const ZORA_L1_BASE_FEE_HIGH = BigInt(process.env.ZORA_L1_BASE_FEE_HIGH!);
+export const ZORA_L1_BASE_FEE_SCALAR_HIGH = BigInt(
+  process.env.ZORA_L1_BASE_FEE_SCALAR_HIGH!,
+);
 export const ZORA_BLOB_BASE_FEE_HIGH = BigInt(
   process.env.ZORA_BLOB_BASE_FEE_HIGH!,
+);
+export const ZORA_BLOB_BASE_FEE_SCALAR_HIGH = BigInt(
+  process.env.ZORA_BLOB_BASE_FEE_SCALAR_HIGH!,
 );

@@ -5,28 +5,36 @@ import {
   encodePacked,
   getAbiItem,
   getContract,
+  hexToBigInt,
+  maxUint8,
   toHex,
 } from "viem";
 import {AccountConfig, AccountDataV07} from "../accounts";
-import {LIGHT_ACCOUNT_V2_ARTIFACTS} from "../artifacts/lightAccountV2";
+import {MODULAR_ACCOUNT_V2_ARTIFACTS} from "../artifacts/modularAccountV2";
 import {getEntryPointV07} from "../utils/entryPoint";
 
 enum SignatureType {
   EOA = 0,
   CONTRACT = 1,
-  CONTRACT_WITH_ADDR = 2,
+}
+
+enum ValidationType {
+  SELECTOR_ASSOCIATED = 0,
+  GLOBAL = 1,
 }
 
 async function accountFixture(): Promise<AccountDataV07> {
   const [walletClient] = await hre.viem.getWalletClients();
 
-  for (const {address, bytecode} of Object.values(LIGHT_ACCOUNT_V2_ARTIFACTS)) {
+  for (const {address, bytecode} of Object.values(
+    MODULAR_ACCOUNT_V2_ARTIFACTS,
+  )) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
   }
 
-  const lightAccountV2Factory = getContract({
-    address: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccountFactory.address,
-    abi: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccountFactory.abi,
+  const accountFactory = getContract({
+    address: MODULAR_ACCOUNT_V2_ARTIFACTS.AccountFactory.address,
+    abi: MODULAR_ACCOUNT_V2_ARTIFACTS.AccountFactory.abi,
     client: walletClient,
   });
 
@@ -35,29 +43,44 @@ async function accountFixture(): Promise<AccountDataV07> {
   return {
     entryPoint,
     createAccount: async (salt, ownerAddress) => {
-      return await lightAccountV2Factory.write.createAccount([
+      return await accountFactory.write.createSemiModularAccount([
         ownerAddress,
         salt,
       ]);
     },
     getAccountAddress: async (salt, ownerAddress) => {
-      return await lightAccountV2Factory.read.getAddress([ownerAddress, salt]);
+      return await accountFactory.read.getAddressSemiModular([
+        ownerAddress,
+        salt,
+      ]);
     },
     getOwnerSignature: async (owner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       const signature = await owner.signMessage({
         message: {raw: userOpHash},
       });
-      return concatHex([toHex(SignatureType.EOA, {size: 1}), signature]);
+      return concatHex([
+        toHex(maxUint8, {size: 1}), // RESERVED_VALIDATION_DATA_INDEX
+        toHex(SignatureType.EOA, {size: 1}),
+        signature,
+      ]);
     },
     getNonce: async (accountAddress) => {
-      return await entryPoint.read.getNonce([accountAddress, 0n]);
+      const key = encodePacked(
+        ["uint152", "uint32", "uint8"],
+        [
+          0n, // Parallel nonce key
+          0, // Validation entity ID (0 for FALLBACK_VALIDATION)
+          ValidationType.GLOBAL, // Validation type
+        ],
+      );
+      return await entryPoint.read.getNonce([accountAddress, hexToBigInt(key)]);
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
         abi: [
           getAbiItem({
-            abi: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccount.abi,
+            abi: MODULAR_ACCOUNT_V2_ARTIFACTS.ModularAccount.abi,
             name: "execute",
           }),
         ],
@@ -68,7 +91,7 @@ async function accountFixture(): Promise<AccountDataV07> {
       return encodeFunctionData({
         abi: [
           getAbiItem({
-            abi: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccount.abi,
+            abi: MODULAR_ACCOUNT_V2_ARTIFACTS.ModularAccount.abi,
             name: "execute",
           }),
         ],
@@ -77,6 +100,7 @@ async function accountFixture(): Promise<AccountDataV07> {
     },
     getDummySignature: (_userOp) => {
       return concatHex([
+        toHex(maxUint8, {size: 1}), // RESERVED_VALIDATION_DATA_INDEX
         toHex(SignatureType.EOA, {size: 1}),
         "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c",
       ]);
@@ -85,12 +109,12 @@ async function accountFixture(): Promise<AccountDataV07> {
       return encodePacked(
         ["address", "bytes"],
         [
-          lightAccountV2Factory.address,
+          accountFactory.address,
           encodeFunctionData({
             abi: [
               getAbiItem({
-                abi: lightAccountV2Factory.abi,
-                name: "createAccount",
+                abi: accountFactory.abi,
+                name: "createSemiModularAccount",
               }),
             ],
             args: [ownerAddress, salt],
@@ -101,7 +125,7 @@ async function accountFixture(): Promise<AccountDataV07> {
   };
 }
 
-export const lightAccountV2: AccountConfig = {
-  name: "Light Account v2",
+export const modularAccountV2: AccountConfig = {
+  name: "Modular Account v2",
   accountFixture,
 };

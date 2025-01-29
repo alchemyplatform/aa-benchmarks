@@ -26,8 +26,10 @@ async function accountFixture(): Promise<AccountDataV06> {
     client: walletClient,
   });
 
+  const entryPoint = getEntryPointV06({walletClient});
+
   return {
-    entryPoint: getEntryPointV06({walletClient}),
+    entryPoint,
     createAccount: async (salt, ownerAddress) => {
       const abiEncodedOwner = encodeAbiParameters(
         [{type: "address"}],
@@ -48,13 +50,16 @@ async function accountFixture(): Promise<AccountDataV06> {
         salt,
       ]);
     },
-    getOwnerSignature: async (_owner, userOp, entryPoint) => {
+    getOwnerSignature: async (_owner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       // Key of owner account.
       const privateKey =
         "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
       const signature = await sign({hash: userOpHash, privateKey});
       return buildSignatureWrapperForEOA({signature, ownerIndex: 0n});
+    },
+    getNonce: async (accountAddress) => {
+      return await entryPoint.read.getNonce([accountAddress, 0n]);
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({

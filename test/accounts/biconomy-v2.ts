@@ -67,7 +67,7 @@ async function accountFixture(): Promise<AccountDataV06> {
         salt,
       ]);
     },
-    getOwnerSignature: async (owner, userOp, entryPoint) => {
+    getOwnerSignature: async (owner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       const signature = await owner.signMessage({
         message: {raw: userOpHash},
@@ -79,6 +79,9 @@ async function accountFixture(): Promise<AccountDataV06> {
         ],
         [signature, BICONOMY_V2_ARTIFACTS.EcdsaOwnershipRegistryModule.address],
       );
+    },
+    getNonce: async (accountAddress) => {
+      return await entryPoint.read.getNonce([accountAddress, 0n]);
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
@@ -235,7 +238,7 @@ async function accountFixture(): Promise<AccountDataV06> {
         ],
       });
     },
-    getSessionKeySignature: async (key, userOp, entryPoint) => {
+    getSessionKeySignature: async (key, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       const keySignature = await key.signMessage({
         message: {raw: userOpHash},

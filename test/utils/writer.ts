@@ -8,11 +8,13 @@ import {
   BASE_BLOB_BASE_FEE,
   BASE_BLOB_BASE_FEE_HIGH,
   BASE_BLOB_BASE_FEE_SCALAR,
+  BASE_BLOB_BASE_FEE_SCALAR_HIGH,
   BASE_GAS_PRICE,
   BASE_GAS_PRICE_HIGH,
   BASE_L1_BASE_FEE,
   BASE_L1_BASE_FEE_HIGH,
   BASE_L1_BASE_FEE_SCALAR,
+  BASE_L1_BASE_FEE_SCALAR_HIGH,
   DRY_RUN,
   ETH_GAS_PRICE,
   ETH_GAS_PRICE_HIGH,
@@ -20,11 +22,13 @@ import {
   OPT_BLOB_BASE_FEE,
   OPT_BLOB_BASE_FEE_HIGH,
   OPT_BLOB_BASE_FEE_SCALAR,
+  OPT_BLOB_BASE_FEE_SCALAR_HIGH,
   OPT_GAS_PRICE,
   OPT_GAS_PRICE_HIGH,
   OPT_L1_BASE_FEE,
   OPT_L1_BASE_FEE_HIGH,
   OPT_L1_BASE_FEE_SCALAR,
+  OPT_L1_BASE_FEE_SCALAR_HIGH,
   POLYGON_GAS_PRICE,
   POLYGON_GAS_PRICE_HIGH,
   POLYGON_PRICE_USD,
@@ -32,11 +36,13 @@ import {
   ZORA_BLOB_BASE_FEE,
   ZORA_BLOB_BASE_FEE_HIGH,
   ZORA_BLOB_BASE_FEE_SCALAR,
+  ZORA_BLOB_BASE_FEE_SCALAR_HIGH,
   ZORA_GAS_PRICE,
   ZORA_GAS_PRICE_HIGH,
   ZORA_L1_BASE_FEE,
   ZORA_L1_BASE_FEE_HIGH,
   ZORA_L1_BASE_FEE_SCALAR,
+  ZORA_L1_BASE_FEE_SCALAR_HIGH,
 } from "../../settings";
 import {convertWeiToUsd, formatEtherTruncated, getL1Fee} from "./fees";
 
@@ -53,7 +59,9 @@ interface ChainConfig {
     blobBaseFeeScalar?: bigint;
     gasPriceHigh: bigint;
     l1BaseFeeHigh?: bigint;
+    l1BaseFeeScalarHigh?: bigint;
     blobBaseFeeHigh?: bigint;
+    blobBaseFeeScalarHigh?: bigint;
   };
 }
 export interface GasMetrics {
@@ -102,7 +110,9 @@ const CHAIN_CONFIG: ChainConfig = {
     blobBaseFeeScalar: OPT_BLOB_BASE_FEE_SCALAR,
     gasPriceHigh: OPT_GAS_PRICE_HIGH,
     l1BaseFeeHigh: OPT_L1_BASE_FEE_HIGH,
+    l1BaseFeeScalarHigh: OPT_L1_BASE_FEE_SCALAR_HIGH,
     blobBaseFeeHigh: OPT_BLOB_BASE_FEE_HIGH,
+    blobBaseFeeScalarHigh: OPT_BLOB_BASE_FEE_SCALAR_HIGH,
   },
   [base.id]: {
     file: "benchmarks/base.md",
@@ -116,7 +126,9 @@ const CHAIN_CONFIG: ChainConfig = {
     blobBaseFeeScalar: BASE_BLOB_BASE_FEE_SCALAR,
     gasPriceHigh: BASE_GAS_PRICE_HIGH,
     l1BaseFeeHigh: BASE_L1_BASE_FEE_HIGH,
+    l1BaseFeeScalarHigh: BASE_L1_BASE_FEE_SCALAR_HIGH,
     blobBaseFeeHigh: BASE_BLOB_BASE_FEE_HIGH,
+    blobBaseFeeScalarHigh: BASE_BLOB_BASE_FEE_SCALAR_HIGH,
   },
   [zora.id]: {
     file: "benchmarks/zora.md",
@@ -130,7 +142,9 @@ const CHAIN_CONFIG: ChainConfig = {
     blobBaseFeeScalar: ZORA_BLOB_BASE_FEE_SCALAR,
     gasPriceHigh: ZORA_GAS_PRICE_HIGH,
     l1BaseFeeHigh: ZORA_L1_BASE_FEE_HIGH,
+    l1BaseFeeScalarHigh: ZORA_L1_BASE_FEE_SCALAR_HIGH,
     blobBaseFeeHigh: ZORA_BLOB_BASE_FEE_HIGH,
+    blobBaseFeeScalarHigh: ZORA_BLOB_BASE_FEE_SCALAR_HIGH,
   },
 };
 
@@ -195,8 +209,9 @@ function writeResult(chain: Chain) {
     ],
     [
       "L1 base fee scalar",
-      ...Array(2).fill(
-        monospace(config.l1BaseFeeScalar ? "" + config.l1BaseFeeScalar : "-"),
+      monospace(config.l1BaseFeeScalar ? "" + config.l1BaseFeeScalar : "-"),
+      monospace(
+        config.l1BaseFeeScalarHigh ? "" + config.l1BaseFeeScalarHigh : "-",
       ),
     ],
     [
@@ -206,10 +221,9 @@ function writeResult(chain: Chain) {
     ],
     [
       "Blob base fee scalar",
-      ...Array(2).fill(
-        monospace(
-          config.blobBaseFeeScalar ? "" + config.blobBaseFeeScalar : "-",
-        ),
+      monospace(config.blobBaseFeeScalar ? "" + config.blobBaseFeeScalar : "-"),
+      monospace(
+        config.blobBaseFeeScalarHigh ? "" + config.blobBaseFeeScalarHigh : "-",
       ),
     ],
     [
@@ -284,9 +298,9 @@ function writeResult(chain: Chain) {
           ? getL1Fee(
               metrics.l1GasUsed,
               config.l1BaseFeeHigh!,
-              config.l1BaseFeeScalar!,
+              config.l1BaseFeeScalarHigh!,
               config.blobBaseFeeHigh!,
-              config.blobBaseFeeScalar!,
+              config.blobBaseFeeScalarHigh!,
             )
           : null;
       const totalFeeHigh = executionFeeHigh + (l1FeeHigh || 0n);

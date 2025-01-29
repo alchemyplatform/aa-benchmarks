@@ -64,8 +64,10 @@ async function accountFixture(): Promise<AccountDataV06> {
     });
   }
 
+  const entryPoint = getEntryPointV06({walletClient});
+
   return {
-    entryPoint: getEntryPointV06({walletClient}),
+    entryPoint,
     createAccount: async (salt, ownerAddress) => {
       return await safeProxyFactory.write.createProxyWithNonce([
         SAFE_ARTIFACTS.Safe.address,
@@ -98,7 +100,7 @@ async function accountFixture(): Promise<AccountDataV06> {
       );
       return slice(rawAddress, 12);
     },
-    getOwnerSignature: async (owner, userOp, entryPoint) => {
+    getOwnerSignature: async (_owner, userOp) => {
       const validAfter = 0;
       const validUntil = Number(maxUint48);
 
@@ -155,6 +157,9 @@ async function accountFixture(): Promise<AccountDataV06> {
         ["uint48", "uint48", "bytes"],
         [validAfter, validUntil, signature],
       );
+    },
+    getNonce: async (accountAddress) => {
+      return await entryPoint.read.getNonce([accountAddress, 0n]);
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
