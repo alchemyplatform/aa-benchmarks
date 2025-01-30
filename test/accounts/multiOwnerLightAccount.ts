@@ -49,37 +49,15 @@ async function accountFixture(): Promise<AccountDataV07> {
         salt,
       ]);
     },
-    getOwnerSignature: async (owner, userOp) => {
+    getOwnerSignature: async (ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      const signature = await owner.signMessage({
+      const signature = await ownerSigner.signMessage({
         message: {raw: userOpHash},
       });
       return concatHex([toHex(SignatureType.EOA, {size: 1}), signature]);
     },
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([accountAddress, 0n]);
-    },
-    encodeUserOpExecute: (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: MULTI_OWNER_LIGHT_ACCOUNT_ARTIFACTS.MultiOwnerLightAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
-    },
-    encodeRuntimeExecute: async (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: MULTI_OWNER_LIGHT_ACCOUNT_ARTIFACTS.MultiOwnerLightAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
     },
     getDummySignature: (_userOp) => {
       return concatHex([
@@ -103,6 +81,28 @@ async function accountFixture(): Promise<AccountDataV07> {
           }),
         ],
       );
+    },
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: MULTI_OWNER_LIGHT_ACCOUNT_ARTIFACTS.MultiOwnerLightAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: MULTI_OWNER_LIGHT_ACCOUNT_ARTIFACTS.MultiOwnerLightAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
     },
   };
 }

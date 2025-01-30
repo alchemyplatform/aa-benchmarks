@@ -54,9 +54,9 @@ async function accountFixture(): Promise<AccountDataV07> {
         salt,
       ]);
     },
-    getOwnerSignature: async (owner, userOp) => {
+    getOwnerSignature: async (ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      const signature = await owner.signMessage({
+      const signature = await ownerSigner.signMessage({
         message: {raw: userOpHash},
       });
       return concatHex([
@@ -75,28 +75,6 @@ async function accountFixture(): Promise<AccountDataV07> {
         ],
       );
       return await entryPoint.read.getNonce([accountAddress, hexToBigInt(key)]);
-    },
-    encodeUserOpExecute: (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: MODULAR_ACCOUNT_V2_ARTIFACTS.ModularAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
-    },
-    encodeRuntimeExecute: async (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: MODULAR_ACCOUNT_V2_ARTIFACTS.ModularAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
     },
     getDummySignature: (_userOp) => {
       return concatHex([
@@ -121,6 +99,28 @@ async function accountFixture(): Promise<AccountDataV07> {
           }),
         ],
       );
+    },
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: MODULAR_ACCOUNT_V2_ARTIFACTS.ModularAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: MODULAR_ACCOUNT_V2_ARTIFACTS.ModularAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
     },
   };
 }

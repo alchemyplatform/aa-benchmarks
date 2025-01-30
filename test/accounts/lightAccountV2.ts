@@ -43,37 +43,15 @@ async function accountFixture(): Promise<AccountDataV07> {
     getAccountAddress: async (salt, ownerAddress) => {
       return await lightAccountV2Factory.read.getAddress([ownerAddress, salt]);
     },
-    getOwnerSignature: async (owner, userOp) => {
+    getOwnerSignature: async (ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      const signature = await owner.signMessage({
+      const signature = await ownerSigner.signMessage({
         message: {raw: userOpHash},
       });
       return concatHex([toHex(SignatureType.EOA, {size: 1}), signature]);
     },
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([accountAddress, 0n]);
-    },
-    encodeUserOpExecute: (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
-    },
-    encodeRuntimeExecute: async (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
     },
     getDummySignature: (_userOp) => {
       return concatHex([
@@ -97,6 +75,28 @@ async function accountFixture(): Promise<AccountDataV07> {
           }),
         ],
       );
+    },
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: LIGHT_ACCOUNT_V2_ARTIFACTS.LightAccount.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
     },
   };
 }

@@ -100,7 +100,7 @@ async function accountFixture(): Promise<AccountDataV06> {
       );
       return slice(rawAddress, 12);
     },
-    getOwnerSignature: async (_owner, userOp) => {
+    getOwnerSignature: async (_ownerSigner, userOp) => {
       const validAfter = 0;
       const validUntil = Number(maxUint48);
 
@@ -161,6 +161,30 @@ async function accountFixture(): Promise<AccountDataV06> {
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([accountAddress, 0n]);
     },
+    getDummySignature: (_userOp) => {
+      return "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c";
+    },
+    getInitCode: (salt, ownerAddress) => {
+      return encodePacked(
+        ["address", "bytes"],
+        [
+          safeProxyFactory.address,
+          encodeFunctionData({
+            abi: [
+              getAbiItem({
+                abi: safeProxyFactory.abi,
+                name: "createProxyWithNonce",
+              }),
+            ],
+            args: [
+              SAFE_ARTIFACTS.Safe.address,
+              getSetupData(ownerAddress),
+              salt,
+            ],
+          }),
+        ],
+      );
+    },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
         abi: [
@@ -172,18 +196,24 @@ async function accountFixture(): Promise<AccountDataV06> {
         args: [to, value, data, 0], // Operation.CALL = 0
       });
     },
-    encodeRuntimeExecute: async (to, value, data, owner, accountAddress) => {
-      if (!owner || !accountAddress) {
+    encodeRuntimeExecute: async (
+      to,
+      value,
+      data,
+      ownerSigner,
+      accountAddress,
+    ) => {
+      if (!ownerSigner || !accountAddress) {
         throw new Error("`owner` and `accountAddress` are required.");
       }
 
       const account = getContract({
         address: accountAddress,
         abi: SAFE_ARTIFACTS.Safe.abi,
-        client: owner,
+        client: ownerSigner,
       });
       const nonce = await account.read.nonce();
-      const signature = await owner.signTypedData({
+      const signature = await ownerSigner.signTypedData({
         domain: {
           chainId: 31337,
           verifyingContract: accountAddress,
@@ -237,30 +267,6 @@ async function accountFixture(): Promise<AccountDataV06> {
           signature,
         ],
       });
-    },
-    getDummySignature: (_userOp) => {
-      return "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c";
-    },
-    getInitCode: (salt, ownerAddress) => {
-      return encodePacked(
-        ["address", "bytes"],
-        [
-          safeProxyFactory.address,
-          encodeFunctionData({
-            abi: [
-              getAbiItem({
-                abi: safeProxyFactory.abi,
-                name: "createProxyWithNonce",
-              }),
-            ],
-            args: [
-              SAFE_ARTIFACTS.Safe.address,
-              getSetupData(ownerAddress),
-              salt,
-            ],
-          }),
-        ],
-      );
     },
   };
 }
