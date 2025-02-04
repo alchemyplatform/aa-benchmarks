@@ -81,6 +81,7 @@ export interface AccountData<
     sessionKeySigner: WalletClient<Transport, Chain, Account>,
     userOp: TUserOperation,
   ) => Promise<Hex>;
+  getSessionKeyNonce?: (accountAddress: Address) => Promise<bigint>;
 }
 
 export type AccountDataV06 = AccountData<EntryPointV06>;

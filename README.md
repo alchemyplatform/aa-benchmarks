@@ -276,7 +276,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | 2025-01-30 (latest) | 2024-03-31 (high blob fees) |
 | :----------------------------- | ------------------: | --------------------------: |
-| Modular Account v2             |       `Unsupported` |               `Unsupported` |
+| Modular Account v2             |          `$0.00186` |                  `$0.20104` |
 | Modular Account                |          `$0.00343` |                  `$0.29783` |
 | Nexus                          |       `Unsupported` |               `Unsupported` |
 | Biconomy v2                    |          `$0.00089` |                  `$0.12249` |
@@ -296,7 +296,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :----------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
-| Modular Account v2             |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
+| Modular Account v2             |      `495041` |       `0.000000495` | `13748` | `0.000000087` |   `0.000000583` |      `$0.00186` |
 | Modular Account                |      `983001` |       `0.000000984` | `14132` | `0.000000090` |   `0.000001073` |      `$0.00343` |
 | Nexus                          |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
 | Biconomy v2                    |      `212577` |       `0.000000213` | `10600` | `0.000000067` |   `0.000000280` |      `$0.00089` |
@@ -313,7 +313,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :----------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
-| Modular Account v2             |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
+| Modular Account v2             |      `495041` |       `0.000029818` | `13748` | `0.000033154` |   `0.000062972` |      `$0.20104` |
 | Modular Account                |      `983001` |       `0.000059210` | `14132` | `0.000034080` |   `0.000093289` |      `$0.29783` |
 | Nexus                          |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
 | Biconomy v2                    |      `212577` |       `0.000012804` | `10600` | `0.000025562` |   `0.000038366` |      `$0.12249` |
@@ -334,7 +334,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | 2025-01-30 (latest) | 2024-03-31 (high blob fees) |
 | :----------------------------- | ------------------: | --------------------------: |
-| Modular Account v2             |       `Unsupported` |               `Unsupported` |
+| Modular Account v2             |          `$0.00069` |                  `$0.08719` |
 | Modular Account                |          `$0.00069` |                  `$0.09363` |
 | Nexus                          |       `Unsupported` |               `Unsupported` |
 | Biconomy v2                    |       `Unsupported` |               `Unsupported` |
@@ -354,7 +354,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :----------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
-| Modular Account v2             |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
+| Modular Account v2             |      `172036` |       `0.000000172` | `7028` | `0.000000045` |   `0.000000217` |      `$0.00069` |
 | Modular Account                |      `163716` |       `0.000000164` | `8072` | `0.000000051` |   `0.000000215` |      `$0.00069` |
 | Nexus                          |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
 | Biconomy v2                    |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
@@ -371,7 +371,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :----------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
-| Modular Account v2             |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
+| Modular Account v2             |      `172036` |       `0.000010362` | `7028` | `0.000016948` |   `0.000027310` |      `$0.08719` |
 | Modular Account                |      `163716` |       `0.000009861` | `8072` | `0.000019466` |   `0.000029327` |      `$0.09363` |
 | Nexus                          |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
 | Biconomy v2                    |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
@@ -392,7 +392,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | 2025-01-30 (latest) | 2024-03-31 (high blob fees) |
 | :----------------------------- | ------------------: | --------------------------: |
-| Modular Account v2             |       `Unsupported` |               `Unsupported` |
+| Modular Account v2             |          `$0.00079` |                  `$0.09722` |
 | Modular Account                |          `$0.00080` |                  `$0.10472` |
 | Nexus                          |       `Unsupported` |               `Unsupported` |
 | Biconomy v2                    |          `$0.00070` |                  `$0.11573` |
@@ -412,7 +412,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :----------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
-| Modular Account v2             |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
+| Modular Account v2             |      `197295` |       `0.000000197` |  `7700` | `0.000000049` |   `0.000000246` |      `$0.00079` |
 | Modular Account                |      `194942` |       `0.000000195` |  `8732` | `0.000000055` |   `0.000000251` |      `$0.00080` |
 | Nexus                          |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
 | Biconomy v2                    |      `147023` |       `0.000000147` | `11360` | `0.000000072` |   `0.000000219` |      `$0.00070` |
@@ -429,7 +429,7 @@ These numbers are derived from local simulations with fixed inputs (see [Run ben
 
 |                                | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :----------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
-| Modular Account v2             |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
+| Modular Account v2             |      `197295` |       `0.000011884` |  `7700` | `0.000018569` |   `0.000030452` |      `$0.09722` |
 | Modular Account                |      `194942` |       `0.000011742` |  `8732` | `0.000021057` |   `0.000032799` |      `$0.10472` |
 | Nexus                          |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
 | Biconomy v2                    |      `147023` |       `0.000008856` | `11360` | `0.000027395` |   `0.000036251` |      `$0.11573` |
