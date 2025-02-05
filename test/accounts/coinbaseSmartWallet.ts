@@ -50,7 +50,7 @@ async function accountFixture(): Promise<AccountDataV06> {
         salt,
       ]);
     },
-    getOwnerSignature: async (_owner, userOp) => {
+    getOwnerSignature: async (_ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       // Key of owner account.
       const privateKey =
@@ -60,28 +60,6 @@ async function accountFixture(): Promise<AccountDataV06> {
     },
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([accountAddress, 0n]);
-    },
-    encodeUserOpExecute: (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: COINBASE_SMART_WALLET_ARTIFACTS.CoinbaseSmartWallet.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
-    },
-    encodeRuntimeExecute: async (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: COINBASE_SMART_WALLET_ARTIFACTS.CoinbaseSmartWallet.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
     },
     getDummySignature: (_userOp) => {
       return "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000041000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
@@ -106,6 +84,28 @@ async function accountFixture(): Promise<AccountDataV06> {
           }),
         ],
       );
+    },
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: COINBASE_SMART_WALLET_ARTIFACTS.CoinbaseSmartWallet.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
+    },
+    encodeRuntimeExecute: async (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: COINBASE_SMART_WALLET_ARTIFACTS.CoinbaseSmartWallet.abi,
+            name: "execute",
+          }),
+        ],
+        args: [to, value, data],
+      });
     },
   };
 }

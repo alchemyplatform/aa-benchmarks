@@ -69,9 +69,9 @@ async function accountFixture(): Promise<AccountDataV07> {
       ]);
     },
 
-    getOwnerSignature: async (owner, userOp) => {
+    getOwnerSignature: async (ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      const signature = await owner.signMessage({
+      const signature = await ownerSigner.signMessage({
         message: {raw: userOpHash},
       });
       return signature;
@@ -84,66 +84,10 @@ async function accountFixture(): Promise<AccountDataV07> {
       ]);
     },
 
-    encodeUserOpExecute: (target, value, data) => {
-      try {
-        const executionCalldata = encodePacked(
-          ["address", "uint256", "bytes"],
-          [target, value, data],
-        );
-
-        const defaultMode = toHex(0, {size: 32});
-
-        return encodeFunctionData({
-          abi: [
-            getAbiItem({
-              abi: NEXUS_ARTIFACTS.Nexus.abi,
-              name: "execute",
-            }),
-          ],
-          args: [defaultMode, executionCalldata],
-        });
-      } catch (error) {
-        console.error("Error encoding UserOpExecute:", error);
-        throw error;
-      }
-    },
-
-    encodeRuntimeExecute: async (
-      target,
-      value,
-      data,
-      owner,
-      accountAddress,
-    ) => {
-      if (!accountAddress) {
-        throw new Error("Account address is required");
-      }
-      try {
-        const executionCalldata = encodePacked(
-          ["address", "uint256", "bytes"],
-          [target, value, data],
-        );
-
-        const defaultMode = toHex(0, {size: 32});
-
-        return encodeFunctionData({
-          abi: [
-            getAbiItem({
-              abi: NEXUS_ARTIFACTS.Nexus.abi,
-              name: "execute",
-            }),
-          ],
-          args: [defaultMode, executionCalldata],
-        });
-      } catch (error) {
-        console.error("Error encoding RuntimeExecute:", error);
-        throw error;
-      }
-    },
-
     getDummySignature: (_userOp) => {
       return "0x";
     },
+
     getInitCode: (salt, ownerAddress) => {
       const attesters = [ownerAddress];
       const threshold = 1;
@@ -163,6 +107,63 @@ async function accountFixture(): Promise<AccountDataV07> {
           }),
         ],
       );
+    },
+
+    encodeUserOpExecute: (to, value, data) => {
+      try {
+        const executionCalldata = encodePacked(
+          ["address", "uint256", "bytes"],
+          [to, value, data],
+        );
+
+        const defaultMode = toHex(0, {size: 32});
+
+        return encodeFunctionData({
+          abi: [
+            getAbiItem({
+              abi: NEXUS_ARTIFACTS.Nexus.abi,
+              name: "execute",
+            }),
+          ],
+          args: [defaultMode, executionCalldata],
+        });
+      } catch (error) {
+        console.error("Error in encodeUserOpExecute:", error);
+        throw error;
+      }
+    },
+
+    encodeRuntimeExecute: async (
+      to,
+      value,
+      data,
+      _ownerSigner,
+      accountAddress,
+    ) => {
+      if (!accountAddress) {
+        throw new Error("Account address is required");
+      }
+      try {
+        const executionCalldata = encodePacked(
+          ["address", "uint256", "bytes"],
+          [to, value, data],
+        );
+
+        const defaultMode = toHex(0, {size: 32});
+
+        return encodeFunctionData({
+          abi: [
+            getAbiItem({
+              abi: NEXUS_ARTIFACTS.Nexus.abi,
+              name: "execute",
+            }),
+          ],
+          args: [defaultMode, executionCalldata],
+        });
+      } catch (error) {
+        console.error("Error in encodeRuntimeExecute:", error);
+        throw error;
+      }
     },
   };
 }

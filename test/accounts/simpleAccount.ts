@@ -30,14 +30,34 @@ async function accountFixture(): Promise<AccountDataV07> {
     getAccountAddress: async (salt, ownerAddress) => {
       return await simpleAccountFactory.read.getAddress([ownerAddress, salt]);
     },
-    getOwnerSignature: async (owner, userOp) => {
+    getOwnerSignature: async (ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      return await owner.signMessage({
+      return await ownerSigner.signMessage({
         message: {raw: userOpHash},
       });
     },
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([accountAddress, 0n]);
+    },
+    getDummySignature: (_userOp) => {
+      return "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c";
+    },
+    getInitCode: (salt, ownerAddress) => {
+      return encodePacked(
+        ["address", "bytes"],
+        [
+          simpleAccountFactory.address,
+          encodeFunctionData({
+            abi: [
+              getAbiItem({
+                abi: simpleAccountFactory.abi,
+                name: "createAccount",
+              }),
+            ],
+            args: [ownerAddress, salt],
+          }),
+        ],
+      );
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
@@ -60,26 +80,6 @@ async function accountFixture(): Promise<AccountDataV07> {
         ],
         args: [to, value, data],
       });
-    },
-    getDummySignature: (_userOp) => {
-      return "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c";
-    },
-    getInitCode: (salt, ownerAddress) => {
-      return encodePacked(
-        ["address", "bytes"],
-        [
-          simpleAccountFactory.address,
-          encodeFunctionData({
-            abi: [
-              getAbiItem({
-                abi: simpleAccountFactory.abi,
-                name: "createAccount",
-              }),
-            ],
-            args: [ownerAddress, salt],
-          }),
-        ],
-      );
     },
   };
 }

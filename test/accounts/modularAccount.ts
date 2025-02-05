@@ -1,5 +1,12 @@
 import hre from "hardhat";
-import {encodeFunctionData, encodePacked, getAbiItem, getContract} from "viem";
+import {
+  concat,
+  encodeAbiParameters,
+  encodeFunctionData,
+  encodePacked,
+  getAbiItem,
+  getContract,
+} from "viem";
 import {AccountConfig, AccountDataV06} from "../accounts";
 import {MODULAR_ACCOUNT_ARTIFACTS} from "../artifacts/modularAccount";
 import {getEntryPointV06} from "../utils/entryPoint";
@@ -17,9 +24,6 @@ async function accountFixture(): Promise<AccountDataV06> {
     client: walletClient,
   });
 
-  const tag =
-    "0x0000000000000000000000000000000000000000000000000000000000000000";
-
   const entryPoint = getEntryPointV06({walletClient});
 
   return {
@@ -36,14 +40,34 @@ async function accountFixture(): Promise<AccountDataV06> {
         [ownerAddress],
       ]);
     },
-    getOwnerSignature: async (owner, userOp) => {
+    getOwnerSignature: async (ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      return await owner.signMessage({
+      return await ownerSigner.signMessage({
         message: {raw: userOpHash},
       });
     },
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([accountAddress, 0n]);
+    },
+    getDummySignature: (_userOp) => {
+      return "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c";
+    },
+    getInitCode: (salt, ownerAddress) => {
+      return encodePacked(
+        ["address", "bytes"],
+        [
+          multiOwnerModularAccountFactory.address,
+          encodeFunctionData({
+            abi: [
+              getAbiItem({
+                abi: multiOwnerModularAccountFactory.abi,
+                name: "createAccount",
+              }),
+            ],
+            args: [salt, [ownerAddress]],
+          }),
+        ],
+      );
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
@@ -67,104 +91,102 @@ async function accountFixture(): Promise<AccountDataV06> {
         args: [to, value, data],
       });
     },
-    getDummySignature: (_userOp) => {
-      return "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c";
-    },
-    getInitCode: (salt, ownerAddress) => {
-      return encodePacked(
-        ["address", "bytes"],
-        [
-          multiOwnerModularAccountFactory.address,
-          encodeFunctionData({
-            abi: [
-              getAbiItem({
-                abi: multiOwnerModularAccountFactory.abi,
-                name: "createAccount",
-              }),
+    encodeSessionKeyCreate: (
+      sessionKeySigner,
+      allowedTargetAddress,
+      allowedTokenAddress,
+      spendLimitWei,
+      _accountAddress,
+    ) => {
+      return {
+        callData: encodeFunctionData({
+          abi: [
+            getAbiItem({
+              abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
+              name: "installPlugin",
+            }),
+          ],
+          args: [
+            MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.address,
+            "0x178289dadbf8d06fc233b07a6d6dbf251f100cd96cec78989f1ca58cb67b3ec5", // H(plugin manifest)
+            encodeAbiParameters(
+              [
+                {name: "sessionKeysToAdd", type: "address[]"},
+                {name: "tags", type: "bytes32[]"},
+                {name: "permissionUpdates", type: "bytes[][]"},
+              ],
+              [
+                [sessionKeySigner.account.address],
+                [
+                  "0x0000000000000000000000000000000000000000000000000000000000000000",
+                ],
+                [
+                  [
+                    encodeFunctionData({
+                      abi: [
+                        getAbiItem({
+                          abi: MODULAR_ACCOUNT_ARTIFACTS
+                            .ISessionKeyPermissionsUpdate.abi,
+                          name: "updateAccessListAddressEntry",
+                        }),
+                      ],
+                      args: [allowedTokenAddress, true, false],
+                    }),
+                    encodeFunctionData({
+                      abi: [
+                        getAbiItem({
+                          abi: MODULAR_ACCOUNT_ARTIFACTS
+                            .ISessionKeyPermissionsUpdate.abi,
+                          name: "setERC20SpendLimit",
+                        }),
+                      ],
+                      args: [allowedTokenAddress, spendLimitWei, 0],
+                    }),
+                    encodeFunctionData({
+                      abi: [
+                        getAbiItem({
+                          abi: MODULAR_ACCOUNT_ARTIFACTS
+                            .ISessionKeyPermissionsUpdate.abi,
+                          name: "updateAccessListAddressEntry",
+                        }),
+                      ],
+                      args: [allowedTargetAddress, true, false],
+                    }),
+                    encodeFunctionData({
+                      abi: [
+                        getAbiItem({
+                          abi: MODULAR_ACCOUNT_ARTIFACTS
+                            .ISessionKeyPermissionsUpdate.abi,
+                          name: "setNativeTokenSpendLimit",
+                        }),
+                      ],
+                      args: [spendLimitWei, 0],
+                    }),
+                  ],
+                ],
+              ],
+            ),
+            [
+              concat([
+                MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerPlugin.address,
+                "0x01",
+              ]),
+              concat([
+                MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerPlugin.address,
+                "0x00",
+              ]),
             ],
-            args: [salt, [ownerAddress]],
-          }),
-        ],
-      );
+          ],
+        }),
+      };
     },
-    installSessionKeyPlugin: async (accountAddr, ownerAddress) => {
-      const account = getContract({
-        address: accountAddr,
-        abi: MODULAR_ACCOUNT_ARTIFACTS.UpgradeableModularAccount.abi,
-        client: walletClient,
-      });
-
-      return await account.write.installPlugin([
-        MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.address,
-        "0x178289dadbf8d06fc233b07a6d6dbf251f100cd96cec78989f1ca58cb67b3ec5", // H(plugin manifest)
-        "0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", // abi.encode(new address[](0), new bytes32[](0), new bytes[][](0))
-        [
-          (MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerPlugin.address +
-            "01") as `0x${string}`, //fn ref
-          (MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerPlugin.address +
-            "00") as `0x${string}`, //fn ref
-        ],
-      ]);
-    },
-    addSessionKeyCalldata: (key, target, tokens, spendLimit, account) => {
-      // add permissions for tokens
-      const permissions = tokens.flatMap((token) => [
-        encodeFunctionData({
-          abi: [
-            getAbiItem({
-              abi: MODULAR_ACCOUNT_ARTIFACTS.ISessionKeyPermissionsUpdate.abi,
-              name: "updateAccessListAddressEntry",
-            }),
-          ],
-          args: [token.address, true, false],
-        }),
-        encodeFunctionData({
-          abi: [
-            getAbiItem({
-              abi: MODULAR_ACCOUNT_ARTIFACTS.ISessionKeyPermissionsUpdate.abi,
-              name: "setERC20SpendLimit",
-            }),
-          ],
-          args: [token.address, spendLimit, 0],
-        }),
-      ]);
-      // add target
-      permissions.push(
-        encodeFunctionData({
-          abi: [
-            getAbiItem({
-              abi: MODULAR_ACCOUNT_ARTIFACTS.ISessionKeyPermissionsUpdate.abi,
-              name: "updateAccessListAddressEntry",
-            }),
-          ],
-          args: [target, true, false],
-        }),
-      );
-      permissions.push(
-        encodeFunctionData({
-          abi: [
-            getAbiItem({
-              abi: MODULAR_ACCOUNT_ARTIFACTS.ISessionKeyPermissionsUpdate.abi,
-              name: "setNativeTokenSpendLimit",
-            }),
-          ],
-          args: [spendLimit, 0],
-        }),
-      );
-
-      return encodeFunctionData({
-        abi: MODULAR_ACCOUNT_ARTIFACTS.SessionKeyPlugin.abi,
-        functionName: "addSessionKey",
-        args: [key, tag, permissions],
-      });
-    },
-    getSessionKeySignature: async (key, userOp) => {
+    getSessionKeySignature: async (sessionKeySigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      return await key.signMessage({
+      return await sessionKeySigner.signMessage({
         message: {raw: userOpHash},
       });
     },
-    useSessionKeyERC20TransferCalldata: (token, key, to, amount) => {
+    encodeSessionKeyERC20Transfer: (token, sessionKeyAddress, to, amount) => {
       const transferCall = encodeFunctionData({
         abi: [
           getAbiItem({
@@ -184,11 +206,11 @@ async function accountFixture(): Promise<AccountDataV06> {
         ],
         args: [
           [{target: token.address, value: BigInt(0), data: transferCall}],
-          key,
+          sessionKeyAddress,
         ],
       });
     },
-    useSessionKeyNativeTokenTransferCalldata: (key, to, amount) => {
+    encodeSessionKeyNativeTokenTransfer: (sessionKeyAddress, to, amount) => {
       return encodeFunctionData({
         abi: [
           getAbiItem({
@@ -196,7 +218,7 @@ async function accountFixture(): Promise<AccountDataV06> {
             name: "executeWithSessionKey",
           }),
         ],
-        args: [[{target: to, value: amount, data: "0x"}], key],
+        args: [[{target: to, value: amount, data: "0x"}], sessionKeyAddress],
       });
     },
   };

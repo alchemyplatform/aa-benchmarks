@@ -421,7 +421,7 @@ describe("Benchmark", function () {
             await loadFixture(baseFixture);
           const accountData = await loadFixture(accountFixture);
 
-          if (!accountData.addSessionKeyCalldata) {
+          if (!accountData.encodeSessionKeyCreate) {
             return this.skip();
           }
 
@@ -431,23 +431,25 @@ describe("Benchmark", function () {
           );
           await fundAccount(accountAddress, usdc);
           await accountData.createAccount(0n, owner.account.address);
-          await accountData.installSessionKeyPlugin?.(accountAddress, owner);
 
+          const {getSessionKeyCreateSignature, callData} =
+            accountData.encodeSessionKeyCreate(
+              sessionKey,
+              alice.account.address,
+              usdc.address,
+              USDC_TRANSFER_AMOUNT,
+              accountAddress,
+            );
           hash = await wrappedHandleOps({
             accountData,
             signer: owner,
             beneficiary,
             sender: accountAddress,
-            callData: accountData.addSessionKeyCalldata(
-              sessionKey.account.address,
-              alice.account.address,
-              [usdc],
-              USDC_TRANSFER_AMOUNT,
-              accountAddress,
-            ),
+            callData,
             getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
-            getSignature: accountData.getOwnerSignature,
+            getSignature:
+              getSessionKeyCreateSignature ?? accountData.getOwnerSignature,
           });
         });
 
@@ -457,8 +459,8 @@ describe("Benchmark", function () {
           const accountData = await loadFixture(accountFixture);
 
           if (
-            !accountData.addSessionKeyCalldata ||
-            !accountData.useSessionKeyNativeTokenTransferCalldata ||
+            !accountData.encodeSessionKeyCreate ||
+            !accountData.encodeSessionKeyNativeTokenTransfer ||
             !accountData.getSessionKeySignature
           ) {
             return this.skip();
@@ -470,24 +472,26 @@ describe("Benchmark", function () {
           );
           await fundAccount(accountAddress, usdc);
           await accountData.createAccount(0n, owner.account.address);
-          await accountData.installSessionKeyPlugin?.(accountAddress, owner);
 
           // Add session key
+          const {getSessionKeyCreateSignature, callData} =
+            accountData.encodeSessionKeyCreate(
+              sessionKey,
+              alice.account.address,
+              usdc.address,
+              NATIVE_TRANSFER_AMOUNT,
+              accountAddress,
+            );
           await wrappedHandleOps({
             accountData,
             signer: owner,
             beneficiary,
             sender: accountAddress,
-            callData: accountData.addSessionKeyCalldata(
-              sessionKey.account.address,
-              alice.account.address,
-              [usdc],
-              NATIVE_TRANSFER_AMOUNT,
-              accountAddress,
-            ),
+            callData,
             getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
-            getSignature: accountData.getOwnerSignature,
+            getSignature:
+              getSessionKeyCreateSignature ?? accountData.getOwnerSignature,
           });
 
           hash = await wrappedHandleOps({
@@ -495,11 +499,11 @@ describe("Benchmark", function () {
             signer: sessionKey,
             beneficiary,
             sender: accountAddress,
-            callData: accountData.useSessionKeyNativeTokenTransferCalldata(
+            callData: accountData.encodeSessionKeyNativeTokenTransfer(
               sessionKey.account.address,
               alice.account.address,
               NATIVE_TRANSFER_AMOUNT,
-            ), // key 3 = sessionKey.account.address
+            ),
             getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getSessionKeySignature,
@@ -520,8 +524,8 @@ describe("Benchmark", function () {
           const accountData = await loadFixture(accountFixture);
 
           if (
-            !accountData.addSessionKeyCalldata ||
-            !accountData.useSessionKeyERC20TransferCalldata ||
+            !accountData.encodeSessionKeyCreate ||
+            !accountData.encodeSessionKeyERC20Transfer ||
             !accountData.getSessionKeySignature
           ) {
             return this.skip();
@@ -533,24 +537,26 @@ describe("Benchmark", function () {
           );
           await fundAccount(accountAddress, usdc);
           await accountData.createAccount(0n, owner.account.address);
-          await accountData.installSessionKeyPlugin?.(accountAddress, owner);
 
           // Add session key
+          const {getSessionKeyCreateSignature, callData} =
+            accountData.encodeSessionKeyCreate(
+              sessionKey,
+              alice.account.address,
+              usdc.address,
+              USDC_TRANSFER_AMOUNT,
+              accountAddress,
+            );
           await wrappedHandleOps({
             accountData,
             signer: owner,
             beneficiary,
             sender: accountAddress,
-            callData: accountData.addSessionKeyCalldata(
-              sessionKey.account.address,
-              alice.account.address,
-              [usdc],
-              USDC_TRANSFER_AMOUNT,
-              accountAddress,
-            ),
+            callData,
             getNonce: accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
-            getSignature: accountData.getOwnerSignature,
+            getSignature:
+              getSessionKeyCreateSignature ?? accountData.getOwnerSignature,
           });
 
           hash = await wrappedHandleOps({
@@ -558,7 +564,7 @@ describe("Benchmark", function () {
             signer: sessionKey,
             beneficiary,
             sender: accountAddress,
-            callData: accountData.useSessionKeyERC20TransferCalldata(
+            callData: accountData.encodeSessionKeyERC20Transfer(
               usdc,
               sessionKey.account.address,
               alice.account.address,

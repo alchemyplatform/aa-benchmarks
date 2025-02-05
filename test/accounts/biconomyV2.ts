@@ -7,17 +7,13 @@ import {
   getContract,
   hexToBigInt,
   keccak256,
-  parseEther,
-  toHex,
-  walletActions,
 } from "viem";
 import {AccountConfig, AccountDataV06} from "../accounts";
-import {BICONOMY_V2_ARTIFACTS} from "../artifacts/biconomy-v2";
+import {BICONOMY_V2_ARTIFACTS} from "../artifacts/biconomyV2";
 import {getEntryPointV06} from "../utils/entryPoint";
 
 async function accountFixture(): Promise<AccountDataV06> {
   const [walletClient] = await hre.viem.getWalletClients();
-  const testClient = (await hre.viem.getTestClient()).extend(walletActions);
 
   for (const {address, bytecode} of Object.values(BICONOMY_V2_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
@@ -67,9 +63,9 @@ async function accountFixture(): Promise<AccountDataV06> {
         salt,
       ]);
     },
-    getOwnerSignature: async (owner, userOp) => {
+    getOwnerSignature: async (ownerSigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      const signature = await owner.signMessage({
+      const signature = await ownerSigner.signMessage({
         message: {raw: userOpHash},
       });
       return encodeAbiParameters(
@@ -82,17 +78,6 @@ async function accountFixture(): Promise<AccountDataV06> {
     },
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([accountAddress, 0n]);
-    },
-    encodeUserOpExecute: (to, value, data) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [to, value, data],
-      });
     },
     getDummySignature: (_userOp) => {
       return encodeAbiParameters(
@@ -127,95 +112,94 @@ async function accountFixture(): Promise<AccountDataV06> {
         ],
       );
     },
-    installSessionKeyPlugin: async (accountAddr, ownerAddress) => {
-      // const biconomyAccount = getContract({
-      //     address: accountAddr,
-      //     abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
-      //     publicClient,
-      //     walletClient,
-      // });
-
-      await testClient.impersonateAccount({
-        address: entryPoint.address,
-      }); // Mock a self-call to allow the call through
-      await hre.network.provider.send("hardhat_setBalance", [
-        entryPoint.address,
-        toHex(parseEther("10000")),
-      ]);
-      await testClient.writeContract({
-        address: accountAddr,
-        abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
-        functionName: "enableModule",
-        args: [BICONOMY_V2_ARTIFACTS.SessionKeyManager.address],
-        account: entryPoint.address,
-      });
-      await testClient.stopImpersonatingAccount({
-        address: entryPoint.address,
-      }); // Stop mocking the self-call
-
-      // If we want to test using batched session routing, we need to also install that module as below.
-      // return await biconomyAccount.write.executeBatch([
-      //     [accountAddr, accountAddr],
-      //     [0n, 0n],
-      //     [
-      //         encodeFunctionData({
-      //             abi: [
-      //                 getAbiItem({
-      //                     abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
-      //                     name: "enableModule",
-      //                 })
-      //             ],
-      //             args: [
-      //                 BICONOMY_V2_ARTIFACTS.SessionKeyManager.address
-      //             ]
-      //         }),
-      //         encodeFunctionData({
-      //             abi: [
-      //                 getAbiItem({
-      //                     abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
-      //                     name: "enableModule",
-      //                 })
-      //             ],
-      //             args: [
-      //                 BICONOMY_V2_ARTIFACTS.BatchedSessionRouterModule.address
-      //             ]
-      //         }),
-      //     ]
-      // ]);
-    },
-    addSessionKeyCalldata: (key, target, tokens, spendLimit, account) => {
-      // todo: construct the merkle tree with the permissions.
-      // temp: construct using only 1 key, which is the one that is signed with. Use this as the merkle root.
-
-      const erc20ValidationModuleData = encodeAbiParameters(
-        [
-          {name: "sessionKeyAddr", type: "address"},
-          {name: "tokenAddr", type: "address"},
-          {name: "recipientAddr", type: "address"},
-          {name: "nonce", type: "uint256"},
+    encodeUserOpExecute: (to, value, data) => {
+      return encodeFunctionData({
+        abi: [
+          getAbiItem({
+            abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
+            name: "execute",
+          }),
         ],
-        [key, tokens[0].address, target, spendLimit],
-      );
-
+        args: [to, value, data],
+      });
+    },
+    encodeSessionKeyCreate: (
+      sessionKeySigner,
+      allowedTargetAddress,
+      allowedTokenAddress,
+      spendLimitWei,
+      accountAddress,
+    ) => {
       const validUntil = hexToBigInt("0x7d2b7500"); // 2_100_000_000
       const validAfter = hexToBigInt("0x713fb300"); // 1_900_000_000
+      const erc20ValidationModuleData = encodeAbiParameters(
+        [
+          {name: "sessionKey", type: "address"},
+          {name: "token", type: "address"},
+          {name: "recipient", type: "address"},
+          {name: "maxAmount", type: "uint256"},
+        ],
+        [
+          sessionKeySigner.account.address,
+          allowedTokenAddress,
+          allowedTargetAddress,
+          spendLimitWei,
+        ],
+      );
 
       keyDataHolder.validUntil = validUntil;
       keyDataHolder.validAfter = validAfter;
       keyDataHolder.moduleData = erc20ValidationModuleData;
 
-      const leafData = encodePacked(
-        ["uint48", "uint48", "address", "bytes"],
-        [
-          Number(validUntil),
-          Number(validAfter),
-          BICONOMY_V2_ARTIFACTS.ERC20SessionValidationModule.address,
-          erc20ValidationModuleData,
-        ],
-      );
-
-      const leafHash = keccak256(leafData);
-
+      return {
+        callData: encodeFunctionData({
+          abi: [
+            getAbiItem({
+              abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
+              name: "executeBatch",
+            }),
+          ],
+          args: [
+            [accountAddress, BICONOMY_V2_ARTIFACTS.SessionKeyManager.address],
+            [0n, 0n],
+            [
+              encodeFunctionData({
+                abi: [
+                  getAbiItem({
+                    abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
+                    name: "enableModule",
+                  }),
+                ],
+                args: [BICONOMY_V2_ARTIFACTS.SessionKeyManager.address],
+              }),
+              encodeFunctionData({
+                abi: [
+                  getAbiItem({
+                    abi: BICONOMY_V2_ARTIFACTS.SessionKeyManager.abi,
+                    name: "setMerkleRoot",
+                  }),
+                ],
+                args: [
+                  keccak256(
+                    encodePacked(
+                      ["uint48", "uint48", "address", "bytes"],
+                      [
+                        Number(validUntil),
+                        Number(validAfter),
+                        BICONOMY_V2_ARTIFACTS.ERC20SessionValidationModule
+                          .address,
+                        erc20ValidationModuleData,
+                      ],
+                    ),
+                  ),
+                ],
+              }),
+            ],
+          ],
+        }),
+      };
+    },
+    encodeSessionKeyERC20Transfer: (token, _sessionKeyAddress, to, amount) => {
       return encodeFunctionData({
         abi: [
           getAbiItem({
@@ -224,23 +208,26 @@ async function accountFixture(): Promise<AccountDataV06> {
           }),
         ],
         args: [
-          BICONOMY_V2_ARTIFACTS.SessionKeyManager.address,
+          token.address,
           0n,
           encodeFunctionData({
             abi: [
               getAbiItem({
-                abi: BICONOMY_V2_ARTIFACTS.SessionKeyManager.abi,
-                name: "setMerkleRoot",
+                abi: token.abi,
+                name: "transfer",
               }),
             ],
-            args: [leafHash],
+            args: [to, amount],
           }),
         ],
       });
     },
-    getSessionKeySignature: async (key, userOp) => {
+    // encodeSessionKeyNativeTokenTransfer: (sessionKeyAddress, to, amount) => {
+    //     // Unsupported by Biconomy v2
+    // }
+    getSessionKeySignature: async (sessionKeySigner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
-      const keySignature = await key.signMessage({
+      const keySignature = await sessionKeySigner.signMessage({
         message: {raw: userOpHash},
       });
 
@@ -271,36 +258,10 @@ async function accountFixture(): Promise<AccountDataV06> {
         [moduleSignature, BICONOMY_V2_ARTIFACTS.SessionKeyManager.address],
       );
     },
-    useSessionKeyERC20TransferCalldata: (token, key, to, amount) => {
-      return encodeFunctionData({
-        abi: [
-          getAbiItem({
-            abi: BICONOMY_V2_ARTIFACTS.SmartAccount.abi,
-            name: "execute",
-          }),
-        ],
-        args: [
-          token.address,
-          0n,
-          encodeFunctionData({
-            abi: [
-              getAbiItem({
-                abi: token.abi,
-                name: "transfer",
-              }),
-            ],
-            args: [to, amount],
-          }),
-        ],
-      });
-    },
-    // useSessionKeyNativeTokenTransferCalldata: (key, to, amount) => {
-    //     // Unsupported by Biconomy v2
-    // }
   };
 }
 
-export const biconomy_v2: AccountConfig = {
+export const biconomyV2: AccountConfig = {
   name: "Biconomy v2",
   accountFixture,
 };

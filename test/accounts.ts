@@ -8,7 +8,7 @@ import {
   Transport,
   WalletClient,
 } from "viem";
-import {biconomy_v2} from "./accounts/biconomy-v2";
+import {biconomyV2} from "./accounts/biconomyV2";
 import {coinbaseSmartWallet} from "./accounts/coinbaseSmartWallet";
 import {kernel} from "./accounts/kernel";
 import {kernelV3} from "./accounts/kernelV3";
@@ -36,54 +36,51 @@ export interface AccountData<
   createAccount: (salt: bigint, ownerAddress: Address) => Promise<Address>;
   getAccountAddress: (salt: bigint, ownerAddress: Address) => Promise<Address>;
   getOwnerSignature: (
-    signer: WalletClient<Transport, Chain, Account>,
+    ownerSigner: WalletClient<Transport, Chain, Account>,
     userOp: TUserOperation,
   ) => Promise<Hex>;
   getNonce: (accountAddress: Address) => Promise<bigint>;
+  getDummySignature: (userOp: TUserOperation) => Hex;
+  getInitCode: (salt: bigint, ownerAddress: Address) => Hex;
   encodeUserOpExecute: (to: Address, value: bigint, data: Hex) => Hex;
   encodeRuntimeExecute?: (
     to: Address,
     value: bigint,
     data: Hex,
-    owner?: WalletClient<Transport, Chain, Account>,
+    ownerSigner?: WalletClient<Transport, Chain, Account>,
     accountAddress?: Address,
   ) => Promise<Hex>;
-  getDummySignature: (userOp: TUserOperation) => Hex;
-  getInitCode: (salt: bigint, ownerAddress: Address) => Hex;
-
-  // Session key methods
-  installSessionKeyPlugin?: (
+  encodeSessionKeyCreate?: (
+    sessionKeySigner: WalletClient<Transport, Chain, Account>,
+    allowedTargetAddress: Address,
+    allowedTokenAddress: Address,
+    spendLimitWei: bigint,
     accountAddress: Address,
-    owner: WalletClient<Transport, Chain, Account>,
-  ) => void;
-  addSessionKeyCalldata?: (
-    key: Hex,
-    target: Address,
-    tokens: GetContractReturnType<
-      typeof TOKEN_ARTIFACTS.USDC.abi,
-      Client<Transport, Chain>
-    >[],
-    spendLimit: bigint,
-    account?: Address,
-  ) => Hex;
-  getSessionKeySignature?: (
-    signer: WalletClient<Transport, Chain, Account>,
-    userOp: TUserOperation,
-  ) => Promise<Hex>;
-  useSessionKeyERC20TransferCalldata?: (
+  ) => {
+    callData: Hex;
+    getSessionKeyCreateSignature?: (
+      ownerSigner: WalletClient<Transport, Chain, Account>,
+      userOp: TUserOperation,
+    ) => Promise<Hex>;
+  };
+  encodeSessionKeyERC20Transfer?: (
     token: GetContractReturnType<
       typeof TOKEN_ARTIFACTS.USDC.abi,
       Client<Transport, Chain>
     >,
-    key: Hex,
+    sessionKeyAddress: Hex,
     to: Address,
     amount: bigint,
   ) => Hex;
-  useSessionKeyNativeTokenTransferCalldata?: (
-    key: Hex,
+  encodeSessionKeyNativeTokenTransfer?: (
+    sessionKeyAddress: Hex,
     to: Address,
     amount: bigint,
   ) => Hex;
+  getSessionKeySignature?: (
+    sessionKeySigner: WalletClient<Transport, Chain, Account>,
+    userOp: TUserOperation,
+  ) => Promise<Hex>;
 }
 
 export type AccountDataV06 = AccountData<EntryPointV06>;
@@ -99,7 +96,7 @@ export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   modularAccountV2,
   modularAccount,
   nexus,
-  biconomy_v2,
+  biconomyV2,
   kernelV3,
   kernel,
   safe,
