@@ -504,7 +504,7 @@ describe("Benchmark", function () {
               alice.account.address,
               NATIVE_TRANSFER_AMOUNT,
             ),
-            getNonce: accountData.getNonce,
+            getNonce: accountData.getSessionKeyNonce ?? accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getSessionKeySignature,
           });
@@ -569,8 +569,8 @@ describe("Benchmark", function () {
               sessionKey.account.address,
               alice.account.address,
               USDC_TRANSFER_AMOUNT,
-            ), // key 3 = sessionKey.account.address
-            getNonce: accountData.getNonce,
+            ),
+            getNonce: accountData.getSessionKeyNonce ?? accountData.getNonce,
             getDummySignature: accountData.getDummySignature,
             getSignature: accountData.getSessionKeySignature,
           });
