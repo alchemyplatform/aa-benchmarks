@@ -16,6 +16,7 @@ import {lightAccountV2} from "./accounts/lightAccountV2";
 import {modularAccount} from "./accounts/modularAccount";
 import {modularAccountV2} from "./accounts/modularAccountV2";
 import {multiOwnerLightAccount} from "./accounts/multiOwnerLightAccount";
+import {nexus} from "./accounts/nexus";
 import {safe} from "./accounts/safe";
 import {simpleAccount} from "./accounts/simpleAccount";
 import {TOKEN_ARTIFACTS} from "./artifacts/tokens";
@@ -96,6 +97,7 @@ export interface AccountConfig {
 export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   modularAccountV2,
   modularAccount,
+  nexus,
   biconomy_v2,
   kernel,
   safe,
