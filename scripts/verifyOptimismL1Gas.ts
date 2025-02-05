@@ -68,7 +68,7 @@ async function getBlobBaseFee(blockNumber: bigint) {
   const l1BlockPredeploy = getContract({
     address: "0x4200000000000000000000000000000000000015",
     abi: L1_BLOCK_PREDEPLOY_ABI,
-    publicClient,
+    client: publicClient,
   });
 
   return await l1BlockPredeploy.read.blobBaseFee({blockNumber});
