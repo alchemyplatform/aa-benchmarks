@@ -287,6 +287,6 @@ function ethSignLegacy(data: `0x${string}`) {
 }
 
 export const safe: AccountConfig = {
-  name: "Gnosis Safe v1.4.1",
+  name: "Safe v1.4.1",
   accountFixture,
 };
