@@ -262,6 +262,6 @@ async function accountFixture(): Promise<AccountDataV06> {
 }
 
 export const biconomyV2: AccountConfig = {
-  name: "Biconomy v2",
+  name: "Biconomy Smart Account v2",
   accountFixture,
 };

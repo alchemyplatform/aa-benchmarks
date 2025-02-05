@@ -102,6 +102,6 @@ async function accountFixture(): Promise<AccountDataV07> {
 }
 
 export const lightAccountV2: AccountConfig = {
-  name: "Light Account v2",
+  name: "Alchemy Light Account v2",
   accountFixture,
 };

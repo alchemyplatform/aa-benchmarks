@@ -210,6 +210,6 @@ async function accountFixture(): Promise<AccountDataV07> {
 }
 
 export const kernelV3: AccountConfig = {
-  name: "Kernel v3.1",
+  name: "ZeroDev Kernel v3.1",
   accountFixture,
 };

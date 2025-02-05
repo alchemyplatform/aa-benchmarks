@@ -169,6 +169,6 @@ async function accountFixture(): Promise<AccountDataV07> {
 }
 
 export const nexus: AccountConfig = {
-  name: "Nexus",
+  name: "Biconomy Nexus",
   accountFixture,
 };
