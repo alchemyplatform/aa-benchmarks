@@ -11,6 +11,7 @@ import {
 import {biconomy_v2} from "./accounts/biconomy-v2";
 import {coinbaseSmartWallet} from "./accounts/coinbaseSmartWallet";
 import {kernel} from "./accounts/kernel";
+import {kernelV3} from "./accounts/kernelV3";
 import {lightAccount} from "./accounts/lightAccount";
 import {lightAccountV2} from "./accounts/lightAccountV2";
 import {modularAccount} from "./accounts/modularAccount";
@@ -99,6 +100,7 @@ export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   modularAccount,
   nexus,
   biconomy_v2,
+  kernelV3,
   kernel,
   safe,
   lightAccountV2,

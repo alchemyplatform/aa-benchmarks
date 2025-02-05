@@ -11,7 +11,7 @@ import {
   zeroAddress,
 } from "viem";
 import {AccountConfig, AccountDataV07} from "../accounts";
-import {NEXUS_ARTIFACTS} from "../artifacts/nexus";
+import {KERNEL_V3_ARTIFACTS} from "../artifacts/kernelV3";
 import {getEntryPointV07} from "../utils/entryPoint";
 
 async function accountFixture(): Promise<AccountDataV07> {
@@ -19,25 +19,68 @@ async function accountFixture(): Promise<AccountDataV07> {
   const testClient = (await hre.viem.getTestClient()).extend(walletActions);
 
   // Deploy Nexus-related contracts to the network using hardhat_setCode.
-  for (const {address, bytecode} of Object.values(NEXUS_ARTIFACTS)) {
+  for (const {address, bytecode} of Object.values(KERNEL_V3_ARTIFACTS)) {
     await hre.network.provider.send("hardhat_setCode", [address, bytecode]);
   }
 
   // Get the Nexus factory contract
-  const nexusFactory = getContract({
-    address: NEXUS_ARTIFACTS.K1ValidatorFactory.address,
-    abi: NEXUS_ARTIFACTS.K1ValidatorFactory.abi,
+  const factoryStaker = getContract({
+    address: KERNEL_V3_ARTIFACTS.FactoryStaker.address,
+    abi: KERNEL_V3_ARTIFACTS.FactoryStaker.abi,
     client: walletClient,
   });
 
-  // If the factory requires setting up using an impersonated account
+  const kernelFactory = getContract({
+    address: KERNEL_V3_ARTIFACTS.KernelFactory.address,
+    abi: KERNEL_V3_ARTIFACTS.KernelFactory.abi,
+    client: walletClient,
+  });
+
+  const factoryOwner = "0x9775137314fE595c943712B0b336327dfa80aE8A";
+
   await testClient.impersonateAccount({address: zeroAddress});
   await hre.network.provider.send("hardhat_setBalance", [
     zeroAddress,
     toHex(parseEther("10000")),
   ]);
-  // No need to call `setImplementation` here; it's already set in the constructor.
+  await testClient.writeContract({
+    address: factoryStaker.address,
+    abi: factoryStaker.abi,
+    functionName: "transferOwnership",
+    args: ["0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"],
+    account: zeroAddress,
+  });
   await testClient.stopImpersonatingAccount({address: zeroAddress});
+
+  await factoryStaker.write.stake(
+    ["0x0000000071727De22E5E9d8BAf0edAc6f37da032", 99],
+    {value: parseEther("0.1")},
+  );
+  await factoryStaker.write.approveFactory([
+    KERNEL_V3_ARTIFACTS.KernelFactory.address,
+    true,
+  ]);
+
+  const buildKernelInitializeData = (ownerAddress: `0x${string}`) => {
+    return encodeFunctionData({
+      abi: [
+        getAbiItem({
+          abi: KERNEL_V3_ARTIFACTS.Kernel.abi,
+          name: "initialize",
+        }),
+      ],
+      args: [
+        encodePacked(
+          ["bytes1", "address"],
+          ["0x01", KERNEL_V3_ARTIFACTS.ECDSAValidator.address],
+        ), //root validator
+        "0x0000000000000000000000000000000000000000", //hook
+        ownerAddress, //root validator data
+        "0x", //hook data
+        [], //init config
+      ],
+    });
+  };
 
   const entryPoint = getEntryPointV07({walletClient});
 
@@ -45,27 +88,19 @@ async function accountFixture(): Promise<AccountDataV07> {
     entryPoint,
 
     createAccount: async (salt, ownerAddress) => {
-      const attesters = [ownerAddress];
-      const threshold = 1;
-
-      const hash = await nexusFactory.write.createAccount([
-        ownerAddress,
-        salt,
-        attesters,
-        threshold,
+      const hash = await factoryStaker.write.deployWithFactory([
+        KERNEL_V3_ARTIFACTS.KernelFactory.address,
+        buildKernelInitializeData(ownerAddress),
+        toHex(salt, {size: 32}),
       ]);
 
       return hash;
     },
 
     getAccountAddress: async (salt, ownerAddress) => {
-      const attesters = [ownerAddress];
-      const threshold = 1;
-      return await nexusFactory.read.computeAccountAddress([
-        ownerAddress,
-        salt,
-        attesters,
-        threshold,
+      return kernelFactory.read.getAddress([
+        buildKernelInitializeData(ownerAddress),
+        toHex(salt, {size: 32}),
       ]);
     },
 
@@ -74,13 +109,17 @@ async function accountFixture(): Promise<AccountDataV07> {
       const signature = await owner.signMessage({
         message: {raw: userOpHash},
       });
+      //console.log("Signature", signature);
+      //const signatureHex = concatHex([toHex(SignatureType.EOA, { size: 1 }), signature]);
+      //console.log("Sig hex", signatureHex);
+      //return signatureHex;
       return signature;
     },
 
     getNonce: async (accountAddress) => {
       return await entryPoint.read.getNonce([
         accountAddress,
-        hexToBigInt(NEXUS_ARTIFACTS.K1Validator.address),
+        hexToBigInt(KERNEL_V3_ARTIFACTS.ECDSAValidator.address),
       ]);
     },
 
@@ -96,7 +135,7 @@ async function accountFixture(): Promise<AccountDataV07> {
         return encodeFunctionData({
           abi: [
             getAbiItem({
-              abi: NEXUS_ARTIFACTS.Nexus.abi,
+              abi: KERNEL_V3_ARTIFACTS.Kernel.abi,
               name: "execute",
             }),
           ],
@@ -129,7 +168,7 @@ async function accountFixture(): Promise<AccountDataV07> {
         return encodeFunctionData({
           abi: [
             getAbiItem({
-              abi: NEXUS_ARTIFACTS.Nexus.abi,
+              abi: KERNEL_V3_ARTIFACTS.Kernel.abi,
               name: "execute",
             }),
           ],
@@ -142,24 +181,27 @@ async function accountFixture(): Promise<AccountDataV07> {
     },
 
     getDummySignature: (_userOp) => {
+      //return concatHex([toHex(SignatureType.EOA, { size: 1 })]);
       return "0x";
     },
-    getInitCode: (salt, ownerAddress) => {
-      const attesters = [ownerAddress];
-      const threshold = 1;
 
+    getInitCode: (salt, ownerAddress) => {
       return encodePacked(
         ["address", "bytes"],
         [
-          nexusFactory.address,
+          factoryStaker.address,
           encodeFunctionData({
             abi: [
               getAbiItem({
-                abi: nexusFactory.abi,
-                name: "createAccount",
+                abi: factoryStaker.abi,
+                name: "deployWithFactory",
               }),
             ],
-            args: [ownerAddress, salt, attesters, threshold],
+            args: [
+              KERNEL_V3_ARTIFACTS.KernelFactory.address,
+              buildKernelInitializeData(ownerAddress),
+              toHex(salt, {size: 32}),
+            ],
           }),
         ],
       );
@@ -167,7 +209,7 @@ async function accountFixture(): Promise<AccountDataV07> {
   };
 }
 
-export const nexus: AccountConfig = {
-  name: "Nexus",
+export const kernelV3: AccountConfig = {
+  name: "Kernel v3.1",
   accountFixture,
 };
