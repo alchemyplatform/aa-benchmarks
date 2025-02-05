@@ -33,5 +33,5 @@ export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
 }
 
 export function convertWeiToUsd(wei: bigint, gasTokenPrice: number) {
-  return (Number(formatEther(wei)) * gasTokenPrice).toFixed(4);
+  return (Number(formatEther(wei)) * gasTokenPrice).toFixed(5);
 }

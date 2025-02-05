@@ -17,8 +17,10 @@ async function accountFixture(): Promise<AccountDataV07> {
     client: walletClient,
   });
 
+  const entryPoint = getEntryPointV07({walletClient});
+
   return {
-    entryPoint: getEntryPointV07({walletClient}),
+    entryPoint,
     createAccount: async (salt, ownerAddress) => {
       return await simpleAccountFactory.write.createAccount([
         ownerAddress,
@@ -28,11 +30,14 @@ async function accountFixture(): Promise<AccountDataV07> {
     getAccountAddress: async (salt, ownerAddress) => {
       return await simpleAccountFactory.read.getAddress([ownerAddress, salt]);
     },
-    getOwnerSignature: async (owner, userOp, entryPoint) => {
+    getOwnerSignature: async (owner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       return await owner.signMessage({
         message: {raw: userOpHash},
       });
+    },
+    getNonce: async (accountAddress) => {
+      return await entryPoint.read.getNonce([accountAddress, 0n]);
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({

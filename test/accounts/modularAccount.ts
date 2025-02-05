@@ -14,15 +14,16 @@ async function accountFixture(): Promise<AccountDataV06> {
   const multiOwnerModularAccountFactory = getContract({
     address: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerModularAccountFactory.address,
     abi: MODULAR_ACCOUNT_ARTIFACTS.MultiOwnerModularAccountFactory.abi,
-
     client: walletClient,
   });
 
   const tag =
     "0x0000000000000000000000000000000000000000000000000000000000000000";
 
+  const entryPoint = getEntryPointV06({walletClient});
+
   return {
-    entryPoint: getEntryPointV06({walletClient}),
+    entryPoint,
     createAccount: async (salt, ownerAddress) => {
       return await multiOwnerModularAccountFactory.write.createAccount([
         salt,
@@ -35,11 +36,14 @@ async function accountFixture(): Promise<AccountDataV06> {
         [ownerAddress],
       ]);
     },
-    getOwnerSignature: async (owner, userOp, entryPoint) => {
+    getOwnerSignature: async (owner, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       return await owner.signMessage({
         message: {raw: userOpHash},
       });
+    },
+    getNonce: async (accountAddress) => {
+      return await entryPoint.read.getNonce([accountAddress, 0n]);
     },
     encodeUserOpExecute: (to, value, data) => {
       return encodeFunctionData({
@@ -154,7 +158,7 @@ async function accountFixture(): Promise<AccountDataV06> {
         args: [key, tag, permissions],
       });
     },
-    getSessionKeySignature: async (key, userOp, entryPoint) => {
+    getSessionKeySignature: async (key, userOp) => {
       const userOpHash = await entryPoint.read.getUserOpHash([userOp]);
       return await key.signMessage({
         message: {raw: userOpHash},

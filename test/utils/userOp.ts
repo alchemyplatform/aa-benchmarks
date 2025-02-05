@@ -121,6 +121,7 @@ interface HandleOpsParams<TEntryPoint extends EntryPointV06 | EntryPointV07> {
   sender: Address;
   initCode?: Hex;
   callData: Hex;
+  getNonce: AccountData<TEntryPoint>["getNonce"];
   getDummySignature: AccountData<TEntryPoint>["getDummySignature"];
   getSignature: AccountData<TEntryPoint>["getOwnerSignature"];
 }
@@ -128,7 +129,7 @@ interface HandleOpsParams<TEntryPoint extends EntryPointV06 | EntryPointV07> {
 async function handleOpsV06(
   params: HandleOpsParams<EntryPointV06>,
 ): Promise<Hex> {
-  const nonce = await params.entryPoint.read.getNonce([params.sender, 0n]);
+  const nonce = await params.getNonce(params.sender);
   const userOp = getUnsignedUserOp({
     sender: params.sender,
     nonce,
@@ -136,11 +137,7 @@ async function handleOpsV06(
     callData: params.callData,
     getDummySignature: params.getDummySignature,
   });
-  userOp.signature = await params.getSignature(
-    params.signer,
-    userOp,
-    params.entryPoint,
-  );
+  userOp.signature = await params.getSignature(params.signer, userOp);
   return await params.entryPoint.write.handleOps([
     [userOp],
     params.beneficiary.account.address,
@@ -150,7 +147,7 @@ async function handleOpsV06(
 async function handleOpsV07(
   params: HandleOpsParams<EntryPointV07>,
 ): Promise<Hex> {
-  const nonce = await params.entryPoint.read.getNonce([params.sender, 0n]);
+  const nonce = await params.getNonce(params.sender);
   const packedUserOp = getUnsignedPackedUserOp({
     sender: params.sender,
     nonce,
@@ -161,7 +158,6 @@ async function handleOpsV07(
   packedUserOp.signature = await params.getSignature(
     params.signer,
     packedUserOp,
-    params.entryPoint,
   );
   return await params.entryPoint.write.handleOps([
     [packedUserOp],
@@ -178,6 +174,7 @@ interface WrappedHandleOpsParams<
   sender: Address;
   initCode?: Hex;
   callData: Hex;
+  getNonce: TAccountData["getNonce"];
   getDummySignature: TAccountData["getDummySignature"];
   getSignature: TAccountData["getOwnerSignature"];
 }
@@ -205,6 +202,7 @@ export async function wrappedHandleOps<
       sender: params.sender,
       initCode: params.initCode,
       callData: params.callData,
+      getNonce: params.getNonce,
       getDummySignature: params.getDummySignature,
       getSignature: params.getSignature,
     });
@@ -216,6 +214,7 @@ export async function wrappedHandleOps<
       sender: params.sender,
       initCode: params.initCode,
       callData: params.callData,
+      getNonce: params.getNonce,
       getDummySignature: params.getDummySignature,
       getSignature: params.getSignature,
     });

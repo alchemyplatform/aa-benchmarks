@@ -14,6 +14,7 @@ import {kernel} from "./accounts/kernel";
 import {lightAccount} from "./accounts/lightAccount";
 import {lightAccountV2} from "./accounts/lightAccountV2";
 import {modularAccount} from "./accounts/modularAccount";
+import {modularAccountV2} from "./accounts/modularAccountV2";
 import {multiOwnerLightAccount} from "./accounts/multiOwnerLightAccount";
 import {safe} from "./accounts/safe";
 import {simpleAccount} from "./accounts/simpleAccount";
@@ -35,8 +36,8 @@ export interface AccountData<
   getOwnerSignature: (
     signer: WalletClient<Transport, Chain, Account>,
     userOp: TUserOperation,
-    entryPoint: TEntryPoint,
   ) => Promise<Hex>;
+  getNonce: (accountAddress: Address) => Promise<bigint>;
   encodeUserOpExecute: (to: Address, value: bigint, data: Hex) => Hex;
   encodeRuntimeExecute?: (
     to: Address,
@@ -50,7 +51,7 @@ export interface AccountData<
 
   // Session key methods
   installSessionKeyPlugin?: (
-    account: Address,
+    accountAddress: Address,
     owner: WalletClient<Transport, Chain, Account>,
   ) => void;
   addSessionKeyCalldata?: (
@@ -66,7 +67,6 @@ export interface AccountData<
   getSessionKeySignature?: (
     signer: WalletClient<Transport, Chain, Account>,
     userOp: TUserOperation,
-    entryPoint: TEntryPoint,
   ) => Promise<Hex>;
   useSessionKeyERC20TransferCalldata?: (
     token: GetContractReturnType<
@@ -94,13 +94,14 @@ export interface AccountConfig {
 }
 
 export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
+  modularAccountV2,
   modularAccount,
   biconomy_v2,
   kernel,
   safe,
-  simpleAccount,
-  lightAccount,
   lightAccountV2,
   multiOwnerLightAccount,
+  lightAccount,
   coinbaseSmartWallet,
+  simpleAccount,
 ];
