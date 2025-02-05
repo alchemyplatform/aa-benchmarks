@@ -225,6 +225,6 @@ async function accountFixture(): Promise<AccountDataV06> {
 }
 
 export const modularAccount: AccountConfig = {
-  name: "Modular Account",
+  name: "Alchemy Modular Account",
   accountFixture,
 };
