@@ -13,6 +13,7 @@
     "benchmark:write": "hardhat test",
     "lint:fix": "prettier . --write",
     "verify-l1-gas": "./scripts/verifyOptimismL1Gas.ts",
+    "fetch-fee-snapshot": "./scripts/fetchFeeSnapshot.ts",
     "prepare": "husky"
   },
   "devDependencies": {

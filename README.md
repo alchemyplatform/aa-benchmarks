@@ -698,6 +698,24 @@ Run the benchmarks and update this file with the new results:
 pnpm benchmark:write
 ```
 
+## Scripts
+
+### Fetch fee snapshot
+
+Fetch the current fee snapshot for the supported chains. This will output the most up-to-date values for the environment variables that you can copy into your `.env` file.
+
+```bash
+pnpm fetch-fee-snapshot
+```
+
+### Verify L1 gas
+
+Verify the L1 gas used and the L1 fee paid for a given transaction hash. Run this script with a recent transaction hash to validate that the logic for calculating the L1 gas and L1 fee is correct.
+
+```bash
+pnpm verify-l1-gas <transaction-hash>
+```
+
 ## Contributing
 
 To add a new smart account to this repo, follow the steps below.
