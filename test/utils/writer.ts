@@ -163,12 +163,12 @@ const LATEST_SNAPSHOT_LABEL = `${LATEST_SNAPSHOT_DATE} (latest)`;
 const HIGH_BLOB_FEE_SNAPSHOT_LABEL = `${HIGH_BLOB_FEE_DATE} (high blob fees)`;
 
 // Absolute cost prefix
-const ABSOLUTE_LATEST_SNAPSHOT_LABEL = `Absolute Cost | ${LATEST_SNAPSHOT_DATE} (latest)`;
-const ABSOLUTE_HIGH_BLOB_FEE_SNAPSHOT_LABEL = `Absolute Cost | ${HIGH_BLOB_FEE_DATE} (high blob fees)`;
+const ABSOLUTE_LATEST_SNAPSHOT_LABEL = `Absolute Cost - ${LATEST_SNAPSHOT_LABEL}`;
+const ABSOLUTE_HIGH_BLOB_FEE_SNAPSHOT_LABEL = `Absolute Cost - ${HIGH_BLOB_FEE_SNAPSHOT_LABEL}`;
 
 // Relative cost prefix
-const RELATIVE_LATEST_SNAPSHOT_LABEL = `Relative Cost to MAv2 | ${LATEST_SNAPSHOT_DATE} (latest)`;
-const RELATIVE_HIGH_BLOB_FEE_SNAPSHOT_LABEL = `Relative Cost to MAv2 | ${HIGH_BLOB_FEE_DATE} (high blob fees)`;
+const RELATIVE_LATEST_SNAPSHOT_LABEL = `Relative Cost to MAv2 - ${LATEST_SNAPSHOT_LABEL}`;
+const RELATIVE_HIGH_BLOB_FEE_SNAPSHOT_LABEL = `Relative Cost to MAv2 - ${HIGH_BLOB_FEE_SNAPSHOT_LABEL}`;
 
 const TABLE_HEADERS = [
   "Execution gas",
@@ -220,8 +220,6 @@ function writeResult(chain: Chain) {
       "Gas price (gwei)",
       monospace(formatGwei(config.gasPrice)),
       monospace(formatGwei(config.gasPriceHigh)),
-      monospace(formatGwei(config.gasPrice)),
-      monospace(formatGwei(config.gasPriceHigh)),
     ],
     [
       "L1 base fee (gwei)",
@@ -262,7 +260,7 @@ function writeResult(chain: Chain) {
     RELATIVE_LATEST_SNAPSHOT_LABEL,
     RELATIVE_HIGH_BLOB_FEE_SNAPSHOT_LABEL,
   ];
-  const summaryTableAlign = ["l", "r", "r"];
+  const summaryTableAlign = ["l", "r", "r", "r", "r"];
 
   // Metric names, with the first column left intentionally blank.
   const tableHeaderRow = ["", ...TABLE_HEADERS];
@@ -409,11 +407,11 @@ function writeResult(chain: Chain) {
     buffer += "<details>\n";
     buffer += "<summary><b>Details</b></summary>\n\n";
 
-    buffer += `##### ${ABSOLUTE_LATEST_SNAPSHOT_LABEL}\n\n`;
+    buffer += `##### ${LATEST_SNAPSHOT_LABEL}\n\n`;
     buffer +=
       markdownTable([tableHeaderRow, ...tableRows], {align: tableAlign}) +
       "\n\n";
-    buffer += `##### ${ABSOLUTE_HIGH_BLOB_FEE_SNAPSHOT_LABEL}\n\n`;
+    buffer += `##### ${HIGH_BLOB_FEE_SNAPSHOT_LABEL}\n\n`;
     buffer +=
       markdownTable([tableHeaderRow, ...tableRowsHigh], {align: tableAlign}) +
       "\n\n";

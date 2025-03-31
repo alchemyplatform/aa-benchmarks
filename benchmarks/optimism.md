@@ -10,33 +10,33 @@
 
 #### Run parameters
 
-| Parameter            | 2025-01-30 (latest) | 2024-03-31 (high blob fees) |               |               |
-| :------------------- | ------------------: | --------------------------: | ------------- | ------------- |
-| Gas price (gwei)     |       `0.001000555` |               `0.060233618` | `0.001000555` | `0.060233618` |
-| L1 base fee (gwei)   |       `1.121228232` |                     `24.05` |               |               |
-| L1 base fee scalar   |              `5227` |                      `1368` |               |               |
-| Blob base fee (wei)  |           `7736427` |               `46930000000` |               |               |
-| Blob base fee scalar |           `1014213` |                    `810949` |               |               |
-| ETH price (USD)      |          `$3192.59` |                         `-` |               |               |
+| Parameter            | 2025-01-30 (latest) | 2024-03-31 (high blob fees) |
+| :------------------- | ------------------: | --------------------------: |
+| Gas price (gwei)     |       `0.001000555` |               `0.060233618` |
+| L1 base fee (gwei)   |       `1.121228232` |                     `24.05` |
+| L1 base fee scalar   |              `5227` |                      `1368` |
+| Blob base fee (wei)  |           `7736427` |               `46930000000` |
+| Blob base fee scalar |           `1014213` |                    `810949` |
+| ETH price (USD)      |          `$3192.59` |                         `-` |
 
 #### User Operation: Account creation
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00090` |          `$0.10261` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00127` |          `$0.13254` | `141.59%`     | `129.17%`                   |
-| ZeroDev Kernel v3.1        |    `$0.00129` |          `$0.14290` | `143.44%`     | `139.26%`                   |
-| Safe v1.4.1                |    `$0.00163` |          `$0.17268` | `181.29%`     | `168.29%`                   |
-| Alchemy Light Account v2   |    `$0.00109` |          `$0.11393` | `121.26%`     | `111.03%`                   |
-| Coinbase Smart Wallet      |    `$0.00120` |          `$0.13015` | `133.54%`     | `126.84%`                   |
-| Simple Account             |    `$0.00110` |          `$0.11545` | `123.07%`     | `112.51%`                   |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00090` |                                  `$0.10261` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00127` |                                  `$0.13254` |                                   `141.59%` |                                           `129.17%` |
+| ZeroDev Kernel v3.1        |                          `$0.00129` |                                  `$0.14290` |                                   `143.44%` |                                           `139.26%` |
+| Safe v1.4.1                |                          `$0.00163` |                                  `$0.17268` |                                   `181.29%` |                                           `168.29%` |
+| Alchemy Light Account v2   |                          `$0.00109` |                                  `$0.11393` |                                   `121.26%` |                                           `111.03%` |
+| Coinbase Smart Wallet      |                          `$0.00120` |                                  `$0.13015` |                                   `133.54%` |                                           `126.84%` |
+| Simple Account             |                          `$0.00110` |                                  `$0.11545` |                                   `123.07%` |                                           `112.51%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
@@ -48,7 +48,7 @@
 | Coinbase Smart Wallet      |      `317904` |       `0.000000318` |  `8964` | `0.000000057` |   `0.000000375` |      `$0.00120` |
 | Simple Account             |      `297367` |       `0.000000298` |  `7568` | `0.000000048` |   `0.000000346` |      `$0.00110` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
@@ -66,20 +66,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00065` |          `$0.08408` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00067` |          `$0.08772` | `103.81%`     | `104.33%`                   |
-| ZeroDev Kernel v3.1        |    `$0.00076` |          `$0.09319` | `117.05%`     | `110.84%`                   |
-| Safe v1.4.1                |    `$0.00071` |          `$0.09137` | `110.33%`     | `108.68%`                   |
-| Alchemy Light Account v2   |    `$0.00062` |          `$0.08253` | `96.23%`      | `98.16%`                    |
-| Coinbase Smart Wallet      |    `$0.00066` |          `$0.09018` | `101.69%`     | `107.25%`                   |
-| Simple Account             |    `$0.00062` |          `$0.08242` | `96.14%`      | `98.02%`                    |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00065` |                                  `$0.08408` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00067` |                                  `$0.08772` |                                   `103.81%` |                                           `104.33%` |
+| ZeroDev Kernel v3.1        |                          `$0.00076` |                                  `$0.09319` |                                   `117.05%` |                                           `110.84%` |
+| Safe v1.4.1                |                          `$0.00071` |                                  `$0.09137` |                                   `110.33%` |                                           `108.68%` |
+| Alchemy Light Account v2   |                          `$0.00062` |                                  `$0.08253` |                                    `96.23%` |                                            `98.16%` |
+| Coinbase Smart Wallet      |                          `$0.00066` |                                  `$0.09018` |                                   `101.69%` |                                           `107.25%` |
+| Simple Account             |                          `$0.00062` |                                  `$0.08242` |                                    `96.14%` |                                            `98.02%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -91,7 +91,7 @@
 | Coinbase Smart Wallet      |      `156812` |       `0.000000157` | `7796` | `0.000000050` |   `0.000000206` |      `$0.00066` |
 | Simple Account             |      `151045` |       `0.000000151` | `6932` | `0.000000044` |   `0.000000195` |      `$0.00062` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -109,20 +109,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00074` |          `$0.09385` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00076` |          `$0.09638` | `102.89%`     | `102.70%`                   |
-| ZeroDev Kernel v3.1        |    `$0.00085` |          `$0.10179` | `114.54%`     | `108.46%`                   |
-| Safe v1.4.1                |    `$0.00081` |          `$0.10112` | `109.17%`     | `107.74%`                   |
-| Alchemy Light Account v2   |    `$0.00071` |          `$0.09234` | `96.78%`      | `98.39%`                    |
-| Coinbase Smart Wallet      |    `$0.00075` |          `$0.09991` | `101.56%`     | `106.45%`                   |
-| Simple Account             |    `$0.00071` |          `$0.09234` | `96.77%`      | `98.39%`                    |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00074` |                                  `$0.09385` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00076` |                                  `$0.09638` |                                   `102.89%` |                                           `102.70%` |
+| ZeroDev Kernel v3.1        |                          `$0.00085` |                                  `$0.10179` |                                   `114.54%` |                                           `108.46%` |
+| Safe v1.4.1                |                          `$0.00081` |                                  `$0.10112` |                                   `109.17%` |                                           `107.74%` |
+| Alchemy Light Account v2   |                          `$0.00071` |                                  `$0.09234` |                                    `96.78%` |                                            `98.39%` |
+| Coinbase Smart Wallet      |                          `$0.00075` |                                  `$0.09991` |                                   `101.56%` |                                           `106.45%` |
+| Simple Account             |                          `$0.00071` |                                  `$0.09234` |                                    `96.77%` |                                            `98.39%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -134,7 +134,7 @@
 | Coinbase Smart Wallet      |      `181014` |       `0.000000181` | `8456` | `0.000000054` |   `0.000000235` |      `$0.00075` |
 | Simple Account             |      `175283` |       `0.000000175` | `7616` | `0.000000048` |   `0.000000224` |      `$0.00071` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -152,20 +152,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00083` |          `$0.10825` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00085` |          `$0.11060` | `102.53%`     | `102.17%`                   |
-| ZeroDev Kernel v3.1        |    `$0.00094` |          `$0.11599` | `113.05%`     | `107.15%`                   |
-| Safe v1.4.1                |    `$0.00090` |          `$0.11554` | `108.38%`     | `106.73%`                   |
-| Alchemy Light Account v2   |    `$0.00080` |          `$0.10646` | `97.03%`      | `98.35%`                    |
-| Coinbase Smart Wallet      |    `$0.00084` |          `$0.11430` | `101.53%`     | `105.59%`                   |
-| Simple Account             |    `$0.00080` |          `$0.10673` | `97.25%`      | `98.59%`                    |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00083` |                                  `$0.10825` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00085` |                                  `$0.11060` |                                   `102.53%` |                                           `102.17%` |
+| ZeroDev Kernel v3.1        |                          `$0.00094` |                                  `$0.11599` |                                   `113.05%` |                                           `107.15%` |
+| Safe v1.4.1                |                          `$0.00090` |                                  `$0.11554` |                                   `108.38%` |                                           `106.73%` |
+| Alchemy Light Account v2   |                          `$0.00080` |                                  `$0.10646` |                                    `97.03%` |                                            `98.35%` |
+| Coinbase Smart Wallet      |                          `$0.00084` |                                  `$0.11430` |                                   `101.53%` |                                           `105.59%` |
+| Simple Account             |                          `$0.00080` |                                  `$0.10673` |                                    `97.25%` |                                            `98.59%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -177,7 +177,7 @@
 | Coinbase Smart Wallet      |      `200573` |       `0.000000201` | `9836` | `0.000000062` |   `0.000000263` |      `$0.00084` |
 | Simple Account             |      `194829` |       `0.000000195` | `8996` | `0.000000057` |   `0.000000252` |      `$0.00080` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -195,20 +195,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00186` |          `$0.20104` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             | `Unsupported` |       `Unsupported` |               |                             |
-| ZeroDev Kernel v3.1        | `Unsupported` |       `Unsupported` |               |                             |
-| Safe v1.4.1                | `Unsupported` |       `Unsupported` |               |                             |
-| Alchemy Light Account v2   | `Unsupported` |       `Unsupported` |               |                             |
-| Coinbase Smart Wallet      | `Unsupported` |       `Unsupported` |               |                             |
-| Simple Account             | `Unsupported` |       `Unsupported` |               |                             |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00186` |                                  `$0.20104` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| ZeroDev Kernel v3.1        |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Safe v1.4.1                |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Alchemy Light Account v2   |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Coinbase Smart Wallet      |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Simple Account             |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
@@ -220,7 +220,7 @@
 | Coinbase Smart Wallet      |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
 | Simple Account             |           `-` |                 `-` |     `-` |           `-` |             `-` |             `-` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) |  L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | ------: | ------------: | --------------: | --------------: |
@@ -238,20 +238,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00069` |          `$0.08719` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             | `Unsupported` |       `Unsupported` |               |                             |
-| ZeroDev Kernel v3.1        | `Unsupported` |       `Unsupported` |               |                             |
-| Safe v1.4.1                | `Unsupported` |       `Unsupported` |               |                             |
-| Alchemy Light Account v2   | `Unsupported` |       `Unsupported` |               |                             |
-| Coinbase Smart Wallet      | `Unsupported` |       `Unsupported` |               |                             |
-| Simple Account             | `Unsupported` |       `Unsupported` |               |                             |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00069` |                                  `$0.08719` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| ZeroDev Kernel v3.1        |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Safe v1.4.1                |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Alchemy Light Account v2   |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Coinbase Smart Wallet      |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Simple Account             |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -263,7 +263,7 @@
 | Coinbase Smart Wallet      |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
 | Simple Account             |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -281,20 +281,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00079` |          `$0.09722` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             | `Unsupported` |       `Unsupported` |               |                             |
-| ZeroDev Kernel v3.1        | `Unsupported` |       `Unsupported` |               |                             |
-| Safe v1.4.1                | `Unsupported` |       `Unsupported` |               |                             |
-| Alchemy Light Account v2   | `Unsupported` |       `Unsupported` |               |                             |
-| Coinbase Smart Wallet      | `Unsupported` |       `Unsupported` |               |                             |
-| Simple Account             | `Unsupported` |       `Unsupported` |               |                             |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00079` |                                  `$0.09722` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| ZeroDev Kernel v3.1        |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Safe v1.4.1                |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Alchemy Light Account v2   |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Coinbase Smart Wallet      |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
+| Simple Account             |                       `Unsupported` |                               `Unsupported` |                                             |                                                     |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -306,7 +306,7 @@
 | Coinbase Smart Wallet      |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
 | Simple Account             |           `-` |                 `-` |    `-` |           `-` |             `-` |             `-` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -324,20 +324,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00036` |          `$0.03651` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00074` |          `$0.06471` | `204.96%`     | `177.24%`                   |
-| ZeroDev Kernel v3.1        |    `$0.00067` |          `$0.06984` | `186.38%`     | `191.30%`                   |
-| Safe v1.4.1                |    `$0.00104` |          `$0.10092` | `290.60%`     | `276.41%`                   |
-| Alchemy Light Account v2   |    `$0.00059` |          `$0.05033` | `163.97%`     | `137.86%`                   |
-| Coinbase Smart Wallet      |    `$0.00067` |          `$0.05933` | `186.20%`     | `162.52%`                   |
-| Simple Account             |    `$0.00060` |          `$0.05176` | `168.44%`     | `141.78%`                   |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00036` |                                  `$0.03651` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00074` |                                  `$0.06471` |                                   `204.96%` |                                           `177.24%` |
+| ZeroDev Kernel v3.1        |                          `$0.00067` |                                  `$0.06984` |                                   `186.38%` |                                           `191.30%` |
+| Safe v1.4.1                |                          `$0.00104` |                                  `$0.10092` |                                   `290.60%` |                                           `276.41%` |
+| Alchemy Light Account v2   |                          `$0.00059` |                                  `$0.05033` |                                   `163.97%` |                                           `137.86%` |
+| Coinbase Smart Wallet      |                          `$0.00067` |                                  `$0.05933` |                                   `186.20%` |                                           `162.52%` |
+| Simple Account             |                          `$0.00060` |                                  `$0.05176` |                                   `168.44%` |                                           `141.78%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -349,7 +349,7 @@
 | Coinbase Smart Wallet      |      `190525` |       `0.000000191` | `2948` | `0.000000019` |   `0.000000209` |      `$0.00067` |
 | Simple Account             |      `174219` |       `0.000000174` | `2372` | `0.000000015` |   `0.000000189` |      `$0.00060` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -367,20 +367,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00021` |          `$0.03031` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00018` |          `$0.02962` | `87.28%`      | `97.73%`                    |
-| ZeroDev Kernel v3.1        |    `$0.00021` |          `$0.03143` | `100.88%`     | `103.71%`                   |
-| Safe v1.4.1                |    `$0.00034` |          `$0.05283` | `162.11%`     | `174.33%`                   |
-| Alchemy Light Account v2   |    `$0.00018` |          `$0.02847` | `85.57%`      | `93.94%`                    |
-| Coinbase Smart Wallet      |    `$0.00018` |          `$0.02851` | `85.90%`      | `94.07%`                    |
-| Simple Account             |    `$0.00018` |          `$0.02845` | `85.45%`      | `93.88%`                    |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00021` |                                  `$0.03031` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00018` |                                  `$0.02962` |                                    `87.28%` |                                            `97.73%` |
+| ZeroDev Kernel v3.1        |                          `$0.00021` |                                  `$0.03143` |                                   `100.88%` |                                           `103.71%` |
+| Safe v1.4.1                |                          `$0.00034` |                                  `$0.05283` |                                   `162.11%` |                                           `174.33%` |
+| Alchemy Light Account v2   |                          `$0.00018` |                                  `$0.02847` |                                    `85.57%` |                                            `93.94%` |
+| Coinbase Smart Wallet      |                          `$0.00018` |                                  `$0.02851` |                                    `85.90%` |                                            `94.07%` |
+| Simple Account             |                          `$0.00018` |                                  `$0.02845` |                                    `85.45%` |                                            `93.88%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -392,7 +392,7 @@
 | Coinbase Smart Wallet      |       `39681` |       `0.000000040` | `2712` | `0.000000017` |   `0.000000057` |      `$0.00018` |
 | Simple Account             |       `39381` |       `0.000000039` | `2712` | `0.000000017` |   `0.000000057` |      `$0.00018` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -410,20 +410,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00030` |          `$0.04002` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00027` |          `$0.03818` | `89.87%`      | `95.41%`                    |
-| ZeroDev Kernel v3.1        |    `$0.00030` |          `$0.03990` | `99.33%`      | `99.70%`                    |
-| Safe v1.4.1                |    `$0.00043` |          `$0.06260` | `143.59%`     | `156.42%`                   |
-| Alchemy Light Account v2   |    `$0.00027` |          `$0.03830` | `90.08%`      | `95.69%`                    |
-| Coinbase Smart Wallet      |    `$0.00027` |          `$0.03835` | `90.39%`      | `95.84%`                    |
-| Simple Account             |    `$0.00027` |          `$0.03830` | `90.07%`      | `95.69%`                    |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00030` |                                  `$0.04002` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00027` |                                  `$0.03818` |                                    `89.87%` |                                            `95.41%` |
+| ZeroDev Kernel v3.1        |                          `$0.00030` |                                  `$0.03990` |                                    `99.33%` |                                            `99.70%` |
+| Safe v1.4.1                |                          `$0.00043` |                                  `$0.06260` |                                   `143.59%` |                                           `156.42%` |
+| Alchemy Light Account v2   |                          `$0.00027` |                                  `$0.03830` |                                    `90.08%` |                                            `95.69%` |
+| Coinbase Smart Wallet      |                          `$0.00027` |                                  `$0.03835` |                                    `90.39%` |                                            `95.84%` |
+| Simple Account             |                          `$0.00027` |                                  `$0.03830` |                                    `90.07%` |                                            `95.69%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -435,7 +435,7 @@
 | Coinbase Smart Wallet      |       `63803` |       `0.000000064` | `3388` | `0.000000022` |   `0.000000085` |      `$0.00027` |
 | Simple Account             |       `63503` |       `0.000000064` | `3388` | `0.000000022` |   `0.000000085` |      `$0.00027` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -453,20 +453,20 @@
 
 ##### Total fee (USD)
 
-|                            | Absolute Cost | 2025-01-30 (latest) | Absolute Cost | 2024-03-31 (high blob fees) | Relative Cost to MAv2 | 2025-01-30 (latest) | Relative Cost to MAv2 | 2024-03-31 (high blob fees) |
-| :------------------------- | ------------: | ------------------: | ------------- | --------------------------- | --------------------- | ------------------- | --------------------- | --------------------------- |
-| Alchemy Modular Account v2 |    `$0.00056` |          `$0.06471` | `100.00%`     | `100.00%`                   |
-| Biconomy Nexus             |    `$0.00053` |          `$0.06279` | `94.53%`      | `97.02%`                    |
-| ZeroDev Kernel v3.1        |    `$0.00056` |          `$0.06460` | `99.66%`      | `99.82%`                    |
-| Safe v1.4.1                |    `$0.00064` |          `$0.08371` | `113.54%`     | `129.35%`                   |
-| Alchemy Light Account v2   |    `$0.00053` |          `$0.06281` | `94.60%`      | `97.05%`                    |
-| Coinbase Smart Wallet      |    `$0.00053` |          `$0.06304` | `95.05%`      | `97.41%`                    |
-| Simple Account             |    `$0.00053` |          `$0.06298` | `94.88%`      | `97.32%`                    |
+|                            | Absolute Cost - 2025-01-30 (latest) | Absolute Cost - 2024-03-31 (high blob fees) | Relative Cost to MAv2 - 2025-01-30 (latest) | Relative Cost to MAv2 - 2024-03-31 (high blob fees) |
+| :------------------------- | ----------------------------------: | ------------------------------------------: | ------------------------------------------: | --------------------------------------------------: |
+| Alchemy Modular Account v2 |                          `$0.00056` |                                  `$0.06471` |                                   `100.00%` |                                           `100.00%` |
+| Biconomy Nexus             |                          `$0.00053` |                                  `$0.06279` |                                    `94.53%` |                                            `97.02%` |
+| ZeroDev Kernel v3.1        |                          `$0.00056` |                                  `$0.06460` |                                    `99.66%` |                                            `99.82%` |
+| Safe v1.4.1                |                          `$0.00064` |                                  `$0.08371` |                                   `113.54%` |                                           `129.35%` |
+| Alchemy Light Account v2   |                          `$0.00053` |                                  `$0.06281` |                                    `94.60%` |                                            `97.05%` |
+| Coinbase Smart Wallet      |                          `$0.00053` |                                  `$0.06304` |                                    `95.05%` |                                            `97.41%` |
+| Simple Account             |                          `$0.00053` |                                  `$0.06298` |                                    `94.88%` |                                            `97.32%` |
 
 <details>
 <summary><b>Details</b></summary>
 
-##### Absolute Cost | 2025-01-30 (latest)
+##### 2025-01-30 (latest)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
@@ -478,7 +478,7 @@
 | Coinbase Smart Wallet      |      `137243` |       `0.000000137` | `4760` | `0.000000030` |   `0.000000168` |      `$0.00053` |
 | Simple Account             |      `136943` |       `0.000000137` | `4760` | `0.000000030` |   `0.000000167` |      `$0.00053` |
 
-##### Absolute Cost | 2024-03-31 (high blob fees)
+##### 2024-03-31 (high blob fees)
 
 |                            | Execution gas | Execution fee (ETH) | L1 gas |  L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------- | ------------: | ------------------: | -----: | ------------: | --------------: | --------------: |
