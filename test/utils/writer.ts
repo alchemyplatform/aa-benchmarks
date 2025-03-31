@@ -32,7 +32,6 @@ import {
   POLYGON_GAS_PRICE,
   POLYGON_GAS_PRICE_HIGH,
   POLYGON_PRICE_USD,
-  SNAPSHOT_TIMESTAMP_MS,
   ZORA_BLOB_BASE_FEE,
   ZORA_BLOB_BASE_FEE_HIGH,
   ZORA_BLOB_BASE_FEE_SCALAR,
@@ -153,14 +152,9 @@ const CHAIN_CONFIG: ChainConfig = {
   },
 };
 
-const LATEST_SNAPSHOT_DATE = new Date(SNAPSHOT_TIMESTAMP_MS)
-  .toISOString()
-  .substring(0, 10);
-const HIGH_BLOB_FEE_DATE = "2024-03-31";
-
 // No label prefix
-const LATEST_SNAPSHOT_LABEL = `${LATEST_SNAPSHOT_DATE} (latest)`;
-const HIGH_BLOB_FEE_SNAPSHOT_LABEL = `${HIGH_BLOB_FEE_DATE} (high blob fees)`;
+const LATEST_SNAPSHOT_LABEL = `Latest`;
+const HIGH_BLOB_FEE_SNAPSHOT_LABEL = `High Blob Fees`;
 
 // Absolute cost prefix
 const ABSOLUTE_LATEST_SNAPSHOT_LABEL = `Absolute - ${LATEST_SNAPSHOT_LABEL}`;
