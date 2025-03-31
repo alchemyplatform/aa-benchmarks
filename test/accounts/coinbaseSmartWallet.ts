@@ -111,7 +111,7 @@ async function accountFixture(): Promise<AccountDataV06> {
 }
 
 export const coinbaseSmartWallet: AccountConfig = {
-  name: "Coinbase Smart Wallet",
+  name: "Coinbase Smart Wallet (non-modular)",
   accountFixture,
 };
 

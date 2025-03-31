@@ -85,6 +85,6 @@ async function accountFixture(): Promise<AccountDataV07> {
 }
 
 export const simpleAccount: AccountConfig = {
-  name: "Simple Account",
+  name: "Simple Account (non-modular)",
   accountFixture,
 };
