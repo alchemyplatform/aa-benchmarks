@@ -8,15 +8,10 @@ import {
   Transport,
   WalletClient,
 } from "viem";
-import {biconomyV2} from "./accounts/biconomyV2";
 import {coinbaseSmartWallet} from "./accounts/coinbaseSmartWallet";
-import {kernel} from "./accounts/kernel";
 import {kernelV3} from "./accounts/kernelV3";
-import {lightAccount} from "./accounts/lightAccount";
-import {lightAccountV2} from "./accounts/lightAccountV2";
-import {modularAccount} from "./accounts/modularAccount";
 import {modularAccountV2} from "./accounts/modularAccountV2";
-import {multiOwnerLightAccount} from "./accounts/multiOwnerLightAccount";
+import {multiOwnerLightAccount as lightAccountV2} from "./accounts/multiOwnerLightAccount";
 import {nexus} from "./accounts/nexus";
 import {safe} from "./accounts/safe";
 import {simpleAccount} from "./accounts/simpleAccount";
@@ -95,15 +90,10 @@ export interface AccountConfig {
 
 export const ACCOUNTS_TO_BENCHMARK: AccountConfig[] = [
   modularAccountV2,
-  modularAccount,
   nexus,
-  biconomyV2,
   kernelV3,
-  kernel,
   safe,
   lightAccountV2,
-  multiOwnerLightAccount,
-  lightAccount,
   coinbaseSmartWallet,
   simpleAccount,
 ];

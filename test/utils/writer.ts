@@ -44,7 +44,12 @@ import {
   ZORA_L1_BASE_FEE_SCALAR,
   ZORA_L1_BASE_FEE_SCALAR_HIGH,
 } from "../../settings";
-import {convertWeiToUsd, formatEtherTruncated, getL1Fee} from "./fees";
+import {
+  convertWeiToUsd,
+  convertWeiToUsdNumber,
+  formatEtherTruncated,
+  getL1Fee,
+} from "./fees";
 
 interface ChainConfig {
   [chainId: number]: {
@@ -148,8 +153,22 @@ const CHAIN_CONFIG: ChainConfig = {
   },
 };
 
-const LATEST_SNAPSHOT_LABEL = `${new Date(SNAPSHOT_TIMESTAMP_MS).toISOString().substring(0, 10)} (latest)`;
-const HIGH_BLOB_FEE_SNAPSHOT_LABEL = "2024-03-31 (high blob fees)";
+const LATEST_SNAPSHOT_DATE = new Date(SNAPSHOT_TIMESTAMP_MS)
+  .toISOString()
+  .substring(0, 10);
+const HIGH_BLOB_FEE_DATE = "2024-03-31";
+
+// No label prefix
+const LATEST_SNAPSHOT_LABEL = `${LATEST_SNAPSHOT_DATE} (latest)`;
+const HIGH_BLOB_FEE_SNAPSHOT_LABEL = `${HIGH_BLOB_FEE_DATE} (high blob fees)`;
+
+// Absolute cost prefix
+const ABSOLUTE_LATEST_SNAPSHOT_LABEL = `Absolute Cost | ${LATEST_SNAPSHOT_DATE} (latest)`;
+const ABSOLUTE_HIGH_BLOB_FEE_SNAPSHOT_LABEL = `Absolute Cost | ${HIGH_BLOB_FEE_DATE} (high blob fees)`;
+
+// Relative cost prefix
+const RELATIVE_LATEST_SNAPSHOT_LABEL = `Relative Cost to MAv2 | ${LATEST_SNAPSHOT_DATE} (latest)`;
+const RELATIVE_HIGH_BLOB_FEE_SNAPSHOT_LABEL = `Relative Cost to MAv2 | ${HIGH_BLOB_FEE_DATE} (high blob fees)`;
 
 const TABLE_HEADERS = [
   "Execution gas",
@@ -201,6 +220,8 @@ function writeResult(chain: Chain) {
       "Gas price (gwei)",
       monospace(formatGwei(config.gasPrice)),
       monospace(formatGwei(config.gasPriceHigh)),
+      monospace(formatGwei(config.gasPrice)),
+      monospace(formatGwei(config.gasPriceHigh)),
     ],
     [
       "L1 base fee (gwei)",
@@ -236,8 +257,10 @@ function writeResult(chain: Chain) {
 
   const summaryTableHeaderRow = [
     "",
-    LATEST_SNAPSHOT_LABEL,
-    HIGH_BLOB_FEE_SNAPSHOT_LABEL,
+    ABSOLUTE_LATEST_SNAPSHOT_LABEL,
+    ABSOLUTE_HIGH_BLOB_FEE_SNAPSHOT_LABEL,
+    RELATIVE_LATEST_SNAPSHOT_LABEL,
+    RELATIVE_HIGH_BLOB_FEE_SNAPSHOT_LABEL,
   ];
   const summaryTableAlign = ["l", "r", "r"];
 
@@ -252,6 +275,51 @@ function writeResult(chain: Chain) {
     const tableRowsHigh = [];
     const summaryTableRows = [];
 
+    // Store baseline values outside the main loop
+    let baselineLatestUSD = 0;
+    let baselineHighBlobUSD = 0;
+
+    // First pass to get baseline values
+    for (const [accountName, metrics] of Object.entries(testResults)) {
+      if (accountName === "Alchemy Modular Account v2" && metrics.gasUsed) {
+        const executionFee = metrics.gasUsed * config.gasPrice;
+        const l1Fee =
+          metrics.l1GasUsed && config.l1BaseFee
+            ? getL1Fee(
+                metrics.l1GasUsed,
+                config.l1BaseFee!,
+                config.l1BaseFeeScalar!,
+                config.blobBaseFee!,
+                config.blobBaseFeeScalar!,
+              )
+            : null;
+        const totalFee = executionFee + (l1Fee || 0n);
+        baselineLatestUSD = convertWeiToUsdNumber(
+          totalFee,
+          config.gasTokenPrice,
+        );
+
+        const executionFeeHigh = metrics.gasUsed * config.gasPriceHigh;
+        const l1FeeHigh =
+          metrics.l1GasUsed && config.l1BaseFeeHigh
+            ? getL1Fee(
+                metrics.l1GasUsed,
+                config.l1BaseFeeHigh!,
+                config.l1BaseFeeScalarHigh!,
+                config.blobBaseFeeHigh!,
+                config.blobBaseFeeScalarHigh!,
+              )
+            : null;
+        const totalFeeHigh = executionFeeHigh + (l1FeeHigh || 0n);
+        baselineHighBlobUSD = convertWeiToUsdNumber(
+          totalFeeHigh,
+          config.gasTokenPrice,
+        );
+        break;
+      }
+    }
+
+    // Main loop for processing all accounts
     for (const [accountName, metrics] of Object.entries(testResults)) {
       if (!metrics.gasUsed) {
         tableRows.push([
@@ -314,10 +382,21 @@ function writeResult(chain: Chain) {
         monospace(`$${convertWeiToUsd(totalFeeHigh, config.gasTokenPrice)}`), // Total fee (USD)
       ]);
 
+      let absoluteBase = convertWeiToUsdNumber(totalFee, config.gasTokenPrice);
+      let absoluteHigh = convertWeiToUsdNumber(
+        totalFeeHigh,
+        config.gasTokenPrice,
+      );
+
+      let relativeBase = absoluteBase / baselineLatestUSD;
+      let relativeHigh = absoluteHigh / baselineHighBlobUSD;
+
       summaryTableRows.push([
         accountName,
         monospace(`$${convertWeiToUsd(totalFee, config.gasTokenPrice)}`),
         monospace(`$${convertWeiToUsd(totalFeeHigh, config.gasTokenPrice)}`),
+        monospace(`${(relativeBase * 100).toFixed(2)}%`),
+        monospace(`${(relativeHigh * 100).toFixed(2)}%`),
       ]);
     }
 
@@ -330,11 +409,11 @@ function writeResult(chain: Chain) {
     buffer += "<details>\n";
     buffer += "<summary><b>Details</b></summary>\n\n";
 
-    buffer += `##### ${LATEST_SNAPSHOT_LABEL}\n\n`;
+    buffer += `##### ${ABSOLUTE_LATEST_SNAPSHOT_LABEL}\n\n`;
     buffer +=
       markdownTable([tableHeaderRow, ...tableRows], {align: tableAlign}) +
       "\n\n";
-    buffer += `##### ${HIGH_BLOB_FEE_SNAPSHOT_LABEL}\n\n`;
+    buffer += `##### ${ABSOLUTE_HIGH_BLOB_FEE_SNAPSHOT_LABEL}\n\n`;
     buffer +=
       markdownTable([tableHeaderRow, ...tableRowsHigh], {align: tableAlign}) +
       "\n\n";
