@@ -108,6 +108,6 @@ async function accountFixture(): Promise<AccountDataV07> {
 }
 
 export const multiOwnerLightAccount: AccountConfig = {
-  name: "Alchemy Light Account v2 (Multi-Owner)",
+  name: "Alchemy Light Account v2 (non-modular)",
   accountFixture,
 };

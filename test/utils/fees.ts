@@ -32,6 +32,10 @@ export function formatEtherTruncated(wei: bigint, decimals: number = 9) {
   return Number(formatEther(wei)).toFixed(decimals).toString();
 }
 
+export function convertWeiToUsdNumber(wei: bigint, gasTokenPrice: number) {
+  return Number(formatEther(wei)) * gasTokenPrice;
+}
+
 export function convertWeiToUsd(wei: bigint, gasTokenPrice: number) {
-  return (Number(formatEther(wei)) * gasTokenPrice).toFixed(5);
+  return convertWeiToUsdNumber(wei, gasTokenPrice).toFixed(5);
 }
