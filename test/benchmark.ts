@@ -255,7 +255,7 @@ describe("Benchmark", function () {
           });
 
           // Check that the account was created
-          const code = await publicClient.getBytecode({
+          const code = await publicClient.getCode({
             address: accountAddress,
           });
           expect(code).to.not.equal("0x");
@@ -595,7 +595,7 @@ describe("Benchmark", function () {
             0n,
             owner.account.address,
           );
-          const code = await publicClient.getBytecode({
+          const code = await publicClient.getCode({
             address: accountAddress,
           });
           expect(code).to.not.equal("0x");
