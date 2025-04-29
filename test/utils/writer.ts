@@ -418,10 +418,12 @@ function writeResult(chain: Chain) {
   } else {
     if (chain === optimism) {
       // Write to the main README.md for Optimism.
+      // Omit runtime benchmarks for the main README.md due to size.
+      const trimmedBuffer = buffer.substring(0, buffer.indexOf("#### Runtime"));
       replaceInFile.sync({
         files: "README.md",
         from: /<!-- BENCHMARK_RESULTS -->[\s\S]*<!-- \/BENCHMARK_RESULTS -->/,
-        to: `<!-- BENCHMARK_RESULTS -->\n\n${buffer}<!-- /BENCHMARK_RESULTS -->`,
+        to: `<!-- BENCHMARK_RESULTS -->\n\n${trimmedBuffer}<!-- /BENCHMARK_RESULTS -->`,
       });
       console.log("\n  📝 Results written to README.md!");
     }

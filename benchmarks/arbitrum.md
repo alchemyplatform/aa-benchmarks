@@ -19,19 +19,19 @@
 | Blob base fee scalar |        `-` |            `-` |
 | ETH price (USD)      | `$3192.59` |            `-` |
 
-#### User Operation: Account creation
+#### Account creation
 
 ##### Total fee (USD)
 
 |                                        | Absolute - Latest | Absolute - High Blob Fees | Relative - Latest | Relative - High Blob Fees |
 | :------------------------------------- | ----------------: | ------------------------: | ----------------: | ------------------------: |
-| Alchemy Modular Account v2             |        `$0.00744` |                `$0.00745` |         `100.00%` |                 `100.00%` |
-| Biconomy Nexus                         |        `$0.01093` |                `$0.01095` |         `146.94%` |                 `146.94%` |
-| ZeroDev Kernel v3.1                    |        `$0.01080` |                `$0.01082` |         `145.24%` |                 `145.24%` |
-| Safe v1.4.1 (non-modular)              |        `$0.01390` |                `$0.01393` |         `186.90%` |                 `186.90%` |
-| Alchemy Light Account v2 (non-modular) |        `$0.00935` |                `$0.00937` |         `125.67%` |                 `125.67%` |
-| Coinbase Smart Wallet (non-modular)    |        `$0.01015` |                `$0.01017` |         `136.44%` |                 `136.44%` |
-| Simple Account (non-modular)           |        `$0.00949` |                `$0.00951` |         `127.62%` |                 `127.62%` |
+| Alchemy Modular Account v2             |        `$0.00312` |                `$0.00313` |         `100.00%` |                 `100.00%` |
+| Biconomy Nexus                         |        `$0.00671` |                `$0.00673` |         `215.10%` |                 `215.10%` |
+| ZeroDev Kernel v3.1                    |        `$0.00576` |                `$0.00577` |         `184.58%` |                 `184.58%` |
+| Safe v1.4.1 (non-modular)              |        `$0.00923` |                `$0.00925` |         `295.80%` |                 `295.80%` |
+| Alchemy Light Account v2 (non-modular) |        `$0.00542` |                `$0.00543` |         `173.52%` |                 `173.52%` |
+| Coinbase Smart Wallet (non-modular)    |        `$0.00608` |                `$0.00609` |         `194.87%` |                 `194.87%` |
+| Simple Account (non-modular)           |        `$0.00556` |                `$0.00557` |         `178.19%` |                 `178.19%` |
 
 <details>
 <summary><b>Details</b></summary>
@@ -40,25 +40,25 @@
 
 |                                        | Execution gas | Execution fee (ETH) | L1 gas | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------------------- | ------------: | ------------------: | -----: | -----------: | --------------: | --------------: |
-| Alchemy Modular Account v2             |      `233004` |       `0.000002330` |    `-` |          `-` |   `0.000002330` |      `$0.00744` |
-| Biconomy Nexus                         |      `342381` |       `0.000003424` |    `-` |          `-` |   `0.000003424` |      `$0.01093` |
-| ZeroDev Kernel v3.1                    |      `338419` |       `0.000003384` |    `-` |          `-` |   `0.000003384` |      `$0.01080` |
-| Safe v1.4.1 (non-modular)              |      `435486` |       `0.000004355` |    `-` |          `-` |   `0.000004355` |      `$0.01390` |
-| Alchemy Light Account v2 (non-modular) |      `292822` |       `0.000002928` |    `-` |          `-` |   `0.000002928` |      `$0.00935` |
-| Coinbase Smart Wallet (non-modular)    |      `317904` |       `0.000003179` |    `-` |          `-` |   `0.000003179` |      `$0.01015` |
-| Simple Account (non-modular)           |      `297367` |       `0.000002974` |    `-` |          `-` |   `0.000002974` |      `$0.00949` |
+| Alchemy Modular Account v2             |       `97772` |       `0.000000978` |    `-` |          `-` |   `0.000000978` |      `$0.00312` |
+| Biconomy Nexus                         |      `210309` |       `0.000002103` |    `-` |          `-` |   `0.000002103` |      `$0.00671` |
+| ZeroDev Kernel v3.1                    |      `180465` |       `0.000001805` |    `-` |          `-` |   `0.000001805` |      `$0.00576` |
+| Safe v1.4.1 (non-modular)              |      `289207` |       `0.000002892` |    `-` |          `-` |   `0.000002892` |      `$0.00923` |
+| Alchemy Light Account v2 (non-modular) |      `169655` |       `0.000001697` |    `-` |          `-` |   `0.000001697` |      `$0.00542` |
+| Coinbase Smart Wallet (non-modular)    |      `190525` |       `0.000001905` |    `-` |          `-` |   `0.000001905` |      `$0.00608` |
+| Simple Account (non-modular)           |      `174219` |       `0.000001742` |    `-` |          `-` |   `0.000001742` |      `$0.00556` |
 
 ##### High Blob Fees
 
 |                                        | Execution gas | Execution fee (ETH) | L1 gas | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
 | :------------------------------------- | ------------: | ------------------: | -----: | -----------: | --------------: | --------------: |
-| Alchemy Modular Account v2             |      `233004` |       `0.000002334` |    `-` |          `-` |   `0.000002334` |      `$0.00745` |
-| Biconomy Nexus                         |      `342381` |       `0.000003430` |    `-` |          `-` |   `0.000003430` |      `$0.01095` |
-| ZeroDev Kernel v3.1                    |      `338419` |       `0.000003390` |    `-` |          `-` |   `0.000003390` |      `$0.01082` |
-| Safe v1.4.1 (non-modular)              |      `435486` |       `0.000004363` |    `-` |          `-` |   `0.000004363` |      `$0.01393` |
-| Alchemy Light Account v2 (non-modular) |      `292822` |       `0.000002934` |    `-` |          `-` |   `0.000002934` |      `$0.00937` |
-| Coinbase Smart Wallet (non-modular)    |      `317904` |       `0.000003185` |    `-` |          `-` |   `0.000003185` |      `$0.01017` |
-| Simple Account (non-modular)           |      `297367` |       `0.000002979` |    `-` |          `-` |   `0.000002979` |      `$0.00951` |
+| Alchemy Modular Account v2             |       `97772` |       `0.000000980` |    `-` |          `-` |   `0.000000980` |      `$0.00313` |
+| Biconomy Nexus                         |      `210309` |       `0.000002107` |    `-` |          `-` |   `0.000002107` |      `$0.00673` |
+| ZeroDev Kernel v3.1                    |      `180465` |       `0.000001808` |    `-` |          `-` |   `0.000001808` |      `$0.00577` |
+| Safe v1.4.1 (non-modular)              |      `289207` |       `0.000002897` |    `-` |          `-` |   `0.000002897` |      `$0.00925` |
+| Alchemy Light Account v2 (non-modular) |      `169655` |       `0.000001700` |    `-` |          `-` |   `0.000001700` |      `$0.00543` |
+| Coinbase Smart Wallet (non-modular)    |      `190525` |       `0.000001909` |    `-` |          `-` |   `0.000001909` |      `$0.00609` |
+| Simple Account (non-modular)           |      `174219` |       `0.000001745` |    `-` |          `-` |   `0.000001745` |      `$0.00557` |
 
 </details>
 
@@ -191,6 +191,49 @@
 
 </details>
 
+#### User Operation: Account creation and empty call
+
+##### Total fee (USD)
+
+|                                        | Absolute - Latest | Absolute - High Blob Fees | Relative - Latest | Relative - High Blob Fees |
+| :------------------------------------- | ----------------: | ------------------------: | ----------------: | ------------------------: |
+| Alchemy Modular Account v2             |        `$0.00744` |                `$0.00745` |         `100.00%` |                 `100.00%` |
+| Biconomy Nexus                         |        `$0.01093` |                `$0.01095` |         `146.94%` |                 `146.94%` |
+| ZeroDev Kernel v3.1                    |        `$0.01080` |                `$0.01082` |         `145.24%` |                 `145.24%` |
+| Safe v1.4.1 (non-modular)              |        `$0.01390` |                `$0.01393` |         `186.90%` |                 `186.90%` |
+| Alchemy Light Account v2 (non-modular) |        `$0.00935` |                `$0.00937` |         `125.67%` |                 `125.67%` |
+| Coinbase Smart Wallet (non-modular)    |        `$0.01015` |                `$0.01017` |         `136.44%` |                 `136.44%` |
+| Simple Account (non-modular)           |        `$0.00949` |                `$0.00951` |         `127.62%` |                 `127.62%` |
+
+<details>
+<summary><b>Details</b></summary>
+
+##### Latest
+
+|                                        | Execution gas | Execution fee (ETH) | L1 gas | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
+| :------------------------------------- | ------------: | ------------------: | -----: | -----------: | --------------: | --------------: |
+| Alchemy Modular Account v2             |      `233004` |       `0.000002330` |    `-` |          `-` |   `0.000002330` |      `$0.00744` |
+| Biconomy Nexus                         |      `342381` |       `0.000003424` |    `-` |          `-` |   `0.000003424` |      `$0.01093` |
+| ZeroDev Kernel v3.1                    |      `338419` |       `0.000003384` |    `-` |          `-` |   `0.000003384` |      `$0.01080` |
+| Safe v1.4.1 (non-modular)              |      `435486` |       `0.000004355` |    `-` |          `-` |   `0.000004355` |      `$0.01390` |
+| Alchemy Light Account v2 (non-modular) |      `292822` |       `0.000002928` |    `-` |          `-` |   `0.000002928` |      `$0.00935` |
+| Coinbase Smart Wallet (non-modular)    |      `317904` |       `0.000003179` |    `-` |          `-` |   `0.000003179` |      `$0.01015` |
+| Simple Account (non-modular)           |      `297367` |       `0.000002974` |    `-` |          `-` |   `0.000002974` |      `$0.00949` |
+
+##### High Blob Fees
+
+|                                        | Execution gas | Execution fee (ETH) | L1 gas | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
+| :------------------------------------- | ------------: | ------------------: | -----: | -----------: | --------------: | --------------: |
+| Alchemy Modular Account v2             |      `233004` |       `0.000002334` |    `-` |          `-` |   `0.000002334` |      `$0.00745` |
+| Biconomy Nexus                         |      `342381` |       `0.000003430` |    `-` |          `-` |   `0.000003430` |      `$0.01095` |
+| ZeroDev Kernel v3.1                    |      `338419` |       `0.000003390` |    `-` |          `-` |   `0.000003390` |      `$0.01082` |
+| Safe v1.4.1 (non-modular)              |      `435486` |       `0.000004363` |    `-` |          `-` |   `0.000004363` |      `$0.01393` |
+| Alchemy Light Account v2 (non-modular) |      `292822` |       `0.000002934` |    `-` |          `-` |   `0.000002934` |      `$0.00937` |
+| Coinbase Smart Wallet (non-modular)    |      `317904` |       `0.000003185` |    `-` |          `-` |   `0.000003185` |      `$0.01017` |
+| Simple Account (non-modular)           |      `297367` |       `0.000002979` |    `-` |          `-` |   `0.000002979` |      `$0.00951` |
+
+</details>
+
 #### User Operation: Session key creation
 
 ##### Total fee (USD)
@@ -317,49 +360,6 @@
 | Alchemy Light Account v2 (non-modular) |           `-` |                 `-` |    `-` |          `-` |             `-` |             `-` |
 | Coinbase Smart Wallet (non-modular)    |           `-` |                 `-` |    `-` |          `-` |             `-` |             `-` |
 | Simple Account (non-modular)           |           `-` |                 `-` |    `-` |          `-` |             `-` |             `-` |
-
-</details>
-
-#### Runtime: Account creation
-
-##### Total fee (USD)
-
-|                                        | Absolute - Latest | Absolute - High Blob Fees | Relative - Latest | Relative - High Blob Fees |
-| :------------------------------------- | ----------------: | ------------------------: | ----------------: | ------------------------: |
-| Alchemy Modular Account v2             |        `$0.00312` |                `$0.00313` |         `100.00%` |                 `100.00%` |
-| Biconomy Nexus                         |        `$0.00671` |                `$0.00673` |         `215.10%` |                 `215.10%` |
-| ZeroDev Kernel v3.1                    |        `$0.00576` |                `$0.00577` |         `184.58%` |                 `184.58%` |
-| Safe v1.4.1 (non-modular)              |        `$0.00923` |                `$0.00925` |         `295.80%` |                 `295.80%` |
-| Alchemy Light Account v2 (non-modular) |        `$0.00542` |                `$0.00543` |         `173.52%` |                 `173.52%` |
-| Coinbase Smart Wallet (non-modular)    |        `$0.00608` |                `$0.00609` |         `194.87%` |                 `194.87%` |
-| Simple Account (non-modular)           |        `$0.00556` |                `$0.00557` |         `178.19%` |                 `178.19%` |
-
-<details>
-<summary><b>Details</b></summary>
-
-##### Latest
-
-|                                        | Execution gas | Execution fee (ETH) | L1 gas | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
-| :------------------------------------- | ------------: | ------------------: | -----: | -----------: | --------------: | --------------: |
-| Alchemy Modular Account v2             |       `97772` |       `0.000000978` |    `-` |          `-` |   `0.000000978` |      `$0.00312` |
-| Biconomy Nexus                         |      `210309` |       `0.000002103` |    `-` |          `-` |   `0.000002103` |      `$0.00671` |
-| ZeroDev Kernel v3.1                    |      `180465` |       `0.000001805` |    `-` |          `-` |   `0.000001805` |      `$0.00576` |
-| Safe v1.4.1 (non-modular)              |      `289207` |       `0.000002892` |    `-` |          `-` |   `0.000002892` |      `$0.00923` |
-| Alchemy Light Account v2 (non-modular) |      `169655` |       `0.000001697` |    `-` |          `-` |   `0.000001697` |      `$0.00542` |
-| Coinbase Smart Wallet (non-modular)    |      `190525` |       `0.000001905` |    `-` |          `-` |   `0.000001905` |      `$0.00608` |
-| Simple Account (non-modular)           |      `174219` |       `0.000001742` |    `-` |          `-` |   `0.000001742` |      `$0.00556` |
-
-##### High Blob Fees
-
-|                                        | Execution gas | Execution fee (ETH) | L1 gas | L1 fee (ETH) | Total fee (ETH) | Total fee (USD) |
-| :------------------------------------- | ------------: | ------------------: | -----: | -----------: | --------------: | --------------: |
-| Alchemy Modular Account v2             |       `97772` |       `0.000000980` |    `-` |          `-` |   `0.000000980` |      `$0.00313` |
-| Biconomy Nexus                         |      `210309` |       `0.000002107` |    `-` |          `-` |   `0.000002107` |      `$0.00673` |
-| ZeroDev Kernel v3.1                    |      `180465` |       `0.000001808` |    `-` |          `-` |   `0.000001808` |      `$0.00577` |
-| Safe v1.4.1 (non-modular)              |      `289207` |       `0.000002897` |    `-` |          `-` |   `0.000002897` |      `$0.00925` |
-| Alchemy Light Account v2 (non-modular) |      `169655` |       `0.000001700` |    `-` |          `-` |   `0.000001700` |      `$0.00543` |
-| Coinbase Smart Wallet (non-modular)    |      `190525` |       `0.000001909` |    `-` |          `-` |   `0.000001909` |      `$0.00609` |
-| Simple Account (non-modular)           |      `174219` |       `0.000001745` |    `-` |          `-` |   `0.000001745` |      `$0.00557` |
 
 </details>
 

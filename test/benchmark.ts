@@ -230,37 +230,26 @@ describe("Benchmark", function () {
         await usdt?.write.mint([accountAddress, USDT_INITIAL_BALANCE]);
       }
 
-      describe("User Operation", function () {
-        it("User Operation: Account creation", async function () {
-          const {owner, beneficiary, usdc, publicClient} =
-            await loadFixture(baseFixture);
-          const accountData = await loadFixture(accountFixture);
+      describe("Account creation", function () {
+        it("Account creation", async function () {
+          const {owner, publicClient} = await loadFixture(baseFixture);
+          const {createAccount, getAccountAddress} =
+            await loadFixture(accountFixture);
+          hash = await createAccount(0n, owner.account.address);
 
-          const accountAddress = await accountData.getAccountAddress(
+          // Check that the account was created
+          const accountAddress = await getAccountAddress(
             0n,
             owner.account.address,
           );
-          await fundAccount(accountAddress, usdc);
-
-          hash = await wrappedHandleOps({
-            accountData,
-            signer: owner,
-            beneficiary,
-            sender: accountAddress,
-            initCode: accountData.getInitCode(0n, owner.account.address),
-            callData: accountData.encodeUserOpExecute(zeroAddress, 0n, "0x"),
-            getNonce: accountData.getNonce,
-            getDummySignature: accountData.getDummySignature,
-            getSignature: accountData.getOwnerSignature,
-          });
-
-          // Check that the account was created
           const code = await publicClient.getCode({
             address: accountAddress,
           });
           expect(code).to.not.equal("0x");
         });
+      });
 
+      describe("User Operation", function () {
         it("User Operation: Native transfer", async function () {
           const {owner, alice, beneficiary, usdc, publicClient} =
             await loadFixture(baseFixture);
@@ -414,6 +403,36 @@ describe("Benchmark", function () {
           expect(`${usdcBalance}`).to.equal(
             `${USDC_INITIAL_BALANCE - USDC_TRANSFER_AMOUNT}`,
           );
+        });
+
+        it("User Operation: Account creation and empty call", async function () {
+          const {owner, beneficiary, usdc, publicClient} =
+            await loadFixture(baseFixture);
+          const accountData = await loadFixture(accountFixture);
+
+          const accountAddress = await accountData.getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await fundAccount(accountAddress, usdc);
+
+          hash = await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
+            sender: accountAddress,
+            initCode: accountData.getInitCode(0n, owner.account.address),
+            callData: accountData.encodeUserOpExecute(zeroAddress, 0n, "0x"),
+            getNonce: accountData.getNonce,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
+          });
+
+          // Check that the account was created
+          const code = await publicClient.getCode({
+            address: accountAddress,
+          });
+          expect(code).to.not.equal("0x");
         });
 
         it("User Operation: Session key creation", async function () {
@@ -584,23 +603,6 @@ describe("Benchmark", function () {
       });
 
       describe("Runtime", function () {
-        it("Runtime: Account creation", async function () {
-          const {owner, publicClient} = await loadFixture(baseFixture);
-          const {createAccount, getAccountAddress} =
-            await loadFixture(accountFixture);
-          hash = await createAccount(0n, owner.account.address);
-
-          // Check that the account was created
-          const accountAddress = await getAccountAddress(
-            0n,
-            owner.account.address,
-          );
-          const code = await publicClient.getCode({
-            address: accountAddress,
-          });
-          expect(code).to.not.equal("0x");
-        });
-
         it("Runtime: Native transfer", async function () {
           const {owner, alice, usdc, publicClient} =
             await loadFixture(baseFixture);
