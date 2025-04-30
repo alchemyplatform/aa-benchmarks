@@ -1,9 +1,10 @@
-# AA Benchmarks
+# Smart Account Benchmarks
 
-A comprehensive benchmark for smart contract accounts that support account abstraction (ERC-4337), built on Hardhat for accurate, transaction-based fee measurements (see [Methodology](#methodology)) and for use of existing TypeScript utilities around fee calculations. This work was inspired by ZeroDev's work on [aa-benchmark](https://github.com/zerodevapp/aa-benchmark), which is built on Foundry.
+These comprehensive benchmarks are intended to serve as a resource for evaluating popular ERC-4337 compatible smart contract accounts. They are built on Hardhat for accurate, transaction-based fee measurements (see [Methodology](#methodology)) and for use of existing TypeScript utilities around fee calculations.
 
 ## Methodology
 
+When using smart contract accounts, it's important to consider both deployment gas costs and transaction gas costs which are dependent on the contract implementation. Unlike EOAs, smart contract accounts incur gas costs when being deployed on each chain.
 This tool seeks to measure the cost of the entire transaction landed on-chain for each action, including associated L1 fees. As smart accounts are expected to proliferate on L2s, it's important to consider L1 fees (measured as a function of the RLP-encoded signed transaction and the blob gas market) on top of L2 execution costs. L1 fees can impact the cost of transactions on L2s, so optimizing the size of calldata is important.
 
 The L1 fee calculations are done following the formula and constants specified in [Optimism Ecotone](https://docs.optimism.io/stack/transactions/fees#ecotone).
@@ -12,6 +13,8 @@ There are two different categories of benchmarks measured in this test: **User O
 
 - **User Operation**: This test measures the onchain cost for a bundler to execute the user operation in a bundle of size 1, to present a lower-bound fee required for the user operation to land in an exclusive bundle. The cost per individual user operation can vary, because each bundler may calculate pre-verification gas differently and the costs can differ based on the number of user operations in a bundle. This benchmark, much like most other benchmarks, calculates fees based on the transaction receipt and the serialized signed EIP-1559 transaction for `entryPoint.handleUserOp([userOp])`. As multi-user-op bundles become more prevalent, we can expect actual fees to undercut the data presented here.
 - **Runtime**: Runtime transactions are defined as those performed outside of the ERC-4337 flow. This can be done by calling from one smart account into another during the execution phase in ERC-4337, or by using an EOA account to initiate a transaction and skip the ERC-4337 EntryPoint contract. While this is a possible flow with smart accounts, it is uncommon in practice. Runtime benchmarks can be found within each chain's benchmark page. For this flow, fees are also calculated based on the transaction's receipt and the serialized signed EIP-1559 transaction.
+
+Below, we compare the deployment costs and various transaction costs across multiple popular smart contract account implementations.
 
 ## Results
 
