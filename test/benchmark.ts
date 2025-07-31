@@ -36,6 +36,7 @@ const USDT_DECIMALS = 6;
 const USDC_INITIAL_BALANCE = parseUnits("100", USDC_DECIMALS);
 const USDC_TRANSFER_AMOUNT = parseUnits("50", USDC_DECIMALS);
 const USDT_INITIAL_BALANCE = parseUnits("100", USDT_DECIMALS);
+const NFT_INITIAL_BALANCE = 1n;
 
 describe("Benchmark", function () {
   async function baseFixture() {
@@ -63,6 +64,12 @@ describe("Benchmark", function () {
       client: owner,
     });
 
+    const nft = getContract({
+      address: TOKEN_ARTIFACTS.NFT.address,
+      abi: TOKEN_ARTIFACTS.NFT.abi,
+      client: owner,
+    });
+
     return {
       alice,
       beneficiary,
@@ -71,6 +78,7 @@ describe("Benchmark", function () {
       usdc,
       usdt,
       sessionKey,
+      nft,
     };
   }
 
@@ -221,6 +229,10 @@ describe("Benchmark", function () {
           typeof TOKEN_ARTIFACTS.USDT.abi,
           WalletClient<Transport, Chain, Account>
         >,
+        nft?: GetContractReturnType<
+          typeof TOKEN_ARTIFACTS.NFT.abi,
+          WalletClient<Transport, Chain, Account>
+        >,
       ) {
         await hre.network.provider.send("hardhat_setBalance", [
           accountAddress,
@@ -228,6 +240,7 @@ describe("Benchmark", function () {
         ]);
         await usdc.write.mint([accountAddress, USDC_INITIAL_BALANCE]);
         await usdt?.write.mint([accountAddress, USDT_INITIAL_BALANCE]);
+        await nft?.write.mint([accountAddress, NFT_INITIAL_BALANCE]);
       }
 
       describe("Account creation", function () {
@@ -326,6 +339,98 @@ describe("Benchmark", function () {
             alice.account.address,
           ]);
           expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
+        });
+
+        it("User Operation: ERC-721 approve", async function () {
+          const {owner, alice, beneficiary, usdc, nft} =
+            await loadFixture(baseFixture);
+          const accountData = await loadFixture(accountFixture);
+
+          const accountAddress = await accountData.getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await fundAccount(accountAddress, usdc, undefined, nft);
+          await accountData.createAccount(0n, owner.account.address);
+
+          expect(await nft.read.balanceOf([alice.account.address])).to.equal(
+            0n,
+          );
+
+          hash = await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
+            sender: accountAddress,
+            callData: accountData.encodeUserOpExecute(
+              nft.address,
+              0n,
+              encodeFunctionData({
+                abi: [
+                  getAbiItem({
+                    abi: nft.abi,
+                    name: "approve",
+                  }),
+                ],
+                args: [alice.account.address, 1n],
+              }),
+            ),
+            getNonce: accountData.getNonce,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
+          });
+
+          // Check that the ERC-721 approve was successful
+          const aliceApproved = await nft.read.getApproved([1n]);
+          expect(aliceApproved.toLowerCase()).to.equal(
+            alice.account.address.toLowerCase(),
+          );
+        });
+
+        it("User Operation: ERC-721 transfer", async function () {
+          const {owner, alice, beneficiary, usdc, nft} =
+            await loadFixture(baseFixture);
+          const accountData = await loadFixture(accountFixture);
+
+          const accountAddress = await accountData.getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await fundAccount(accountAddress, usdc, undefined, nft);
+          await accountData.createAccount(0n, owner.account.address);
+
+          expect(await nft.read.balanceOf([alice.account.address])).to.equal(
+            0n,
+          );
+
+          hash = await wrappedHandleOps({
+            accountData,
+            signer: owner,
+            beneficiary,
+            sender: accountAddress,
+            callData: accountData.encodeUserOpExecute(
+              nft.address,
+              0n,
+              encodeFunctionData({
+                abi: [
+                  getAbiItem({
+                    abi: nft.abi,
+                    name: "transferFrom",
+                  }),
+                ],
+                args: [accountAddress, alice.account.address, 1n],
+              }),
+            ),
+            getNonce: accountData.getNonce,
+            getDummySignature: accountData.getDummySignature,
+            getSignature: accountData.getOwnerSignature,
+          });
+
+          // Check that the ERC-721 transfer was successful
+          const aliceBalance = await nft.read.balanceOf([
+            alice.account.address,
+          ]);
+          expect(aliceBalance).to.equal(1n);
         });
 
         it("User Operation: Uniswap V3 ERC-20 swap", async function () {
@@ -684,6 +789,94 @@ describe("Benchmark", function () {
             alice.account.address,
           ]);
           expect(aliceBalance).to.equal(USDC_TRANSFER_AMOUNT);
+        });
+
+        it("Runtime: ERC-721 transfer", async function () {
+          const {owner, alice, usdc, nft} = await loadFixture(baseFixture);
+          const {getAccountAddress, createAccount, encodeRuntimeExecute} =
+            await loadFixture(accountFixture);
+
+          if (!encodeRuntimeExecute) {
+            return this.skip();
+          }
+
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await fundAccount(accountAddress, usdc, undefined, nft);
+          await createAccount(0n, owner.account.address);
+
+          const data = await encodeRuntimeExecute(
+            nft.address,
+            0n,
+            encodeFunctionData({
+              abi: [
+                getAbiItem({
+                  abi: nft.abi,
+                  name: "transferFrom",
+                }),
+              ],
+              args: [accountAddress, alice.account.address, 1n],
+            }),
+            owner,
+            accountAddress,
+          );
+
+          hash = await owner.sendTransaction({
+            to: accountAddress,
+            data,
+          });
+
+          // Check that the ERC-721 transfer was successful
+          const aliceBalance = await nft.read.balanceOf([
+            alice.account.address,
+          ]);
+          expect(aliceBalance).to.equal(1n);
+        });
+
+        it("Runtime: ERC-721 approve", async function () {
+          const {owner, alice, usdc, nft} = await loadFixture(baseFixture);
+          const {getAccountAddress, createAccount, encodeRuntimeExecute} =
+            await loadFixture(accountFixture);
+
+          if (!encodeRuntimeExecute) {
+            return this.skip();
+          }
+
+          const accountAddress = await getAccountAddress(
+            0n,
+            owner.account.address,
+          );
+          await fundAccount(accountAddress, usdc, undefined, nft);
+          await createAccount(0n, owner.account.address);
+
+          const data = await encodeRuntimeExecute(
+            nft.address,
+            0n,
+            encodeFunctionData({
+              abi: [
+                getAbiItem({
+                  abi: nft.abi,
+                  name: "approve",
+                }),
+              ],
+              args: [alice.account.address, 1n],
+            }),
+            owner,
+            accountAddress,
+          );
+
+          hash = await owner.sendTransaction({
+            to: accountAddress,
+            data,
+          });
+
+          // Check that the ERC-721 approve was successful
+          const aliceApproved = await nft.read.getApproved([1n]);
+          expect(aliceApproved.toLowerCase()).to.equal(
+            alice.account.address.toLowerCase(),
+          );
         });
 
         it("Runtime: Uniswap V3 ERC-20 swap", async function () {
